@@ -17,6 +17,7 @@ Use this lane for workbook understanding, task scoping, data extraction, search,
 - use `read range` for bounded extraction
 - use `read search` when the target cells are not already known
 - prefer TSV for shell pipelines
+- `read` stream/file output already uses real workbook data shape; do not plan around synthetic header/index
 - keep inline output bounded unless a file or stream is more appropriate
 - treat this lane as data/structure/formula inspection; it is not a visual styling inspection path
 
@@ -36,14 +37,26 @@ agent-sheet inspect range --entry-id <entry-id> --range "<sheet>!A1:Z200"
 agent-sheet read range --entry-id <entry-id> --range "<sheet>!A1:H80"
 ```
 
-3. Need search-driven discovery
+3. Need exact machine values instead of formatted display values
+
+Use this when the task depends on typed workbook values such as numeric comparison, date-range logic, formula/result separation, or other cases where inline preview formatting could mislead the next step.
+
+```bash
+agent-sheet read range --entry-id <entry-id> --range "<sheet>!A1:H80" --type rawValue --format tsv --to-stdout
+agent-sheet read range --entry-id <entry-id> --range "<sheet>!A1:H80" --type rawValue --format json --to-file --output ./artifacts/range.json
+agent-sheet read search --entry-id <entry-id> --query "<query>" --type rawValue --format tsv --to-stdout
+```
+
+If the business value is the formatted display text itself, keep `displayValue`. Do not switch to external workbook parsers before you have tried canonical `read` with the right cell type.
+
+4. Need search-driven discovery
 
 ```bash
 agent-sheet read search --entry-id <entry-id> --query "<query>"
 agent-sheet read search --entry-id <entry-id> --query "<query>" --format tsv --to-stdout
 ```
 
-4. Need machine parsing rather than human review
+5. Need machine parsing rather than human review
 
 ```bash
 agent-sheet inspect workbook --entry-id <entry-id> --json-summary | jq -r '.sheets[].name'
@@ -52,7 +65,8 @@ agent-sheet inspect workbook --entry-id <entry-id> --json-summary | jq -r '.shee
 ## Output mode rules
 
 - human/model review: default inline output, optionally with `--artifact-max-bytes`
-- shell/dataflow: `--to-stdout --format tsv --no-index`
+- shell/dataflow: `--to-stdout --format tsv`
+- precise machine extract: add `--type rawValue`, usually with `--to-stdout` or `--to-file`
 - reusable artifact: `--to-file --output <path>`
 
 ## What this lane can and cannot verify

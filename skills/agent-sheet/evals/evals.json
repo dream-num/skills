@@ -34,7 +34,7 @@
       "files": [],
       "expectations": [
         "The workflow uses `--to-stdout` explicitly for the streaming read.",
-        "The workflow keeps the streamed table shape intentional, typically by suppressing the synthetic row index with `--no-index` before piping into `write table`.",
+        "The workflow treats the streamed rows as real workbook data shape instead of planning around synthetic index/header columns.",
         "The workflow uses a shell pipeline instead of writing an intermediate data file.",
         "The filtered result is written back with canonical `write range` or `write table`.",
         "The final response includes a verification readback of the review sheet."
@@ -126,26 +126,59 @@
     },
     {
       "id": 11,
-      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Claims` sheet, and write data with headers. Then use a shell pipeline to keep only the `P1` rows and write the result as a complete review table to `ClaimsP1Review`. The read stage must explicitly use `--to-stdout`, and you must handle the stream shape intentionally so the synthetic row index is not mistakenly passed into `write table`. Do not create an intermediate file, and finish by verifying `ClaimsP1Review`.",
-      "expected_output": "Demonstrate header-preserving TSV writeback: shape the output of `read range --to-stdout` intentionally into a table suitable for `write table`, typically using `--no-index`, and then complete a verification readback.",
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Claims` sheet, and write data with headers. Then use a shell pipeline to keep only the `P1` rows and write the result as a complete review table to `ClaimsP1Review`. The read stage must explicitly use `--to-stdout`, and you should rely on the real workbook data shape directly instead of planning around synthetic index/header columns. Do not create an intermediate file, and finish by verifying `ClaimsP1Review`.",
+      "expected_output": "Demonstrate header-preserving TSV writeback: stream the real workbook rows from `read range --to-stdout` into `write table`, then complete a verification readback.",
       "files": [],
       "expectations": [
         "The workflow uses `--to-stdout` explicitly for the streaming read.",
-        "The workflow handles the stream shape intentionally before piping into `write table`, typically with `--no-index`.",
+        "The workflow keeps the stream aligned with the real workbook table shape instead of cleaning up synthetic index/header columns.",
         "The pipeline preserves a valid header row for the destination review table.",
         "The final response includes a verification readback of `ClaimsP1Review`."
       ]
     },
     {
       "id": 12,
-      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Sales` sheet, and write a small table with headers. Then use a shell pipeline to stream only the two column values from the data rows into `Projected!A2:B4`. The target here is raw row writeback, not a review table, so you must handle header/index behavior explicitly and avoid mixing either the header row or the synthetic index into the destination range. Do not create an intermediate file, and finish by verifying `Projected!A1:B4`.",
-      "expected_output": "Demonstrate raw-row TSV writeback: explicitly remove the synthetic index from the stream and decide whether to keep the header based on the destination semantics. Finally, write into the range starting at `A2` with `write range` and verify the full projected result.",
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Sales` sheet, and write a small table with headers. Then use a shell pipeline to stream only the two column values from the data rows into `Projected!A2:B4`. The target here is raw row writeback, not a review table, so you must decide whether to keep the real source header row based on the destination semantics. Do not create an intermediate file, and finish by verifying `Projected!A1:B4`.",
+      "expected_output": "Demonstrate raw-row TSV writeback: use the real workbook data shape from `read range --to-stdout`, drop the real source header row in the transform when needed, then write into the range starting at `A2` and verify the full projected result.",
       "files": [],
       "expectations": [
         "The workflow uses `--to-stdout` explicitly for the streaming read.",
-        "The workflow suppresses the synthetic row index before piping into `write range`.",
-        "The workflow keeps header handling aligned with the destination semantics, rather than forwarding the source stream blindly.",
+        "The workflow does not plan around synthetic row indexes or synthetic headers.",
+        "The workflow keeps real header handling aligned with the destination semantics, rather than forwarding the source stream blindly.",
         "The final response includes a verification readback of `Projected!A1:B4`."
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Claims` sheet with a date column and an amount column, then produce a review table containing only the rows whose exact underlying values satisfy a date-range and amount threshold rule. The read stage must stay on canonical `read` surfaces and must explicitly choose the precision path instead of relying on formatted inline preview. Finish with a verification readback.",
+      "expected_output": "Demonstrate the precision-read workflow: inspect first, then use `read range --type rawValue --to-stdout` or `--to-file`, perform the filter in shell/Python, write back canonically, and verify the result.",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--type rawValue` explicitly for the precision extract.",
+        "The workflow keeps `agent-sheet` as the extraction layer instead of jumping to external workbook parsers.",
+        "The final response includes a canonical verification readback."
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare an `Orders` sheet whose order-id column is stored as text values with leading zeros, and then build a review sheet that keeps only the rows whose ids start with `00`. The workflow must stay shell-native, must use canonical `read` as the extraction layer, and must not jump to `openpyxl` or direct `xlsx` parsing.",
+      "expected_output": "Demonstrate a shell-native exact-text workflow: use canonical `read` output as the extraction surface, preserve the leading-zero ids through the transform, write back canonically, and verify the result.",
+      "files": [],
+      "expectations": [
+        "The workflow keeps `agent-sheet read` as the extraction path.",
+        "The workflow preserves the leading-zero ids through the transform instead of normalizing them away.",
+        "The final response includes canonical writeback verification."
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Revenue` sheet where displayed currency formatting differs from the underlying numeric value, and then generate a threshold review sheet using exact numeric comparison. The read stage must explicitly use the precision path and the final response must explain that the workflow stayed on canonical `read` rather than opening the workbook directly.",
+      "expected_output": "Demonstrate exact numeric extraction with `--type rawValue`, a shell-native transform, canonical writeback, and a short explanation that precise machine reading stayed on `agent-sheet read`.",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--type rawValue` explicitly for the numeric comparison path.",
+        "The workflow uses shell-native transform or a small Python transform without bypassing canonical `read`.",
+        "The response states that canonical `read` handled the precise extraction."
       ]
     }
   ]

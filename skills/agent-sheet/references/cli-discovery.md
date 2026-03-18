@@ -44,7 +44,10 @@ Choose output mode based on the next consumer:
 - inline preview for human/model inspection
 - `--to-stdout` for shell pipelines
 - `--to-file --output <path>` for reusable artifacts
+- `--type rawValue` when the task needs exact machine values rather than formatted display values
 - `--json` or `--json-summary` for machine parsing
+
+For `read range`, stream/file output now uses real workbook data shape directly. Do not expect synthetic row indexes or synthetic column-letter headers.
 
 ## Workspace discovery reality
 

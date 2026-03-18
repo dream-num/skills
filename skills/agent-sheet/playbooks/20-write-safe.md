@@ -76,8 +76,8 @@ If the requested outcome is presentation-only and canonical CLI cannot inspect t
 - `write range` can normalize an oversized explicit target down to the payload shape; still keep the anchor honest
 - `write fill` may expand sheet capacity up to `--target-range`; keep the target tightly bounded
 - `write table` is high impact because it replaces a table-shaped region; verify both contents and surrounding structure
-- when piping `read range --to-stdout` into `write table` or `write range`, decide header/index shape explicitly; for TSV review-table flows this usually means `--no-index` on the read side
-- when piping raw rows into `write range --start-cell <A1>`, also decide whether the source header belongs in the destination; if the destination already has its own header row, use `--no-header` on the read side
+- `read range --to-stdout` already emits real workbook data shape; if you want to skip a real source header row or project columns, do it in the transform step
+- when the writeback depends on exact typed values, add `--type rawValue` on the read side before the shell transform
 - canonical `write.*` verification is for data and structure, not for visual formatting state
 
 ## Stop / escalate

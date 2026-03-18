@@ -12,8 +12,8 @@ Use this matrix to choose the smallest canonical path before reaching for JS.
 | raw remote workbook start | `file attach <unit-id>` | none | only public raw `unitId` surface |
 | workbook topology scan | `inspect workbook` | `inspect sheet` | start here for unknown workbooks |
 | range/profile inspection | `inspect range` | `inspect formulas` / `inspect lint` | use before risky writes |
-| bounded rectangular extract | `read range` | `--to-stdout` or `--to-file` | choose output mode by consumer |
-| search-driven lookup | `read search` | scope flags + stream format | prefer scope flags over post-filter hacks |
+| bounded rectangular extract | `read range` | `--type rawValue --to-stdout` or `--to-file` when exact machine values matter | choose output mode by consumer; stream/file output already uses real workbook data shape |
+| search-driven lookup | `read search` | scope flags + stream format, add `--type rawValue` when exact values matter | prefer scope flags over post-filter hacks |
 | sparse patch | `write cells` | `write range` | best for explicit cell map updates |
 | anchored rectangular write | `write range` | staged writes | best for payload-shaped range writeback |
 | review-sheet replacement | `write table --sheet <name>` | `write range` | high impact; verify carefully |
