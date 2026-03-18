@@ -7,6 +7,12 @@ description: Operate spreadsheet workbooks through `agent-sheet`. Use this skill
 
 `agent-sheet` is the execution protocol for spreadsheet work in this repo.
 
+Install it first when the CLI is not available yet:
+
+```bash
+npm install -g agent-sheet
+```
+
 Treat it as a command router, not a long handbook:
 
 - establish workbook context first
@@ -35,9 +41,11 @@ Treat it as a command router, not a long handbook:
    - `script js` is a bounded fallback for genuine command gaps, not the default editing surface.
 4. Output mode matches the consumer
    - shell/dataflow: `--to-stdout`
+   - precise machine extract: add `--type rawValue`, usually with `--to-stdout` or `--to-file`
    - human/model inspection: bounded inline output
    - large reusable extracts: `--to-file --output <path>`
    - machine parsing: `--json` or `--json-summary` only where it actually helps
+   - `read` stream/file output already uses real workbook data shape; do not plan around synthetic index/header
 5. Every write ends with verification
    - read back the changed range
    - add `inspect sheet` or `inspect workbook` after structural mutations
@@ -91,6 +99,7 @@ Use this selection bias:
 - `inspect workbook` before guessing sheets
 - `inspect sheet` / `inspect range` before risky writes
 - `read range` for rectangular extraction
+- when display formatting could mislead dates, amounts, or other typed values, stay on canonical `read range` and upgrade to `--type rawValue`
 - `read search` for lookup/discovery across sheets
 - `write cells` for sparse patches
 - `write range` for anchored rectangular payloads
@@ -138,6 +147,7 @@ If the result is large, prefer pointing at a file path or a bounded preview over
 
 - do not parse workbook state by hand when `inspect.*` or `read.*` already expresses it
 - do not use `script js` just because it feels flexible
+- do not jump to `xlsx` parsing or `openpyxl` just because inline preview is formatted; try `read range|search --type rawValue` first
 - do not mutate a workbook before resolving entry context
 - do not finish after a write without readback
 - do not emit oversized inline dumps when `--to-file` or `--to-stdout` is the better interface
