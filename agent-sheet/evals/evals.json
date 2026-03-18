@@ -1,0 +1,152 @@
+{
+  "skill_name": "agent-sheet",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "仓库里有一个测试文件 `apps/agent-sheet/tests_prepublish/test_a1_hello.xlsx`。请用 `agent-sheet` 在当前仓库里初始化或复用 workspace，并优先尝试把它导入成 local entry；如果当前 runtime 明确报 converter/import 不可用，就诚实停止并报告 blocker，不要假装导入成功。若导入成功，再确认 workbook/sheet 结构，并读取第一个 sheet 的 `A1`。不要用 `script js`。",
+      "expected_output": "优先走 canonical `file import`。如果 runtime 允许，就继续 `inspect/read` 并返回 entryId、sheet 信息和 A1；如果 runtime 明确缺少 converter/import 能力，就 fail-fast 并说明 blocker，不走 `script js`。",
+      "files": [
+        "../../apps/agent-sheet/tests_prepublish/test_a1_hello.xlsx"
+      ],
+      "expectations": [
+        "The workflow attempts `file import` as the canonical bootstrap path.",
+        "If import succeeds, the workflow uses `inspect workbook` before or together with the final readback.",
+        "If import succeeds, the workflow reads `A1` with canonical read or inspect commands instead of `script js`.",
+        "If import fails because runtime converter support is unavailable, the response stops with that concrete blocker instead of fabricating an `entryId`."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "请用 `agent-sheet` 新建一个本地 workbook，默认 `Sheet1` 重命名为 `OpsReview`，然后写入一个两列表头加三行数据的小 review table，最后验证 `OpsReview!A1:B4`。这应该完全走 canonical commands，不要用 `script js`。",
+      "expected_output": "通过 `file create` / `sheet rename` / `write range` 或 `write table` / `read range` 完成一个最小但完整的本地写回流程。",
+      "files": [],
+      "expectations": [
+        "The workflow creates a local workbook entry instead of attaching a remote workbook.",
+        "The workflow renames `Sheet1` rather than creating an unnecessary extra sheet.",
+        "The mutation is done with canonical write commands, not `script js`.",
+        "The final result includes a verification readback for `OpsReview!A1:B4`."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "请用 `agent-sheet` 新建一个本地 workbook，准备一张 `Claims` 表，写入几行包含优先级列的数据；然后用 shell pipeline 只筛出 `P1` 行，写到 `ClaimsP1Review`。要求读取阶段显式使用 `--to-stdout`，写回阶段通过 stdin 消费流，不要落中间文件，最后验证 review sheet。",
+      "expected_output": "展示 shell-native 工作流：canonical create/write 之后，使用 `read ... --to-stdout | awk/sed/... | write ...` 完成筛选写回，并验证输出表。",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--to-stdout` explicitly for the streaming read.",
+        "The workflow keeps the streamed table shape intentional, typically by suppressing the synthetic row index with `--no-index` before piping into `write table`.",
+        "The workflow uses a shell pipeline instead of writing an intermediate data file.",
+        "The filtered result is written back with canonical `write range` or `write table`.",
+        "The final response includes a verification readback of the review sheet."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "请用 `agent-sheet` 新建一个本地 workbook，准备 `Summary` sheet，并把 `Summary!A1:D10` 做成更像报告：表头加粗、浅灰底、水平居中，并冻结首行。优先 canonical commands；如果做不到，再用最小 `script js`。如果视觉状态不能被当前 canonical CLI 独立验证，要明确写出来，不要假装验证过。",
+      "expected_output": "识别这是 presentation-oriented 任务，合理进入 `script js` fallback，返回结构化执行摘要，并诚实说明视觉状态的可检验边界。",
+      "files": [],
+      "expectations": [
+        "The workflow recognizes that styling/freeze behavior is a valid `script js` fallback case.",
+        "The script, if used, stays bounded to the intended sheet/range.",
+        "The response does not claim canonical CLI independently verified visual styling if no such inspect surface exists.",
+        "The response includes changed sheet names or A1 ranges from the script execution."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "请用 `agent-sheet` 新建一个本地 workbook，准备 `Summary` sheet，把 `A1:D1` 合并成标题区，写入 `Quarterly Summary`，设置加粗并居中。优先 canonical commands；如果需要 `script js`，请解释 gap，并在结果里明确哪些部分是执行确认，哪些部分不能通过 canonical CLI 独立检查。",
+      "expected_output": "把 merge/title formatting 识别为可能需要 workbook-native API 的 bounded fallback，并给出清晰的 gap 说明与验证说明。",
+      "files": [],
+      "expectations": [
+        "The workflow explains why canonical commands are insufficient if it chooses `script js`.",
+        "The script scope is bounded to the intended title block.",
+        "The final response distinguishes execution confirmation from canonical verification.",
+        "The response reports the touched sheet and merged range."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "请用 `agent-sheet` 新建一个本地 `Sales` workbook，写入一列原始数值和一列公式，然后使用 `inspect formulas` 和必要的 readback 来确认公式存在并可读。这里应尽量使用 canonical command surface，不要为了简单公式检查直接走 `script js`。",
+      "expected_output": "通过 canonical workbook creation / write / formula inspection 路径完成一个带公式的本地流程，展示 `inspect formulas` 的正确使用。",
+      "files": [],
+      "expectations": [
+        "The workflow uses canonical commands to create and populate the workbook.",
+        "The workflow uses `inspect formulas` rather than `script js` as the primary inspection path.",
+        "The final report includes a formula-oriented verification step.",
+        "The response keeps `script js` out of a scenario already covered by canonical commands."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "假设仓库根目录已经初始化过 `agent-sheet` workspace。请从一个子目录开始工作，复用现有 workspace，而不是重复 `init`。然后新建一个本地 workbook，写入一小块数据，并验证结果。不要用 `script js`。",
+      "expected_output": "展示 workspace reuse 规则：在已有 workspace tree 内从子目录工作时，不重复执行 `init`，而是直接走 canonical file/create + write + readback。",
+      "files": [],
+      "expectations": [
+        "The workflow reuses an existing workspace instead of re-running `init` inside the same tree.",
+        "The workflow still resolves and reports a valid `entryId`.",
+        "The mutation path stays on canonical commands.",
+        "The final output includes a verification readback."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "请用 `agent-sheet` 先创建一个本地 workbook，再尝试把它通过 `file push` 升级成 remote entry。先用 `doctor --json` 检查远程可用性：如果 auth/host 已就绪，就继续 push 并报告新的 remote `unitId`；如果远程条件不满足，就明确停止并报告 blocker，不要假装 push 成功。",
+      "expected_output": "展示 local-to-remote promotion 路径，并在 remote prerequisites 不满足时 fail-fast；如果满足，则返回同一个 entryId 和新的 remote unitId。",
+      "files": [],
+      "expectations": [
+        "The workflow checks remote readiness with `doctor --json` before attempting `file push`.",
+        "If remote prerequisites are unavailable, the response stops with a concrete blocker instead of fabricating success.",
+        "If `file push` runs, it is done on a local entry and reports the resulting remote `unitId`.",
+        "The response reflects the local-to-remote handoff semantics accurately."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "用户只给了一个 raw remote workbook id，希望你用 `agent-sheet` 先 attach，再 inspect workbook，并在条件允许时导出到本地 `./artifacts/attached-output.xlsx`。必须走 `file attach` 作为 raw unitId 入口；如果 remote auth/host 不可用，要在 attach/export 前通过 `doctor --json` 识别并明确停止。",
+      "expected_output": "展示 raw remote unitId 只能走 `file attach` 的入口边界，并在远程条件可用时继续 inspect/export，不可用时给出诚实 blocker。",
+      "files": [],
+      "expectations": [
+        "The workflow uses `file attach` as the only raw remote `unitId` entry surface.",
+        "The workflow checks remote readiness before claiming attach/export success.",
+        "If remote access is unavailable, the response fails fast with a precise blocker.",
+        "If attach succeeds, the response reports the resolved `entryId` and the remote context."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "请用 `agent-sheet` 处理一个 workbook export 任务：如果是 local entry，就按 canonical `file export` 路径尝试导出；如果遇到 local export runtime/converter 不可用或 size guard 阻止，要明确说明原因以及为什么下一步应考虑 `file push` / `file import --push`。不要用 `script js` 冒充 export。",
+      "expected_output": "展示 export 边界：优先 canonical `file export`，遇到 runtime guard 或 local snapshot size guard 时，给出正确的升级/绕行建议，而不是伪造导出成功。",
+      "files": [],
+      "expectations": [
+        "The workflow treats `file export` as the canonical export surface.",
+        "The response does not substitute `script js` for export behavior.",
+        "If export is blocked by runtime readiness or local snapshot guard, the response explains the blocker accurately.",
+        "The response suggests `file push` or `file import --push` when that is the correct next step."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "请用 `agent-sheet` 新建一个本地 workbook，准备 `Claims` sheet，写入带表头的数据；然后用 shell pipeline 只保留 `P1` 行，并把结果作为完整 review table 写到 `ClaimsP1Review`。要求读取阶段显式使用 `--to-stdout`，并且你要显式处理 stream shape，避免把 synthetic row index 错误地传给 `write table`。不要落中间文件，最后验证 `ClaimsP1Review`。",
+      "expected_output": "展示 header-preserving TSV writeback：`read range --to-stdout` 的输出被有意识地整形成适合 `write table` 的 table shape，通常会用 `--no-index`，然后完成验证读回。",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--to-stdout` explicitly for the streaming read.",
+        "The workflow handles the stream shape intentionally before piping into `write table`, typically with `--no-index`.",
+        "The pipeline preserves a valid header row for the destination review table.",
+        "The final response includes a verification readback of `ClaimsP1Review`."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "请用 `agent-sheet` 新建一个本地 workbook，准备 `Sales` sheet，写入一张带表头的小表；然后用 shell pipeline 只把数据行里的两列值流式写到 `Projected!A2:B4`。这里目标是 raw row writeback，不是 review table，所以你要显式处理 header/index，避免把 header 或 synthetic index 混进目标区域。不要落中间文件，最后验证 `Projected!A1:B4`。",
+      "expected_output": "展示 raw-row TSV writeback：stream 需要显式去掉 synthetic index，并根据目标语义决定是否保留 header。最终用 `write range` 写入 `A2` 起始区域，并验证整个投影结果。",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--to-stdout` explicitly for the streaming read.",
+        "The workflow suppresses the synthetic row index before piping into `write range`.",
+        "The workflow keeps header handling aligned with the destination semantics, rather than forwarding the source stream blindly.",
+        "The final response includes a verification readback of `Projected!A1:B4`."
+      ]
+    }
+  ]
+}
