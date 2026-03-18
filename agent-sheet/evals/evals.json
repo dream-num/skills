@@ -1,0 +1,152 @@
+{
+  "skill_name": "agent-sheet",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "There is a test file at `apps/agent-sheet/tests_prepublish/test_a1_hello.xlsx` in the repository. Use `agent-sheet` to initialize or reuse a workspace in the current repo, and first try to import it as a local entry. If the current runtime explicitly reports that converter/import support is unavailable, stop honestly and report the blocker instead of pretending the import succeeded. If the import succeeds, then confirm the workbook/sheet structure and read `A1` from the first sheet. Do not use `script js`.",
+      "expected_output": "Prefer the canonical `file import` path. If the runtime allows it, continue with `inspect/read` and return the entryId, sheet information, and `A1`. If the runtime explicitly lacks converter/import capability, fail fast, explain the blocker, and do not fall back to `script js`.",
+      "files": [
+        "../../apps/agent-sheet/tests_prepublish/test_a1_hello.xlsx"
+      ],
+      "expectations": [
+        "The workflow attempts `file import` as the canonical bootstrap path.",
+        "If import succeeds, the workflow uses `inspect workbook` before or together with the final readback.",
+        "If import succeeds, the workflow reads `A1` with canonical read or inspect commands instead of `script js`.",
+        "If import fails because runtime converter support is unavailable, the response stops with that concrete blocker instead of fabricating an `entryId`."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Use `agent-sheet` to create a new local workbook, rename the default `Sheet1` to `OpsReview`, write a small review table with a two-column header and three data rows, and then verify `OpsReview!A1:B4`. This should stay entirely on canonical commands; do not use `script js`.",
+      "expected_output": "Complete a minimal but full local writeback flow using `file create`, `sheet rename`, `write range` or `write table`, and `read range`.",
+      "files": [],
+      "expectations": [
+        "The workflow creates a local workbook entry instead of attaching a remote workbook.",
+        "The workflow renames `Sheet1` rather than creating an unnecessary extra sheet.",
+        "The mutation is done with canonical write commands, not `script js`.",
+        "The final result includes a verification readback for `OpsReview!A1:B4`."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Claims` sheet, and write several rows that include a priority column. Then use a shell pipeline to filter only the `P1` rows and write them to `ClaimsP1Review`. The read stage must explicitly use `--to-stdout`, the writeback stage must consume the stream from stdin, no intermediate file should be created, and the final step should verify the review sheet.",
+      "expected_output": "Demonstrate a shell-native workflow: after canonical create/write steps, use `read ... --to-stdout | awk/sed/... | write ...` to filter and write back the result, then verify the output sheet.",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--to-stdout` explicitly for the streaming read.",
+        "The workflow keeps the streamed table shape intentional, typically by suppressing the synthetic row index with `--no-index` before piping into `write table`.",
+        "The workflow uses a shell pipeline instead of writing an intermediate data file.",
+        "The filtered result is written back with canonical `write range` or `write table`.",
+        "The final response includes a verification readback of the review sheet."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Summary` sheet, and make `Summary!A1:D10` look more report-like: bold headers, a light gray fill, horizontal centering, and a frozen top row. Prefer canonical commands first; if that is not possible, use the smallest possible `script js` fallback. If the current canonical CLI cannot independently verify the visual state, say so explicitly and do not pretend it was verified.",
+      "expected_output": "Recognize this as a presentation-oriented task, use a reasonable `script js` fallback if needed, return a structured execution summary, and state the verification limits of the visual state honestly.",
+      "files": [],
+      "expectations": [
+        "The workflow recognizes that styling/freeze behavior is a valid `script js` fallback case.",
+        "The script, if used, stays bounded to the intended sheet/range.",
+        "The response does not claim canonical CLI independently verified visual styling if no such inspect surface exists.",
+        "The response includes changed sheet names or A1 ranges from the script execution."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Summary` sheet, merge `A1:D1` into a title area, write `Quarterly Summary`, and set it to bold and centered. Prefer canonical commands first. If `script js` is required, explain the gap and clearly separate what was execution-confirmed from what cannot be independently checked through the canonical CLI.",
+      "expected_output": "Recognize merge/title formatting as a bounded fallback case that may require a workbook-native API, and provide a clear explanation of the gap and the verification boundary.",
+      "files": [],
+      "expectations": [
+        "The workflow explains why canonical commands are insufficient if it chooses `script js`.",
+        "The script scope is bounded to the intended title block.",
+        "The final response distinguishes execution confirmation from canonical verification.",
+        "The response reports the touched sheet and merged range."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Use `agent-sheet` to create a new local `Sales` workbook, write one column of raw values and one column of formulas, and then use `inspect formulas` plus any necessary readback to confirm that the formulas exist and are readable. This should stay on the canonical command surface as much as possible; do not jump to `script js` for a simple formula inspection task.",
+      "expected_output": "Complete a local formula workflow through canonical workbook creation, write, and formula inspection steps, demonstrating the correct use of `inspect formulas`.",
+      "files": [],
+      "expectations": [
+        "The workflow uses canonical commands to create and populate the workbook.",
+        "The workflow uses `inspect formulas` rather than `script js` as the primary inspection path.",
+        "The final report includes a formula-oriented verification step.",
+        "The response keeps `script js` out of a scenario already covered by canonical commands."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Assume the repository root has already been initialized as an `agent-sheet` workspace. Start from a subdirectory, reuse the existing workspace instead of running `init` again, then create a new local workbook, write a small block of data, and verify the result. Do not use `script js`.",
+      "expected_output": "Demonstrate the workspace reuse rule: when working from a subdirectory inside an existing workspace tree, do not run `init` again and instead go straight through canonical file/create, write, and readback commands.",
+      "files": [],
+      "expectations": [
+        "The workflow reuses an existing workspace instead of re-running `init` inside the same tree.",
+        "The workflow still resolves and reports a valid `entryId`.",
+        "The mutation path stays on canonical commands.",
+        "The final output includes a verification readback."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Use `agent-sheet` to first create a local workbook, then try to promote it to a remote entry with `file push`. Check remote readiness with `doctor --json` first: if auth/host is ready, continue with the push and report the new remote `unitId`; if the remote prerequisites are not satisfied, stop explicitly and report the blocker instead of pretending the push succeeded.",
+      "expected_output": "Demonstrate the local-to-remote promotion path, failing fast when remote prerequisites are not met; if they are met, return the same entryId together with the new remote unitId.",
+      "files": [],
+      "expectations": [
+        "The workflow checks remote readiness with `doctor --json` before attempting `file push`.",
+        "If remote prerequisites are unavailable, the response stops with a concrete blocker instead of fabricating success.",
+        "If `file push` runs, it is done on a local entry and reports the resulting remote `unitId`.",
+        "The response reflects the local-to-remote handoff semantics accurately."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "The user provides only a raw remote workbook id and wants you to use `agent-sheet` to attach it first, inspect the workbook, and export it to local `./artifacts/attached-output.xlsx` when conditions allow. You must use `file attach` as the entry point for a raw unitId. If remote auth/host is unavailable, detect that with `doctor --json` before attach/export and stop explicitly.",
+      "expected_output": "Demonstrate the boundary that a raw remote unitId can only enter through `file attach`, then continue to inspect/export when remote prerequisites are available, or report an honest blocker when they are not.",
+      "files": [],
+      "expectations": [
+        "The workflow uses `file attach` as the only raw remote `unitId` entry surface.",
+        "The workflow checks remote readiness before claiming attach/export success.",
+        "If remote access is unavailable, the response fails fast with a precise blocker.",
+        "If attach succeeds, the response reports the resolved `entryId` and the remote context."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Use `agent-sheet` for a workbook export task: if the target is a local entry, first try the canonical `file export` path. If local export is blocked because the runtime/converter is unavailable or a size guard rejects it, explain the reason clearly and why the next step should be `file push` or `file import --push`. Do not use `script js` to fake an export.",
+      "expected_output": "Demonstrate the export boundary: prefer canonical `file export`, and when blocked by runtime readiness or a local snapshot size guard, give the correct promotion or workaround guidance instead of pretending the export succeeded.",
+      "files": [],
+      "expectations": [
+        "The workflow treats `file export` as the canonical export surface.",
+        "The response does not substitute `script js` for export behavior.",
+        "If export is blocked by runtime readiness or local snapshot guard, the response explains the blocker accurately.",
+        "The response suggests `file push` or `file import --push` when that is the correct next step."
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Claims` sheet, and write data with headers. Then use a shell pipeline to keep only the `P1` rows and write the result as a complete review table to `ClaimsP1Review`. The read stage must explicitly use `--to-stdout`, and you must handle the stream shape intentionally so the synthetic row index is not mistakenly passed into `write table`. Do not create an intermediate file, and finish by verifying `ClaimsP1Review`.",
+      "expected_output": "Demonstrate header-preserving TSV writeback: shape the output of `read range --to-stdout` intentionally into a table suitable for `write table`, typically using `--no-index`, and then complete a verification readback.",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--to-stdout` explicitly for the streaming read.",
+        "The workflow handles the stream shape intentionally before piping into `write table`, typically with `--no-index`.",
+        "The pipeline preserves a valid header row for the destination review table.",
+        "The final response includes a verification readback of `ClaimsP1Review`."
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Use `agent-sheet` to create a new local workbook, prepare a `Sales` sheet, and write a small table with headers. Then use a shell pipeline to stream only the two column values from the data rows into `Projected!A2:B4`. The target here is raw row writeback, not a review table, so you must handle header/index behavior explicitly and avoid mixing either the header row or the synthetic index into the destination range. Do not create an intermediate file, and finish by verifying `Projected!A1:B4`.",
+      "expected_output": "Demonstrate raw-row TSV writeback: explicitly remove the synthetic index from the stream and decide whether to keep the header based on the destination semantics. Finally, write into the range starting at `A2` with `write range` and verify the full projected result.",
+      "files": [],
+      "expectations": [
+        "The workflow uses `--to-stdout` explicitly for the streaming read.",
+        "The workflow suppresses the synthetic row index before piping into `write range`.",
+        "The workflow keeps header handling aligned with the destination semantics, rather than forwarding the source stream blindly.",
+        "The final response includes a verification readback of `Projected!A1:B4`."
+      ]
+    }
+  ]
+}
