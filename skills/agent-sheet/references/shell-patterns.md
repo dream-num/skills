@@ -2,6 +2,8 @@
 
 Use these patterns when the task is fundamentally a stream transform, large-data extraction, or review-table build.
 
+These companion tools are optional. If they are unavailable, stay on built-in commands or write an intermediate artifact first.
+
 ## TSV pipeline for filter/project/writeback
 
 ```bash
@@ -18,36 +20,12 @@ agent-sheet read range --entry-id <entry-id> --range "Claims!A1:H200000" --type 
   | agent-sheet write table --entry-id <entry-id> --sheet "ClaimsExactReview" --input-format tsv
 ```
 
-## Text normalization in stream
-
-```bash
-agent-sheet read range --entry-id <entry-id> --range "Raw!A1:C80000" --to-stdout --format tsv \
-  | sed 's/[[:space:]]\+/ /g' \
-  | agent-sheet write range --entry-id <entry-id> --range "RawNormalized!A1:C80000" --input-format tsv
-```
-
 ## Python one-liner for richer transforms
 
 ```bash
 agent-sheet read range --entry-id <entry-id> --range "Sales!A1:F120000" --type rawValue --to-stdout --format csv \
   | python -c 'import csv,sys; r=csv.reader(sys.stdin); w=csv.writer(sys.stdout); h=next(r); w.writerow(h+["amount_with_tax"]); [w.writerow(row+[str(round(float(row[4])*1.06,2))]) for row in r if row and row[4]]' \
   | agent-sheet write range --entry-id <entry-id> --range "SalesEnriched!A1:G120000" --input-format csv
-```
-
-## Search-driven review table
-
-```bash
-agent-sheet read search --entry-id <entry-id> --query "review" --format tsv --to-stdout \
-  | awk -F'\t' 'BEGIN{OFS="\t"} NR==1 || $7=="review"{print $1,$2,$5,$7}' \
-  | agent-sheet write table --entry-id <entry-id> --sheet "ReviewHits" --input-format tsv
-```
-
-## Raw-row projection into anchored range
-
-```bash
-agent-sheet read range --entry-id <entry-id> --range "Sales!A1:C2000" --type rawValue --format tsv --to-stdout \
-  | awk -F'\t' 'BEGIN{OFS="\t"} NR>1 {print $1,$3}' \
-  | agent-sheet write range --entry-id <entry-id> --sheet "Projected" --start-cell A2 --input-format tsv
 ```
 
 ## Reusable file artifact
@@ -64,3 +42,4 @@ awk -F'\t' 'NR==1 || $5=="P1"{print $0}' ./artifacts/claims.tsv > ./artifacts/cl
 - `read range --to-stdout` already emits real workbook data shape; if you need to skip a real source header row, do it in the transform step
 - use `--type rawValue` when the next step depends on exact typed values rather than formatted display values
 - use `write table --sheet <name>` when the destination is conceptually a review table anchored at `A1`
+- if `awk`, `sed`, or `python` are unnecessary, prefer the direct `agent-sheet` command path

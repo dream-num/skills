@@ -12,9 +12,7 @@ Small repo for reusable agent skills.
         ├── SKILL.md
         ├── evals/
         ├── playbooks/
-        ├── policies/
         ├── references/
-        └── templates/
 ```
 
 ## Current Skill

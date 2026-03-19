@@ -21,7 +21,7 @@
       "expected_output": "Complete a minimal but full local writeback flow using `file create`, `sheet rename`, `write range` or `write table`, and `read range`.",
       "files": [],
       "expectations": [
-        "The workflow creates a local workbook entry instead of attaching a remote workbook.",
+        "The workflow creates a local workbook entry instead of importing an unnecessary file.",
         "The workflow renames `Sheet1` rather than creating an unnecessary extra sheet.",
         "The mutation is done with canonical write commands, not `script js`.",
         "The final result includes a verification readback for `OpsReview!A1:B4`."
@@ -90,38 +90,38 @@
     },
     {
       "id": 8,
-      "prompt": "Use `agent-sheet` to first create a local workbook, then try to promote it to a remote entry with `file push`. Check remote readiness with `doctor --json` first: if auth/host is ready, continue with the push and report the new remote `unitId`; if the remote prerequisites are not satisfied, stop explicitly and report the blocker instead of pretending the push succeeded.",
-      "expected_output": "Demonstrate the local-to-remote promotion path, failing fast when remote prerequisites are not met; if they are met, return the same entryId together with the new remote unitId.",
+      "prompt": "Use `agent-sheet` to create a new local workbook, write a small table to `Summary`, then use `file info --entry-id <id> --json` to inspect the workbook metadata and `file open --entry-id <id> --json` to confirm the workbook can be opened through the canonical local lifecycle. Finish with a verification readback for `Summary!A1:B3`.",
+      "expected_output": "Demonstrate the local workbook lifecycle around `file create`, canonical writeback, `file info`, `file open`, and final verification.",
       "files": [],
       "expectations": [
-        "The workflow checks remote readiness with `doctor --json` before attempting `file push`.",
-        "If remote prerequisites are unavailable, the response stops with a concrete blocker instead of fabricating success.",
-        "If `file push` runs, it is done on a local entry and reports the resulting remote `unitId`.",
-        "The response reflects the local-to-remote handoff semantics accurately."
+        "The workflow uses `file create` as the local workbook entry point.",
+        "The workflow uses canonical write commands rather than `script js` for the simple table.",
+        "The workflow inspects the resulting local workbook with `file info` and `file open`.",
+        "The final response includes a verification readback for `Summary!A1:B3`."
       ]
     },
     {
       "id": 9,
-      "prompt": "The user provides only a raw remote workbook id and wants you to use `agent-sheet` to attach it first, inspect the workbook, and export it to local `./artifacts/attached-output.xlsx` when conditions allow. You must use `file attach` as the entry point for a raw unitId. If remote auth/host is unavailable, detect that with `doctor --json` before attach/export and stop explicitly.",
-      "expected_output": "Demonstrate the boundary that a raw remote unitId can only enter through `file attach`, then continue to inspect/export when remote prerequisites are available, or report an honest blocker when they are not.",
+      "prompt": "The user provides only a local workbook file path and wants you to use `agent-sheet` to import it, inspect the workbook, and export it to local `./artifacts/imported-output.xlsx` when the runtime allows. Prefer the canonical local lifecycle: import first, inspect, then export. If local import or export is blocked by runtime/converter readiness, stop explicitly and report the blocker instead of pretending success.",
+      "expected_output": "Demonstrate the local import-inspect-export path, failing fast when converter/runtime readiness is unavailable, or reporting the resolved `entryId` and exported file path when the workflow succeeds.",
       "files": [],
       "expectations": [
-        "The workflow uses `file attach` as the only raw remote `unitId` entry surface.",
-        "The workflow checks remote readiness before claiming attach/export success.",
-        "If remote access is unavailable, the response fails fast with a precise blocker.",
-        "If attach succeeds, the response reports the resolved `entryId` and the remote context."
+        "The workflow uses `file import` as the local workbook entry surface.",
+        "The workflow uses canonical inspect and export commands rather than `script js`.",
+        "If local runtime readiness is unavailable, the response fails fast with a precise blocker.",
+        "If the flow succeeds, the response reports the resolved `entryId` and exported file path."
       ]
     },
     {
       "id": 10,
-      "prompt": "Use `agent-sheet` for a workbook export task: if the target is a local entry, first try the canonical `file export` path. If local export is blocked because the runtime/converter is unavailable or a size guard rejects it, explain the reason clearly and why the next step should be `file push` or `file import --push`. Do not use `script js` to fake an export.",
-      "expected_output": "Demonstrate the export boundary: prefer canonical `file export`, and when blocked by runtime readiness or a local snapshot size guard, give the correct promotion or workaround guidance instead of pretending the export succeeded.",
+      "prompt": "Use `agent-sheet` for a local workbook export task: first try the canonical `file export` path. If local export is blocked because the runtime/converter is unavailable or a size guard rejects it, explain the reason clearly and stop honestly. Do not use `script js` to fake an export.",
+      "expected_output": "Demonstrate the local export boundary: prefer canonical `file export`, and when blocked by runtime readiness or a local snapshot size guard, explain the blocker accurately instead of pretending the export succeeded.",
       "files": [],
       "expectations": [
         "The workflow treats `file export` as the canonical export surface.",
         "The response does not substitute `script js` for export behavior.",
         "If export is blocked by runtime readiness or local snapshot guard, the response explains the blocker accurately.",
-        "The response suggests `file push` or `file import --push` when that is the correct next step."
+        "The response does not invent a non-canonical workaround."
       ]
     },
     {
