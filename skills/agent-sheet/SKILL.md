@@ -1,6 +1,6 @@
 ---
 name: agent-sheet
-description: a local spreadsheet CLI for AI agents, to spreadsheets what SQLite is to databases: shell-native, structured, and built for spreadsheet work such as inspecting sheets, reading ranges, making precise edits safely, analyzing formulas, or automating workbook tasks.
+description: a local spreadsheet CLI for AI agents, to spreadsheets what SQLite is to databases, shell-native, structured, and built for spreadsheet work such as inspecting sheets, reading ranges, making precise edits safely, analyzing formulas, or automating workbook tasks.
 metadata:
   openclaw:
     os:
