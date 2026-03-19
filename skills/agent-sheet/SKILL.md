@@ -17,7 +17,7 @@ metadata:
         - python
     install:
       - kind: node
-        package: agent-sheet@0.0.2
+        package: agent-sheet@latest
         bins:
           - agent-sheet
     links:
