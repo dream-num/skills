@@ -42,4 +42,5 @@ awk -F'\t' 'NR==1 || $5=="P1"{print $0}' ./artifacts/claims.tsv > ./artifacts/cl
 - `read range --to-stdout` already emits real workbook data shape; if you need to skip a real source header row, do it in the transform step
 - use `--type rawValue` when the next step depends on exact typed values rather than formatted display values
 - use `write table --sheet <name>` when the destination is conceptually a review table anchored at `A1`
+- if you need external processing, start from `agent-sheet read` output rather than reopening the workbook with a local workbook library
 - if `awk`, `sed`, or `python` are unnecessary, prefer the direct `agent-sheet` command path
