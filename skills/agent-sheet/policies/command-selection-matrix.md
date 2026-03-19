@@ -7,9 +7,7 @@ Use this matrix to choose the smallest canonical path before reaching for JS.
 | initialize workspace | `init [<path>]` | none | only when no workspace exists yet at the intended root |
 | inspect existing entries | `file list --json` | `file info --entry-id <id>` | use before guessing a target |
 | fresh local workbook | `file create <name>` | `sheet rename` for domain sheet | prefer positional workbook name |
-| local spreadsheet bootstrap | `file import <path>` | `file import <path> --push` | `xlsx` / `csv` entry path, but runtime converter must be available |
-| local to remote promotion | `file push --entry-id <id>` | none | keeps the same `entryId` |
-| raw remote workbook start | `file attach <unit-id>` | none | only public raw `unitId` surface |
+| local spreadsheet bootstrap | `file import <path>` | `file info --entry-id <id>` | `xlsx` / `csv` entry path, but runtime converter must be available |
 | workbook topology scan | `inspect workbook` | `inspect sheet` | start here for unknown workbooks |
 | range/profile inspection | `inspect range` | `inspect formulas` / `inspect lint` | use before risky writes |
 | bounded rectangular extract | `read range` | `--type rawValue --to-stdout` or `--to-file` when exact machine values matter | choose output mode by consumer; stream/file output already uses real workbook data shape |
@@ -37,7 +35,6 @@ Use this matrix to choose the smallest canonical path before reaching for JS.
 
 - commands other than `init` must not create a workspace
 - if a workspace already exists in the current tree, business commands should reuse it instead of re-initializing
-- only `file attach` accepts raw remote `unitId`
-- `file export` supports local and remote entries
+- `file export` produces local artifacts from the current local workbook entry
 - local import and local export use runtime converter resolution and may fail fast if runtime is not ready
-- local export rejects snapshots larger than `100MB`; use `file push` or `file import --push` first
+- local export rejects snapshots larger than `100MB`; stop and report the blocker honestly

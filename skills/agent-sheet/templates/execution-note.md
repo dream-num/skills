@@ -8,10 +8,9 @@
 ## Context
 
 - entry_id:
-- entry_mode: (`local` | `remote`)
-- remote_unit_id: (only when entry source is remote attach)
+- workbook_name:
+- workspace_root:
 - context source:
-- mode: entry-managed
 
 ## Commands Executed
 

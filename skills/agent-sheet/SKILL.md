@@ -1,11 +1,32 @@
 ---
 name: agent-sheet
-description: Operate spreadsheet workbooks through `agent-sheet`. Use this skill whenever the task targets a local or remote Univer workbook, workbook file import/export, remote attach/push, sheet tabs, A1 ranges, formulas, workbook inspection/search, shell-native workbook read/write pipelines, review-table writeback, precise cell/range mutations, or workbook presentation changes such as formatting, borders, colors, alignment, freeze panes, merge/unmerge, and other bounded `script js` spreadsheet operations. Trigger even if the user does not name `agent-sheet` when they clearly want to inspect, edit, reconcile, or automate a workbook in shell. Do not use this skill for generic markdown table formatting, code formatting, or plain CSV/text munging that does not need an `agent-sheet`-managed workbook.
+description: Use `agent-sheet` for local spreadsheet work in shell. Trigger whenever the task needs a workbook-aware interface for creating or importing local workbooks, inspecting sheets, ranges, and formulas, streaming spreadsheet data through shell pipelines, writing back precise edits, or using bounded workbook-local `script js` when canonical commands are insufficient. Do not use this skill for plain CSV/text munging that does not need a managed workbook.
+metadata:
+  openclaw:
+    os:
+      - linux
+      - macos
+    requires:
+      bins:
+        - agent-sheet
+      anyBins:
+        - awk
+        - sed
+        - python3
+        - python
+    install:
+      - kind: node
+        package: agent-sheet@0.0.2
+        bins:
+          - agent-sheet
+    links:
+      repository: https://github.com/dream-num/skills
+      documentation: https://github.com/dream-num/skills
 ---
 
 # agent-sheet
 
-`agent-sheet` is the execution protocol for spreadsheet work in this repo.
+`agent-sheet` is a sqlite-like spreadsheet CLI: local-first, shell-native, and safe to compose in agent workflows.
 
 Install it first when the CLI is not available yet:
 
@@ -13,7 +34,7 @@ Install it first when the CLI is not available yet:
 npm install -g agent-sheet
 ```
 
-Treat it as a command router, not a long handbook:
+Treat it as a command router:
 
 - establish workbook context first
 - choose the smallest canonical command path
@@ -22,10 +43,16 @@ Treat it as a command router, not a long handbook:
 
 ## What this skill optimizes for
 
-- context-safe output: avoid dumping oversized workbook payloads inline when a path or bounded preview is enough
-- shell-native execution: prefer streamable reads and direct stdin writeback for batch transforms
-- stable workbook semantics: use explicit `entryId` workflows instead of guessing local/remote state
-- low-surprise mutations: prefer canonical commands over ad-hoc JS
+- spreadsheet-native semantics: workbook, sheet, range, and formula operations stay first-class
+- shell-native execution: stream real workbook data through stdin/stdout when the next step is a transform
+- agent-friendly output: prefer bounded previews, file paths, and structured extracts over huge inline dumps
+- powerful but bounded edits: use canonical commands first, then a workbook-local `script js` fallback only for real gaps
+
+## Optional companion tools
+
+- `awk`, `sed`, `python3`, and `python` are optional helpers for shell transforms
+- they are not required for every task
+- canonical `inspect.*`, `read.*`, `write.*`, `sheet.*`, and `file.*` commands stay primary
 
 ## Non-negotiable defaults
 
@@ -35,10 +62,9 @@ Treat it as a command router, not a long handbook:
 2. Entry context is explicit
    - Prefer `--entry-id <id>`.
    - `--entry-id @current` is acceptable only after the workspace already has a resolved current entry.
-   - Raw remote `unitId` only belongs on `file attach`.
 3. Canonical command first
    - `inspect.*`, `read.*`, `write.*`, `sheet.*`, `file.*` are the main path.
-   - `script js` is a bounded fallback for genuine command gaps, not the default editing surface.
+   - `script js` is a bounded workbook-local fallback for genuine command gaps, not the default editing surface.
 4. Output mode matches the consumer
    - shell/dataflow: `--to-stdout`
    - precise machine extract: add `--type rawValue`, usually with `--to-stdout` or `--to-file`
@@ -50,15 +76,6 @@ Treat it as a command router, not a long handbook:
    - read back the changed range
    - add `inspect sheet` or `inspect workbook` after structural mutations
    - if the change is presentation-only and CLI has no inspect surface for that visual state, return an explicit execution summary and say that the visual state was applied but not independently inspectable via canonical CLI commands
-
-## Repo-local guardrails
-
-When the task also edits this repository, keep the repo contract aligned:
-
-- minimal necessity only; no extra deps or prompt bloat
-- communication in Chinese; code comments in English
-- runtime behavior must stay correct for source and `dist`
-- significant product behavior changes require doc sync in `architecture.md` / `docs/architecture/`
 
 ## Routing protocol
 
@@ -72,9 +89,6 @@ Choose one path and stay explicit:
 | need an existing entry | `agent-sheet file list --json` |
 | start from a fresh workbook | `agent-sheet file create <name> --json` |
 | start from local `xlsx`/`csv` | `agent-sheet file import <path> --json` |
-| import locally, then immediately go remote | `agent-sheet file import <path> --push --json` |
-| start from raw remote workbook id | `agent-sheet file attach <unit-id> --json` |
-| promote an existing local entry to remote | `agent-sheet file push --entry-id <id> --json` |
 
 `file import` is runtime-managed like local export. If the current build cannot resolve the installed converter package, fail fast and report the blocker instead of pretending the local workbook was imported.
 
@@ -85,12 +99,12 @@ For entry lifecycle details, read [playbooks/30-file-lifecycle.md](playbooks/30-
 | Task shape | Primary lane | Read next |
 |---|---|---|
 | workbook/sheet/range discovery | inspect/read | [playbooks/10-read-analyze.md](playbooks/10-read-analyze.md) |
-| file bootstrap / push / attach / export | file lifecycle | [playbooks/30-file-lifecycle.md](playbooks/30-file-lifecycle.md) |
+| create / import / open / export local workbooks | file lifecycle | [playbooks/30-file-lifecycle.md](playbooks/30-file-lifecycle.md) |
 | localized or bulk workbook mutation | write | [playbooks/20-write-safe.md](playbooks/20-write-safe.md) |
 | shell-native transform pipeline | read stream + write | [references/shell-patterns.md](references/shell-patterns.md) |
 | canonical surface cannot express the operation | bounded fallback | [playbooks/40-script-fallback.md](playbooks/40-script-fallback.md) |
 
-Always start with [playbooks/00-preflight.md](playbooks/00-preflight.md) when context, auth, workspace, or runtime readiness is uncertain.
+Always start with [playbooks/00-preflight.md](playbooks/00-preflight.md) when workspace or entry readiness is uncertain.
 
 ### Step 3: Pick the smallest command family
 
@@ -135,9 +149,9 @@ agent-sheet read range --entry-id <entry-id> --range "Sheet1!A1:D20"
 
 Keep final task reporting compact and agent-friendly:
 
-- context: workspace root, `entryId`, local/remote mode when relevant
+- context: workspace root, `entryId`, workbook scope when relevant
 - action: commands run or the next exact command to run
-- result: changed range/sheet, exported file path, or remote `unitId`
+- result: changed range/sheet, exported file path, or generated artifact
 - verification: what was read back and whether it matched
 - risk: only residual uncertainty, not a long narrative
 
@@ -158,10 +172,10 @@ Read only the file needed for the current task:
 
 | File | Use when |
 |---|---|
-| [playbooks/00-preflight.md](playbooks/00-preflight.md) | workspace, auth, daemon, or entry readiness is unclear |
+| [playbooks/00-preflight.md](playbooks/00-preflight.md) | workspace or entry readiness is unclear |
 | [playbooks/10-read-analyze.md](playbooks/10-read-analyze.md) | scoping workbook structure or extracting data |
 | [playbooks/20-write-safe.md](playbooks/20-write-safe.md) | selecting and verifying a mutation path |
-| [playbooks/30-file-lifecycle.md](playbooks/30-file-lifecycle.md) | creating, importing, pushing, attaching, opening, or exporting entries |
+| [playbooks/30-file-lifecycle.md](playbooks/30-file-lifecycle.md) | creating, importing, opening, inspecting, or exporting local workbooks |
 | [playbooks/40-script-fallback.md](playbooks/40-script-fallback.md) | canonical command gap requires bounded JS |
 | [policies/command-selection-matrix.md](policies/command-selection-matrix.md) | task-to-command routing |
 | [policies/error-recovery.md](policies/error-recovery.md) | recovery after structured failures |

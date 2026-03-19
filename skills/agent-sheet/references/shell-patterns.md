@@ -2,6 +2,8 @@
 
 Use these patterns when the task is fundamentally a stream transform, large-data extraction, or review-table build.
 
+These companion tools are optional. If they are unavailable, stay on canonical commands or write an intermediate artifact first.
+
 ## TSV pipeline for filter/project/writeback
 
 ```bash
@@ -64,3 +66,4 @@ awk -F'\t' 'NR==1 || $5=="P1"{print $0}' ./artifacts/claims.tsv > ./artifacts/cl
 - `read range --to-stdout` already emits real workbook data shape; if you need to skip a real source header row, do it in the transform step
 - use `--type rawValue` when the next step depends on exact typed values rather than formatted display values
 - use `write table --sheet <name>` when the destination is conceptually a review table anchored at `A1`
+- if `awk`, `sed`, or `python` are unnecessary, prefer the canonical command lane directly

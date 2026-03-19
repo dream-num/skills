@@ -59,8 +59,10 @@ agent-sheet read search --entry-id <entry-id> --query "<query>" --format tsv --t
 5. Need machine parsing rather than human review
 
 ```bash
-agent-sheet inspect workbook --entry-id <entry-id> --json-summary | jq -r '.sheets[].name'
+agent-sheet inspect workbook --entry-id <entry-id> --json-summary
 ```
+
+If the next step needs programmatic extraction, parse the JSON response with the tool already available in the environment instead of making `jq` a requirement.
 
 ## Output mode rules
 

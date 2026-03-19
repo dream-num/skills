@@ -16,30 +16,20 @@ Use structured error signals first. Retry only the minimum failed step.
 |---|---|---|---|
 | `UNIVER_TOOL_INVALID_ARGS` | CLI surface mismatch | `agent-sheet --help` | normalize args and retry |
 | `No agent-sheet workspace found` | workspace missing or wrong cwd | run `agent-sheet init` at the intended root | retry in that workspace |
-| `UNIVER_AUTH_REQUIRED` | missing or invalid credential path | `agent-sheet doctor --json` | fix auth and retry |
 | `UNIVER_SHEET_NOT_FOUND` | sheet renamed or missing | `inspect workbook` | rebind target or create sheet |
 | `UNIVER_RANGE_NOT_FOUND` | invalid or stale range | `inspect sheet` / `inspect range` | retry with corrected range |
-| `UNIVER_TOOL_EXEC_ERROR` | runtime execution failure | `doctor --json` | retry with narrower scope |
-| `ENGINE_RPC_ERROR` | daemon/session instability | `agent-sheet daemon stop && agent-sheet daemon start` | rerun the minimum failed step |
-| `file push only supports local entries` | push attempted on remote entry | `file info --entry-id <id> --json` | use the remote entry directly |
-| `local snapshot JSON exceeds 100MB` | local export size guard | `file push` or `file import --push` | export from remote entry |
-| `missing exchange cli binary path` | local export runtime not ready | confirm runtime package can resolve installed `uexcli` | retry export only |
-| `pushWorkbookToRemoteAsync` / `Local snapshot manager push API is not available` | stale runner/daemon stack | `agent-sheet doctor --json` then restart/upgrade runtime | retry push only |
+| `UNIVER_TOOL_EXEC_ERROR` | runtime execution failure | narrow the operation scope and inspect the workbook state again | retry with corrected scope |
+| `ENGINE_RPC_ERROR` | local runtime instability | rerun the minimum failed step only after local runtime is healthy again | stop and report the blocker if instability persists |
+| `local snapshot JSON exceeds 100MB` | local export size guard | stop and report the size blocker clearly | do not fabricate an export |
+| `missing exchange cli binary path` | local import/export runtime not ready | confirm runtime package can resolve installed `uexcli` | retry only the blocked import/export step |
 
 ## Context recovery probes
 
-When the environment or session looks wrong:
+When the local workbook context looks wrong:
 
 ```bash
 agent-sheet file list --json
-agent-sheet doctor --json
-```
-
-When the only input is a remote workbook id:
-
-```bash
-ATTACH_JSON=$(agent-sheet file attach <remote-unit-id> --json)
-ENTRY_ID=$(printf '%s' "$ATTACH_JSON" | jq -r '.entryId')
+agent-sheet inspect workbook --entry-id <entry-id>
 ```
 
 ## Recovery guardrails

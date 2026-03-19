@@ -8,15 +8,13 @@ Use the real CLI help and runtime output as source of truth when memory and docs
 - supported positional shortcuts
 - output mode controls
 - removed legacy surfaces
-- runtime health signals relevant to the current task
 
 ## First checks
 
-If the binary is not packaged into `PATH` yet:
+If the binary is not packaged into `PATH` yet, install it first:
 
 ```bash
-REPO_ROOT=$(git rev-parse --show-toplevel)
-export PATH="$REPO_ROOT/scripts:$PATH"
+npm install -g agent-sheet
 ```
 
 Then inspect the real surface:
@@ -25,15 +23,14 @@ Then inspect the real surface:
 agent-sheet --help
 ```
 
-Important current surfaces:
+For the public local workflow, focus on these surfaces:
 
 - `init [<path>]`
-- `doctor [--json]`
 - `inspect workbook|sheet|range|formulas|lint`
 - `read range`
 - `read search`
 - `sheet list|create|rename|copy|delete`
-- `file list|info|open|create|import|push|attach|export`
+- `file list|info|open|create|import|export`
 - `write table|range|cells|fill`
 - `script js`
 
@@ -62,26 +59,15 @@ Do not rely on:
 - `meta*` commands
 - `--profile*`
 - legacy `-u`
-- `--unit-id` outside `file attach`
 - `--artifact-dir`
-- `--daemon-run-dir`
 
-## Useful runtime probes
+## Useful local probes
 
 ```bash
 agent-sheet init   # only when no workspace exists yet at the intended root
-agent-sheet doctor --json
 agent-sheet file list --json
 agent-sheet inspect workbook --entry-id <entry-id> --json-summary
 ```
-
-When remote access matters, inspect these doctor fields:
-
-- `authConfigured`
-- `credentialSource`
-- `fileHttp.resolvedHost`
-- `telemetry.enabled`
-- `telemetry.distinctId`
 
 ## Current inspectability limits
 

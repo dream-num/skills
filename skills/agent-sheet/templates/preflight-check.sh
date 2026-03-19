@@ -4,12 +4,12 @@ set -euo pipefail
 ENTRY_ID="${1:-}"
 
 if ! command -v agent-sheet >/dev/null 2>&1; then
-  REPO_ROOT=$(git rev-parse --show-toplevel)
-  export PATH="$REPO_ROOT/scripts:$PATH"
+  echo "[preflight] agent-sheet not found in PATH; install it first with: npm install -g agent-sheet" >&2
+  exit 1
 fi
 
 echo "[preflight] checking runtime"
-agent-sheet doctor --json
+command -v agent-sheet >/dev/null
 
 if [[ -n "$ENTRY_ID" ]]; then
   echo "[preflight] checking workbook access entry_id=$ENTRY_ID"

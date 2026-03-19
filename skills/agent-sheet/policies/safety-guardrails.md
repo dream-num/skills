@@ -10,7 +10,6 @@ Commands:
 
 - `inspect.*`
 - `read.*`
-- `doctor`
 - `file list`
 - `file info`
 - `file open`
@@ -59,6 +58,8 @@ Rules:
 4. Shell pipelines must opt into `--to-stdout`.
 5. Large extracts should become files, not bloated inline output.
 6. High-risk flows should execute one bounded step at a time.
+7. `script js` must stay workbook-local with no network, filesystem, or shell/process side effects.
+8. Before `script js`, state the touched sheets and A1 ranges.
 
 ## Escalation triggers
 

@@ -23,6 +23,7 @@ Do not use `script js` just because it is flexible. If `write.*` or `sheet.*` al
 
 - explicit statement of the canonical gap
 - explicit workbook boundary
+- planned touched sheets and A1 ranges
 - verification plan
 
 Before writing the script, read [../references/js-api-minimal.md](../references/js-api-minimal.md) and restrict yourself to documented methods.
@@ -30,6 +31,7 @@ Before writing the script, read [../references/js-api-minimal.md](../references/
 ## Defaults
 
 - prefer explicit sheet lookup via `getSheetByName`
+- keep `script js` workbook-local only: no network, no filesystem, no shell or process side effects
 - keep the script minimal and return a structured object
 - if formulas are written and then read, wait for calculation to apply
 - if the same fallback keeps recurring, it should probably become product work rather than a permanent prompt habit
@@ -86,7 +88,11 @@ agent-sheet script js --entry-id <entry-id> --code '() => {
     return { success: false, error: "Sheet1 not found" };
   }
   sheet.getRange("A1").setValue("done");
-  return { success: true, changed: ["Sheet1!A1"] };
+  return {
+    success: true,
+    touchedSheets: ["Sheet1"],
+    changedRanges: ["Sheet1!A1"],
+  };
 }'
 ```
 
@@ -101,7 +107,12 @@ agent-sheet script js --entry-id <entry-id> --code 'async () => {
   }
   sheet.getRange("A1").setFormula("=SUM(B1:B10)");
   await univerAPI.getFormula().onCalculationResultApplied();
-  return { success: true, value: sheet.getRange("A1").getValue() };
+  return {
+    success: true,
+    touchedSheets: ["Sales"],
+    changedRanges: ["Sales!A1"],
+    value: sheet.getRange("A1").getValue(),
+  };
 }'
 ```
 
