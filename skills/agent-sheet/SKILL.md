@@ -28,7 +28,7 @@ metadata:
 
 `agent-sheet` is to spreadsheets what SQLite is to databases: a local, shell-native interface for structured spreadsheet work.
 
-Use it when the task needs local workbook inspection, table analysis, or precise edits instead of plain CSV cleanup or direct `xlsx` hacking.
+Use it when the task needs local workbook inspection, table analysis, precise edits, or workbook-native automation instead of plain CSV cleanup or direct `xlsx` hacking.
 
 ```bash
 npm install -g agent-sheet
@@ -40,19 +40,20 @@ npm install -g agent-sheet
 - inspecting sheets, ranges, formulas, and workbook structure
 - streaming spreadsheet data through shell pipelines
 - writing back precise workbook edits
-- using workbook-local `script js` only for built-in command gaps such as formatting or layout work
+- using bounded workbook-local `script js` for workbook-native operations, complex range logic, or formatting/layout work
 
 ## Not for
 
 - plain text or CSV cleanup that does not need a workbook
-- jumping to `script js` before checking whether a built-in `inspect`, `read`, `write`, `sheet`, or `file` command already solves it
+- reopening `xlsx` with a local workbook library when `agent-sheet` already covers the read/write/clear/inspect path
+- jumping to broad workbook libraries before checking whether `inspect`, `read`, `write`, `sheet`, `file`, or bounded `script js` already solves it
 
 ## Default path
 
 1. Initialize the workspace once at the intended root.
 2. Resolve a workbook by listing, creating, or importing one.
 3. Inspect before editing.
-4. Use the smallest built-in command that matches the task.
+4. Use the smallest direct command that matches the task, including bounded `script js` when workbook-native logic is the clearest path.
 5. Verify the changed area before finishing.
 
 ```bash
@@ -69,11 +70,12 @@ agent-sheet read range --entry-id <entry-id> --range "Sheet1!A1:A1"
 ## Defaults
 
 - keep the workbook target explicit with `--entry-id`
-- prefer built-in commands first
+- prefer `agent-sheet` commands and bounded `script js` before external workbook libraries
 - when exact typed values matter, use `--type rawValue`
+- `file import` works on an isolated local entry; choose the final file path later with `file export --output <path>`
 - keep output bounded and composable
 - verify every mutation before finishing
-- use `script js` only when the built-in command surface cannot express the task cleanly
+- do not reopen the workbook with a local workbook library as the main read/write path
 
 ## Task routing
 
@@ -90,7 +92,8 @@ agent-sheet read range --entry-id <entry-id> --range "Sheet1!A1:A1"
 
 - `awk`, `sed`, `python3`, and `python` are optional helpers for shell transforms
 - they are not required for every task
-- the main path stays on `agent-sheet` commands
+- the main path stays on `agent-sheet` reads/writes and bounded `script js`
+- if external processing is needed, start from `agent-sheet read --type rawValue --to-stdout|--to-file` output instead of reopening the workbook with a local workbook library
 
 ## Output style
 

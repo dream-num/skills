@@ -23,6 +23,12 @@ agent-sheet read range --entry-id <entry-id> --range "<sheet>!A1:H80" --type raw
 agent-sheet read range --entry-id <entry-id> --range "<sheet>!A1:H80" --type rawValue --format json --to-file --output ./artifacts/range.json
 ```
 
+## Structured follow-up work
+
+- keep workbook reads on `agent-sheet`
+- if external transform is needed, start from `read --type rawValue --to-stdout|--to-file`
+- do not reopen the workbook with a local workbook library for reads that `agent-sheet` already covers
+
 ## Output choices
 
 - human review: keep inline output bounded

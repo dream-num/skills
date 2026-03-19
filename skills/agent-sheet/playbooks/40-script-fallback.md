@@ -2,13 +2,15 @@
 
 ## When to use
 
-Use `script js` only when built-in `agent-sheet` commands cannot express the requested workbook change cleanly.
+Use `script js` when workbook-native API logic is the clearest bounded path, or when built-in `agent-sheet` commands cannot express the requested workbook change cleanly.
 
 Typical reasons:
 
 - workbook formatting or layout work
 - freeze panes, row or column sizing, or visibility changes
 - merge or unmerge behavior
+- bounded clear/rewrite flows inside a sheet
+- multi-step workbook-native range logic that would be awkward as shell stitching
 - another workbook-native API flow with a clear sheet and range boundary
 
 Do not use `script js` for:
@@ -62,6 +64,24 @@ Then verify with a normal readback:
 
 ```bash
 agent-sheet read range --entry-id <entry-id> --range "Sheet1!A1:B5"
+```
+
+Bounded clear and rewrite:
+
+```bash
+agent-sheet script js --entry-id <entry-id> --code '() => {
+  const workbook = univerAPI.getActiveWorkbook();
+  const sheet = workbook.getSheetByName("Sheet1");
+  if (!sheet) {
+    return { success: false, error: "Sheet1 not found" };
+  }
+  sheet.getRange("A20:E200").clearContent();
+  return {
+    success: true,
+    touchedSheets: ["Sheet1"],
+    changedRanges: ["Sheet1!A20:E200"],
+  };
+}'
 ```
 
 Presentation-only change:

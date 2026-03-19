@@ -46,6 +46,25 @@ agent-sheet inspect workbook --entry-id <entry-id>
 
 If local import fails, stop and report the blocker. Do not claim the workbook is available unless `file import` actually returned an `entryId`.
 
+Import semantics:
+
+- `file import` does not mutate the source file in place
+- the imported workbook is maintained as an isolated local entry inside the runner/workspace
+- whether edits land on the original path or a new path is decided later by `file export --output <path>`
+
+### Explicit export target workflow
+
+Use this when you want to import one file and later export the edited workbook to a specific path.
+
+```bash
+agent-sheet file import <source.xlsx> --json
+agent-sheet inspect workbook --entry-id <entry-id>
+...
+agent-sheet file export --entry-id <entry-id> --output <target.xlsx>
+```
+
+Keep the workbook target explicit with `--entry-id`, and keep the export path explicit as well.
+
 ### Inspect local entry metadata
 
 ```bash
