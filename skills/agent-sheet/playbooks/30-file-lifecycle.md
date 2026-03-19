@@ -2,7 +2,7 @@
 
 ## When to use
 
-Use this lane when the task is about creating, importing, opening, inspecting, or exporting a local workbook entry rather than editing cell contents directly.
+Use this lane when the task is about creating, importing, opening, or exporting a local workbook rather than editing cell contents directly.
 
 ## Required input
 
@@ -23,8 +23,7 @@ Use this lane when the task is about creating, importing, opening, inspecting, o
 ## Boundary rules
 
 - prefer flows that resolve an `entryId` first and then keep using `--entry-id`
-- local import is runtime-managed and may fail if the installed `uexcli` converter cannot be resolved
-- local export is runtime-managed and may fail if the installed `uexcli` converter cannot be resolved
+- if local import or export is unavailable in the installed build, stop and report the blocker
 - local export hard-fails when the local snapshot JSON exceeds `100MB`
 
 ## Core flows
@@ -45,7 +44,7 @@ agent-sheet file import ./input.xlsx --json
 agent-sheet inspect workbook --entry-id <entry-id>
 ```
 
-If local import fails with a converter/runtime readiness error, stop and report the blocker. Do not claim the workbook is available unless `file import` actually returned an `entryId`.
+If local import fails, stop and report the blocker. Do not claim the workbook is available unless `file import` actually returned an `entryId`.
 
 ### Inspect local entry metadata
 
@@ -69,7 +68,7 @@ agent-sheet file export --entry-id <entry-id> --output ./output.xlsx
 
 Stop and escalate when:
 
-- local import or local export is blocked by missing runtime converter
+- local import or local export is unavailable in the installed build
 - local export is blocked by the `100MB` snapshot guard
 - the requested `entryId` does not resolve to a workbook in the current workspace
 

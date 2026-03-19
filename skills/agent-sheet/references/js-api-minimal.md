@@ -2,7 +2,7 @@
 
 Use this reference when `agent-sheet script js` is necessary.
 
-`script js` is not the default path for ordinary spreadsheet edits, but it remains an important escape hatch for tasks that canonical commands cannot express cleanly, especially:
+`script js` is not the default path for ordinary spreadsheet edits, but it remains an important escape hatch for tasks that built-in commands cannot express cleanly, especially:
 
 - workbook styling and presentation
 - row/column sizing, visibility, and freeze panes
@@ -12,11 +12,14 @@ Use this reference when `agent-sheet script js` is necessary.
 
 ## Positioning
 
-Use canonical commands first:
+Use built-in commands first:
 
+- `read range`
+- `read search`
+- `inspect sheet`
+- `inspect workbook`
 - `write cells`
 - `write range`
-- `write table`
 - `write fill`
 - `sheet create|rename|copy|delete`
 
@@ -25,7 +28,7 @@ Switch to `script js` when you can clearly explain the gap, for example:
 - "I need borders, fonts, colors, alignment, or number formats."
 - "I need to freeze rows/columns or adjust row height/column width."
 - "I need merge/unmerge behavior."
-- "I need a bounded API workflow that is awkward or impossible with current `write.*` / `sheet.*`."
+- "I need a bounded API workflow that is awkward or impossible with current `read.*` / `write.*` / `sheet.*`."
 
 **Related**: [../playbooks/40-script-fallback.md](../playbooks/40-script-fallback.md)
 
