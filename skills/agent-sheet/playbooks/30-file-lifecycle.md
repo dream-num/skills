@@ -102,7 +102,6 @@ agent-sheet read range --entry-id <entry-id> --range '工作表1!A1:J3' --format
 Reusable assets:
 
 - [../examples/template-import-anchor-check.md](../examples/template-import-anchor-check.md)
-- [../templates/template-anchor-check.sh.tmpl](../templates/template-anchor-check.sh.tmpl)
 - [../scripts/check_csv_cells.py](../scripts/check_csv_cells.py)
 
 ## Stop / escalate

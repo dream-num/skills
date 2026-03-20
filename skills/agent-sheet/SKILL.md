@@ -99,9 +99,6 @@ Use these before improvising shell snippets:
 | [examples/roundtrip-awk-write-table.md](examples/roundtrip-awk-write-table.md) | building a review sheet through shell roundtrip |
 | [examples/handoff-verify.md](examples/handoff-verify.md) | exporting, importing, and proving handoff structure |
 | [examples/template-import-anchor-check.md](examples/template-import-anchor-check.md) | importing a template workbook and checking anchor cells |
-| [templates/roundtrip-verify.sh.tmpl](templates/roundtrip-verify.sh.tmpl) | you want a reusable roundtrip verification skeleton |
-| [templates/handoff-verify.sh.tmpl](templates/handoff-verify.sh.tmpl) | you want a reusable export/import verification skeleton |
-| [templates/template-anchor-check.sh.tmpl](templates/template-anchor-check.sh.tmpl) | you want a reusable quoted-sheet anchor check |
 | [scripts/verify_csv_preview.py](scripts/verify_csv_preview.py) | comparing header, head sample rows, and a key column |
 | [scripts/check_csv_cells.py](scripts/check_csv_cells.py) | asserting anchor values or non-empty cells from a CSV snippet |
 

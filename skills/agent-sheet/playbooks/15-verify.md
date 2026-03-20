@@ -82,7 +82,6 @@ agent-sheet read range --entry-id <entry-id> --range 'ApprovalQueue!B2:B6' --for
 Reusable assets:
 
 - [../examples/roundtrip-awk-write-table.md](../examples/roundtrip-awk-write-table.md)
-- [../templates/roundtrip-verify.sh.tmpl](../templates/roundtrip-verify.sh.tmpl)
 - [../scripts/verify_csv_preview.py](../scripts/verify_csv_preview.py)
 
 ### Import/export handoff verification
@@ -100,7 +99,6 @@ test -s ./handoff.xlsx
 Reusable assets:
 
 - [../examples/handoff-verify.md](../examples/handoff-verify.md)
-- [../templates/handoff-verify.sh.tmpl](../templates/handoff-verify.sh.tmpl)
 
 ### Presentation-only `script js`
 

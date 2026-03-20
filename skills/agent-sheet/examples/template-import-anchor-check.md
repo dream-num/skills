@@ -16,13 +16,43 @@ Confirm the imported template sheet still exists and a few anchor cells survived
 ## Example
 
 ```bash
+echo "[agent-sheet] importing template workbook" >&2
 agent-sheet file import ./partner-template.xlsx --json
+echo "[agent-sheet] listing sheets" >&2
 agent-sheet sheet list --entry-id <entry-id> --json
 
+echo "[agent-sheet] reading quoted anchor range" >&2
 agent-sheet read range --entry-id <entry-id> --range '工作表1!A1:J3' --format csv --to-stdout \
   > ./artifacts/template_anchor.csv
 
 python3 <skill-dir>/scripts/check_csv_cells.py ./artifacts/template_anchor.csv \
+  --expect A1=bold \
+  --expect B3='border line' \
+  --expect G3=univer \
+  --non-empty J3
+```
+
+## Reusable shell skeleton
+
+Copy this shape and replace the placeholders:
+
+```bash
+set -euo pipefail
+
+: "${ENTRY_ID:?set ENTRY_ID}"
+: "${RANGE:=工作表1!A1:J3}"
+: "${ARTIFACTS_DIR:=./artifacts}"
+
+mkdir -p "$ARTIFACTS_DIR"
+
+echo "[agent-sheet] listing sheets for imported template" >&2
+agent-sheet sheet list --entry-id "$ENTRY_ID" --json > "$ARTIFACTS_DIR/sheet-list.json"
+
+echo "[agent-sheet] reading anchor range $RANGE" >&2
+agent-sheet read range --entry-id "$ENTRY_ID" --range "$RANGE" --format csv --to-stdout \
+  > "$ARTIFACTS_DIR/template_anchor.csv"
+
+python3 <skill-dir>/scripts/check_csv_cells.py "$ARTIFACTS_DIR/template_anchor.csv" \
   --expect A1=bold \
   --expect B3='border line' \
   --expect G3=univer \
