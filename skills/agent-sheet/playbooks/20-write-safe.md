@@ -2,20 +2,20 @@
 
 ## When to use
 
-Use this for workbook mutations: sparse patches, range writeback, review tables, fills, and sheet lifecycle changes.
+Use this for workbook mutations: sparse patches, bounded replacements, review tables, formula propagation, and sheet lifecycle changes.
 
 ## Choose the smallest edit
 
-| Intent | Command |
-|---|---|
-| sparse patches | `write cells` |
-| bounded rectangular replacement | `write range --range "<sheet>!A1:B20"` |
-| review table or replacement sheet | `write table --sheet <name>` |
-| bounded propagation | `write fill` |
-| workbook-native bounded logic | `script js` |
-| sheet lifecycle | `sheet create|rename|copy|delete` |
+| Intent | Best command | Notes |
+|---|---|---|
+| sparse cell patches | `write cells` | best when only a few coordinates change |
+| bounded rectangular replacement | `write range --range "<sheet>!A1:D200"` | treat `--range` as the full replacement rectangle |
+| review table or queue anchored at `A1` | `write table --sheet "<name>"` | include the header row in the incoming data |
+| bounded propagation from a known seed | `write fill` | use for formulas or series already correct in the source cell(s) |
+| sheet lifecycle | `sheet create|rename|copy|delete` | use workbook-native sheet commands, not ad-hoc rewrites |
+| workbook-native bounded logic | `script js` | only when built-in commands do not express the change clearly |
 
-If the requested change is clearer as workbook-native API logic, especially bounded clear/rewrite or multi-step range operations, switch to [40-script-fallback.md](40-script-fallback.md).
+If the requested change is not obviously covered, read [../references/command-selection-matrix.md](../references/command-selection-matrix.md) first.
 
 ## Default sequence
 
@@ -34,13 +34,11 @@ agent-sheet write table --entry-id <entry-id> --sheet "Review" ./review.tsv --in
 agent-sheet write fill --entry-id <entry-id> --sheet "<sheet>" --source-range A2:A2 --target-range A2:A200
 ```
 
-3. Verify immediately after the mutation.
+3. Verify immediately after the mutation with [15-verify.md](15-verify.md).
 
 ```bash
 agent-sheet read range --entry-id <entry-id> --range "<verify-range>"
 ```
-
-For rectangular replacement, verify both the leading rows and the tail of the bounded target.
 
 4. Add a broader inspection after structural changes.
 
@@ -48,12 +46,21 @@ For rectangular replacement, verify both the leading rows and the tail of the bo
 agent-sheet inspect workbook --entry-id <entry-id>
 ```
 
+## Write-specific rules
+
+- for `write table`, verify the header row, first data rows, and total row count
+- for shell-generated data, stage an artifact if needed and inspect its head before writeback
+- for `write range`, make sure the source data shape matches the replacement rectangle
+- for `write fill`, verify both formula view and displayed values on a small sample
+- large `write table` calls may chunk internally; still verify only from the workbook result, not from command optimism
+
 ## Defaults
 
 - inspect before broad or structural writes
 - verify every data-visible mutation
 - keep the target tightly bounded
-- for `write range`, treat the explicit `--range` as the full replacement rectangle
+- do not use `write table` for arbitrary non-`A1` offsets
+- do not claim shell roundtrip success from row count alone
 - do not fake visual verification for presentation-only changes
 
 ## Stop / escalate
@@ -62,4 +69,5 @@ Stop and escalate when:
 
 - the write would touch a large unknown region
 - the target changed between inspection and write
+- the source artifact shape is unclear
 - verification fails or reveals an unexpected structural change

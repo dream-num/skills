@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+: "${SOURCE_ENTRY_ID:?set SOURCE_ENTRY_ID}"
+: "${EXPORT_XLSX:?set EXPORT_XLSX}"
+: "${EXPECT_SHEETS:?set EXPECT_SHEETS as comma-separated names}"
+: "${FORMULA_RANGE:=}"
+
+if ! command -v agent-sheet >/dev/null 2>&1; then
+  echo "agent-sheet CLI not found" >&2
+  exit 1
+fi
+
+agent-sheet file export --entry-id "$SOURCE_ENTRY_ID" --output "$EXPORT_XLSX"
+test -s "$EXPORT_XLSX"
+
+IMPORT_JSON=$(mktemp)
+INFO_JSON=$(mktemp)
+SHEETS_JSON=$(mktemp)
+
+agent-sheet file import "$EXPORT_XLSX" --json > "$IMPORT_JSON"
+
+IMPORTED_ENTRY_ID=$(python3 - "$IMPORT_JSON" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as f:
+    data = json.load(f)
+print(data["entryId"])
+PY
+)
+
+agent-sheet file info --entry-id "$IMPORTED_ENTRY_ID" --json > "$INFO_JSON"
+agent-sheet sheet list --entry-id "$IMPORTED_ENTRY_ID" --json > "$SHEETS_JSON"
+
+python3 - "$INFO_JSON" "$SHEETS_JSON" "$EXPECT_SHEETS" <<'PY'
+import json
+import sys
+
+info_path, sheets_path, expect_sheets = sys.argv[1:4]
+expected = [item for item in expect_sheets.split(",") if item]
+
+with open(info_path, encoding="utf-8") as f:
+    info = json.load(f)
+with open(sheets_path, encoding="utf-8") as f:
+    sheets = json.load(f)
+
+if info["data"]["mode"] != "local":
+    raise SystemExit("expected imported workbook mode=local")
+if info["data"]["origin"]["kind"] != "import":
+    raise SystemExit("expected imported workbook origin.kind=import")
+
+names = [sheet["name"] for sheet in sheets["data"]["sheets"]]
+missing = [name for name in expected if name not in names]
+if missing:
+    raise SystemExit(f"missing sheets: {missing}")
+
+print("Handoff metadata and sheet structure verification passed.")
+PY
+
+if [[ -n "$FORMULA_RANGE" ]]; then
+  agent-sheet inspect range --entry-id "$IMPORTED_ENTRY_ID" --range "$FORMULA_RANGE"
+fi
+
+echo "Imported entry: $IMPORTED_ENTRY_ID"
