@@ -44,3 +44,5 @@ awk -F'\t' 'NR==1 || $5=="P1"{print $0}' ./artifacts/claims.tsv > ./artifacts/cl
 - use `write table --sheet <name>` when the destination is conceptually a review table anchored at `A1`
 - if you need external processing, start from `agent-sheet read` output rather than reopening the workbook with a local workbook library
 - if `awk`, `sed`, or `python` are unnecessary, prefer the direct `agent-sheet` command path
+- after writeback, verify header row, first sample rows, key columns, and row count together; count-only verification is not enough
+- for a reusable skeleton, start from [../templates/roundtrip-verify.sh.tmpl](../templates/roundtrip-verify.sh.tmpl) and [../scripts/verify_csv_preview.py](../scripts/verify_csv_preview.py)

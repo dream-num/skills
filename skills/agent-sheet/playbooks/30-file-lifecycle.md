@@ -16,15 +16,19 @@ Use this lane when the task is about creating, importing, opening, or exporting 
 |---|---|---|
 | start a fresh local workbook | `file create <name> --json` | new local `entryId` |
 | start from local `xlsx` / `csv` | `file import <path> --json` | imported local `entryId` |
-| inspect entry metadata | `file info --entry-id <id> --json` | workbook status and metadata |
+| inspect entry metadata | `file info --entry-id <id> --json` | metadata only |
+| inspect workbook structure | `sheet list --entry-id <id> --json` or `inspect workbook --entry-id <id>` | sheets and workbook-visible structure |
 | open resolved workbook | `file open --entry-id <id> --json` | workbook open payload |
 | export workbook | `file export --entry-id <id> --output <path>` | local file output |
 
 ## Boundary rules
 
-- prefer flows that resolve an `entryId` first and then keep using `--entry-id`
-- if local import or export is unavailable in the installed build, stop and report the blocker
+- resolve an `entryId` first and keep using `--entry-id`
+- for imported local entries, trust the `entryId` from `file import` even if later `file info` shows `unitId: null`
+- use `file info` for mode, origin, and local-vs-remote metadata only
+- use `sheet list` or `inspect workbook` for sheet count, sheet names, and handoff structure checks
 - local export hard-fails when the local snapshot JSON exceeds `100MB`
+- legacy `file export --manifest ...` and `file use` are removed surfaces; treat invalid-args failure as expected
 
 ## Core flows
 
@@ -41,7 +45,7 @@ Extract the returned `entryId` from the JSON response, then continue with `--ent
 
 ```bash
 agent-sheet file import ./input.xlsx --json
-agent-sheet inspect workbook --entry-id <entry-id>
+agent-sheet sheet list --entry-id <entry-id> --json
 ```
 
 If local import fails, stop and report the blocker. Do not claim the workbook is available unless `file import` actually returned an `entryId`.
@@ -58,9 +62,10 @@ Use this when you want to import one file and later export the edited workbook t
 
 ```bash
 agent-sheet file import <source.xlsx> --json
-agent-sheet inspect workbook --entry-id <entry-id>
+agent-sheet sheet list --entry-id <entry-id> --json
 ...
 agent-sheet file export --entry-id <entry-id> --output <target.xlsx>
+test -s <target.xlsx>
 ```
 
 Keep the workbook target explicit with `--entry-id`, and keep the export path explicit as well.
@@ -70,6 +75,8 @@ Keep the workbook target explicit with `--entry-id`, and keep the export path ex
 ```bash
 agent-sheet file info --entry-id <entry-id> --json
 ```
+
+Treat this as metadata, not workbook structure.
 
 ### Open local workbook
 
@@ -81,7 +88,22 @@ agent-sheet file open --entry-id <entry-id> --json
 
 ```bash
 agent-sheet file export --entry-id <entry-id> --output ./output.xlsx
+test -s ./output.xlsx
 ```
+
+### Imported workbook with non-English sheet names
+
+Quote the full A1 range string in the shell:
+
+```bash
+agent-sheet read range --entry-id <entry-id> --range '工作表1!A1:J3' --format csv --to-stdout
+```
+
+Reusable assets:
+
+- [../examples/template-import-anchor-check.md](../examples/template-import-anchor-check.md)
+- [../templates/template-anchor-check.sh.tmpl](../templates/template-anchor-check.sh.tmpl)
+- [../scripts/check_csv_cells.py](../scripts/check_csv_cells.py)
 
 ## Stop / escalate
 
@@ -90,6 +112,7 @@ Stop and escalate when:
 - local import or local export is unavailable in the installed build
 - local export is blocked by the `100MB` snapshot guard
 - the requested `entryId` does not resolve to a workbook in the current workspace
+- handoff verification depends on `file info` alone
 
 ## Output contract
 
@@ -97,4 +120,5 @@ Report:
 
 - entry source and workbook status
 - `entryId`
+- workbook structure verification surface used
 - exported file path when applicable
