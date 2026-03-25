@@ -19,6 +19,12 @@ Use this when the task looks straightforward but real-world workflows have hidde
 - `file import` can return a `unitId`, while a later `file info` on the same local entry may report `unitId: null`
 - do not switch targeting strategy mid-task; keep using `--entry-id`
 
+## Dirty local state before a follow-up step
+
+- if local mutations must be flushed first, do not invent a no-op business edit
+- use `agent-sheet persist --entry-id <id>` to rewrite the local snapshot and clear `workbook.mutations.jsonl`
+- this recovery path belongs to `agent-sheet`
+
 ## `file info` boundary
 
 - `file info` is useful for metadata such as `mode`, `origin`, `name`, and timestamps
