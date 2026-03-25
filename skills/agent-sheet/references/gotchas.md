@@ -25,6 +25,12 @@ Use this when the task looks straightforward but real-world workflows have hidde
 - use `agent-sheet persist --entry-id <id>` to rewrite the local snapshot and clear `workbook.mutations.jsonl`
 - this recovery path belongs to `agent-sheet`
 
+## `origin attach` vs `file push`
+
+- use `origin attach` when the workbook should remain local-first but remember its intended origin
+- use `file push` only when you intentionally want to publish and migrate the entry into hosted live mode
+- do not treat those two commands as interchangeable
+
 ## `file info` boundary
 
 - `file info` is useful for metadata such as `mode`, `origin`, `name`, and timestamps
