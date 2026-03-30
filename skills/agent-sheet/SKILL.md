@@ -34,8 +34,6 @@ metadata:
 - inspecting workbook structure, sheets, ranges, formulas, and search hits
 - writing sparse cells, bounded ranges, anchored review tables, or formula fills
 - importing a local workbook, continuing edits, and exporting a final file
-- explicitly flushing a local entry with `persist --entry-id <id>` before handoff or follow-up local tooling
-- attaching an origin with `origin attach --entry-id <id> --origin <name>` while keeping the workbook local-first
 - streaming workbook data through shell tools, then writing verified results back
 - using bounded `script js` only when built-in commands do not express the workbook change cleanly
 
@@ -58,16 +56,12 @@ metadata:
 - prefer `entryId` over `unitId` for local workbooks and imports
 - treat `write range` as a full bounded rectangle replacement
 - treat `write table --sheet <name>` as an A1-anchored table write with header semantics
-- use `persist --entry-id <id>` when you need an explicit local flush without inventing another business edit
-- use `origin attach --entry-id <id> --origin <name>` when the task needs origin intent without switching to hosted live mode
 - verify shell roundtrips with structure plus sample rows, not row count alone
 - use `sheet list` or `inspect workbook` for sheet existence and handoff verification
 
 ## Highest-signal gotchas
 
 - imported local entries can be healthy even when later `file info` shows `unitId: null`; keep operating on `entryId`
-- if local mutations must be cleared before a follow-up step, use `agent-sheet persist --entry-id <id>` instead of inventing a no-op business edit
-- `file push` is a mode-changing publish path; it is not the same as `origin attach`
 - `file info` is metadata only; it does not prove sheet count, sheet names, or formula state
 - do not run `init` inside an already initialized workspace tree; nested workspace refusal is expected
 - non-English sheet names work, but quote the full A1 range string in the shell

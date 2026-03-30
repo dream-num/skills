@@ -19,8 +19,6 @@ Use this lane when the task is about creating, importing, opening, or exporting 
 | inspect entry metadata | `file info --entry-id <id> --json` | metadata only |
 | inspect workbook structure | `sheet list --entry-id <id> --json` or `inspect workbook --entry-id <id>` | sheets and workbook-visible structure |
 | open resolved workbook | `file open --entry-id <id> --json` | workbook open payload |
-| flush local mutations explicitly | `persist --entry-id <id> --json` | rewritten snapshot + cleared mutation log |
-| attach an origin while staying local-first | `origin attach --entry-id <id> --origin <name> --json` | origin metadata without mode switch |
 | export workbook | `file export --entry-id <id> --output <path>` | local file output |
 
 ## Boundary rules
@@ -29,10 +27,7 @@ Use this lane when the task is about creating, importing, opening, or exporting 
 - for imported local entries, trust the `entryId` from `file import` even if later `file info` shows `unitId: null`
 - use `file info` for mode, origin, and local-vs-remote metadata only
 - use `sheet list` or `inspect workbook` for sheet count, sheet names, and handoff structure checks
-- if a follow-up local step needs a clean persisted snapshot, use `persist --entry-id <id>` before retrying
-- if the workflow needs a remembered remote destination but must stay local-first, use `origin attach`
 - local export hard-fails when the local snapshot JSON exceeds `100MB`
-- `file push` publishes and switches the entry into hosted live mode; do not use it when you only need origin attachment
 - legacy `file export --manifest ...` and `file use` are removed surfaces; treat invalid-args failure as expected
 
 ## Core flows
@@ -89,23 +84,6 @@ Treat this as metadata, not workbook structure.
 agent-sheet file open --entry-id <entry-id> --json
 ```
 
-### Flush local entry state
-
-Use this when a local entry already exists but another tool requires a clean persisted snapshot.
-
-```bash
-agent-sheet persist --entry-id <entry-id> --json
-```
-
-### Attach origin without leaving local mode
-
-Use this when the workbook should stay local-first for follow-up tooling such as `sheet-git`.
-
-```bash
-agent-sheet origin attach --entry-id <entry-id> --origin <origin-name> --json
-agent-sheet origin status --entry-id <entry-id> --json
-```
-
 ### Export
 
 ```bash
@@ -133,7 +111,6 @@ Stop and escalate when:
 - local import or local export is unavailable in the installed build
 - local export is blocked by the `100MB` snapshot guard
 - the requested `entryId` does not resolve to a workbook in the current workspace
-- explicit persist fails for a local entry that should be recoverable
 - handoff verification depends on `file info` alone
 
 ## Output contract
