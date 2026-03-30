@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sheet Git"
+  short_description: "Spreadsheet repo, review, and origin workflows"
+  default_prompt: "Use $sheet-git to inspect proposal state, hosted review handoff, and origin sync steps for this workspace."
