@@ -32,6 +32,7 @@ Use `agent-sheet` to create, edit, attach, and persist workbook content.
 Use `sheet-git` when the task becomes:
 
 - binding a local repo to one hosted review scope
+- choosing the correct hosted `{owner}/{repo}` scope inside one shared hosted review instance
 - cloning an existing hosted review repo into a fresh local workspace
 - capturing persisted local workbook changes into repo history
 - creating and tracking proposals
@@ -82,6 +83,7 @@ If the task is already in review or origin sync, do not guess. Read the current 
 - or `sheet-git clone <host>/<owner>/<repo>` for browser-copied host shorthand
 - or `sheet-git clone <review-url>`
 - this creates a fresh local workspace, binds the hosted scope, and restores the latest materialized entries
+- if the hosted repo exists but has no materialized origin workbook yet, `clone` still binds the hosted scope but cannot hydrate workbook content yet
 
 ### Publish to Bob
 
@@ -148,3 +150,4 @@ For exact command semantics and output expectations, read [references/command-su
 - Treat semantic summaries as the default review surface.
 - Drop to raw cell diff or blame only when the summary is not enough.
 - When reporting a blocked state, include the exact refusal text and the suggested next command.
+- In multi-repo situations, always report the hosted scope as `{owner}/{repo}`, not just the proposal id.

@@ -55,6 +55,16 @@ Meaning:
 - keep the same proposal id when publishing a follow-up revision
 - do not implicitly approve
 
+## Multi-repo hosted notes
+
+- Hosted review scope is always `{owner}/{repo}`.
+- One hosted web instance may serve many scopes at once.
+- `/review` is the repo index when more than one hosted repo exists.
+- `remote add review` is the right entry for an existing local workspace that now needs hosted review.
+- `clone` is the right entry for starting from an existing hosted repo.
+- If the hosted repo exists but no origin workbook has been materialized yet, `clone` binds the hosted scope but does not restore workbook content yet.
+- Repo-local hosted scope configuration is the primary source of truth; ad-hoc env-only review routing is only a fallback.
+
 ## Origin collaboration
 
 - `sheet-git push origin --dry-run <proposal>`

@@ -15,6 +15,32 @@ Current authority split:
 - Bob reviews in hosted web.
 - Hosted review is the review authority.
 - Origin is the workbook materialization authority.
+- Hosted scope is `{owner}/{repo}`, and one hosted web may contain many repos.
+
+## Entering a hosted repo
+
+### Existing local workspace -> hosted review
+
+If Alice already has a local workspace and wants review for it:
+
+- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
+- `sheet-git push review <proposal>`
+
+This is the first-path for a brand new hosted repo.
+
+### Existing hosted repo -> fresh local workspace
+
+If Alice or Charlie starts from a hosted repo that already exists:
+
+- `sheet-git clone <owner>/<repo> --base-url <base-url>`
+- or `sheet-git clone <host>/<owner>/<repo>`
+- or `sheet-git clone <review-url>`
+
+This creates a fresh local workspace and binds it to that hosted scope.
+
+If the repo has already materialized an origin workbook, clone restores the latest materialized entries.
+
+If the repo exists but has not materialized origin yet, clone still binds the hosted scope, but there may be no workbook content to restore yet.
 
 ## Proposal lifecycle
 
@@ -99,6 +125,14 @@ The handoff can be completed by:
 
 - Alice running `sheet-git push origin <proposal>`
 - or a daemon claiming the request and running the same command
+
+## Multi-repo hosted UI
+
+When hosted web serves many repos:
+
+- `/review` is the repo index
+- each repo inbox/detail page stays scoped to one `{owner}/{repo}`
+- proposal ids are not globally unique enough by themselves; always carry the hosted scope with them when speaking about a review item
 
 ## Best reading order during collaboration
 
