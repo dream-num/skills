@@ -2,6 +2,12 @@
 
 Use this file when `sheet-git` refuses a command or collaboration state is unclear.
 
+Current model:
+
+- `fetch origin` tells you whether remote moved
+- `pull origin` materializes remote state and absorbs replay when needed
+- `push origin --resume <replay-run>` continues an interrupted replay
+
 ## Rule zero
 
 Do not work around refusal text.
@@ -48,8 +54,8 @@ Typical next steps:
 
 - `sheet-git proposal status <proposal>`
 - `sheet-git fetch origin <entry-id>`
-- `sheet-git rebase origin <entry-id>`
 - `sheet-git pull origin --force-to-latest <proposal-or-entry-id>`
+- `sheet-git push origin --resume <replay-run>` when the refusal points at an interrupted replay
 
 Choose the command suggested by the refusal message first.
 
@@ -77,7 +83,7 @@ This is not inconsistent. It means the review decision is closed but origin work
 2. `sheet-git proposal status <proposal>` if a proposal is involved
 3. `sheet-git proposal comments <proposal>` if review feedback is involved
 4. `sheet-git fetch origin <entry-id>` if remote collaboration may have moved
-5. only then consider `pull origin`, `rebase origin`, or `push origin`
+5. only then consider `pull origin`, `push origin --resume`, or `push origin`
 
 ## What not to do
 
@@ -85,3 +91,4 @@ This is not inconsistent. It means the review decision is closed but origin work
 - do not assume hosted `Merge` means origin is already updated
 - do not open a new proposal when the intent is a follow-up revision on the same proposal
 - do not bypass refusal output with ad hoc file mutations
+- do not ask for or simulate `rebase origin`; the current system routes recovery through `fetch` plus `pull`

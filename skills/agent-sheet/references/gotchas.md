@@ -25,6 +25,12 @@ Use this when the task looks straightforward but real-world workflows have hidde
 - it is not sufficient for sheet count, sheet names, formula state, or handoff structure
 - use `sheet list` or `inspect workbook` for workbook-visible structure
 
+## `origin attach` vs local materialization
+
+- `origin attach` binds remote identity; it does not prove the local workbook is already materialized to the observed remote revision
+- treat observed remote revision and confirmed local materialization as different states
+- if the workflow moves from attach into collaboration, let `sheet-git fetch origin` and `sheet-git pull origin` drive the sync step instead of assuming attach was enough
+
 ## Shell roundtrip verification
 
 - correct row count is not enough
@@ -49,6 +55,12 @@ Use this when the task looks straightforward but real-world workflows have hidde
 - imported workbooks can contain non-English sheet names and still work normally
 - quote the full range string in the shell, for example `--range '工作表1!A1:J3'`
 - verify imported templates with readback, not assumptions about the original file
+
+## Daemon restart boundaries
+
+- a read-only `script js` after daemon restart may reconcile local snapshot state without producing a collab-visible local batch
+- do not treat that as proof the workbook changed semantically
+- verify the workbook-visible result first, then inspect local-batch state only if the task actually depends on lineage production
 
 ## Legacy surfaces
 

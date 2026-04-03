@@ -2,6 +2,12 @@
 
 Use this file when you need exact command names, not just the workflow shape.
 
+Mental model:
+
+- `proposal` is the Git-shaped local read model
+- hosted review truth is a review session
+- origin execution truth is a replay run
+
 ## Core repo commands
 
 - `sheet-git init`
@@ -44,11 +50,10 @@ Meaning:
 - `sheet-git push origin --dry-run <proposal>`
 - `sheet-git push origin --explain <proposal>`
 - `sheet-git push origin <proposal>`
-- `sheet-git push origin --resume <merge-run>`
+- `sheet-git push origin --resume <replay-run>`
+- `sheet-git fetch origin <entry-id>`
 - `sheet-git pull origin <proposal-or-entry-id>`
 - `sheet-git pull origin --force-to-latest <proposal-or-entry-id>`
-- `sheet-git fetch origin <entry-id>`
-- `sheet-git rebase origin <entry-id>`
 
 ## Agent-facing review packet
 
@@ -72,3 +77,5 @@ Typical fields worth reading:
 - The command is `history`, not `log`.
 - The hosted handoff command is `push review`, not `proposal publish`.
 - The origin step is still `push origin`, even when hosted review has already been merged.
+- `fetch origin` is the remote-ahead probe; `pull origin` is the replay/materialization step.
+- Do not ask for or invent `rebase origin`; it is not part of the current surface.

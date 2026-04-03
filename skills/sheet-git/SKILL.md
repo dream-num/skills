@@ -1,6 +1,6 @@
 ---
 name: sheet-git
-description: Spreadsheet repo control and hosted review/origin collaboration for persisted `agent-sheet` workspaces. Use when needs to stage workbook entries, create commits or proposals, inspect proposal state, publish a proposal to hosted review, pull machine-readable review comments, or coordinate `push/fetch/pull/rebase` against origin. Do not use it for direct workbook editing.
+description: Spreadsheet repo control and hosted review/origin collaboration for persisted `agent-sheet` workspaces. Use when needs to stage workbook entries, create commits or proposal-shaped review units, inspect proposal state, publish to hosted review, pull machine-readable review comments, or coordinate `push/fetch/pull` against origin. Do not use it for direct workbook editing.
 metadata:
   openclaw:
     os:
@@ -21,6 +21,13 @@ metadata:
 
 `sheet-git` is the repo, review, and origin control plane that sits beside `agent-sheet`.
 
+Current authority split:
+
+- `proposal` is the Git-shaped local handle and read model
+- hosted review truth is a review session
+- origin execution truth is a replay run
+- `pull origin` absorbs replay/recovery; `rebase origin` is not part of the current surface
+
 Use `agent-sheet` to create, edit, attach, and persist workbook content.
 Use `sheet-git` when the task becomes:
 
@@ -29,7 +36,7 @@ Use `sheet-git` when the task becomes:
 - handing proposals to hosted review
 - pulling machine-readable review feedback
 - materializing reviewed changes to origin
-- recovering collaborative drift with `fetch`, `pull`, and `rebase`
+- recovering collaborative drift with `fetch` and `pull`
 
 ## Hard boundaries
 
@@ -38,8 +45,9 @@ Use `sheet-git` when the task becomes:
 - Treat `push review` as handoff only. It publishes to hosted review; it does not approve.
 - Treat `proposal comments` as the agent-facing review surface. It returns JSON packets.
 - Treat `push origin` as the real origin materialization step.
+- Treat `push origin --resume <replay-run>` as replay continuation, not a separate merge system.
 - Treat hosted web `Merge` as review closure plus a materialization handoff. Alice may still need `sheet-git push origin <proposal>` unless a daemon claims the request.
-- Follow refusal output literally. `pull origin`, `push origin`, and `rebase origin` already emit the next safe command when collaboration state is blocked.
+- Follow refusal output literally. `fetch origin`, `pull origin`, and `push origin` already emit the next safe command when collaboration state is blocked.
 
 ## First path
 
@@ -85,11 +93,11 @@ Read [references/hosted-review.md](references/hosted-review.md) when the task in
 - `sheet-git push origin --dry-run <proposal>`
 - `sheet-git push origin --explain <proposal>`
 - `sheet-git push origin <proposal>`
-- `sheet-git pull origin <proposal-or-entry-id>`
+- `sheet-git push origin --resume <replay-run>`
 - `sheet-git fetch origin <entry-id>`
-- `sheet-git rebase origin <entry-id>`
+- `sheet-git pull origin <proposal-or-entry-id>`
 
-Read [references/recovery.md](references/recovery.md) when `pull`, `push`, or `rebase` refuses and emits a next step.
+Read [references/recovery.md](references/recovery.md) when `fetch`, `pull`, or `push` refuses and emits a next step.
 
 ## Quick routes
 
@@ -111,11 +119,10 @@ Read [references/recovery.md](references/recovery.md) when `pull`, `push`, or `r
 | preview origin materialization | `sheet-git push origin --dry-run <proposal>` |
 | explain origin blockers | `sheet-git push origin --explain <proposal>` |
 | materialize to origin | `sheet-git push origin <proposal>` |
-| resume a merge run | `sheet-git push origin --resume <merge-run>` |
+| resume a replay run | `sheet-git push origin --resume <replay-run>` |
+| see remote-ahead state | `sheet-git fetch origin <entry-id>` |
 | materialize remote changes locally | `sheet-git pull origin <proposal-or-entry-id>` |
 | force local materialization repair | `sheet-git pull origin --force-to-latest <proposal-or-entry-id>` |
-| see remote-ahead state | `sheet-git fetch origin <entry-id>` |
-| rebase local work on remote | `sheet-git rebase origin <entry-id>` |
 | blame one cell | `sheet-git blame --entry-id <id> --cell 'Sheet1!A1' [<commit>]` |
 | inspect history | `sheet-git history [--limit <n>]` |
 | inspect one revision | `sheet-git show [<commit>]` |

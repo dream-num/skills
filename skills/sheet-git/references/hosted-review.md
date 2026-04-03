@@ -2,6 +2,12 @@
 
 Use this file when the task spans Alice CLI, Bob hosted web review, proposal revisions, or materialization handoff.
 
+Current authority split:
+
+- local CLI speaks in proposal ids
+- hosted review truth is a review session
+- origin execution truth is a replay run
+
 ## Collaboration model
 
 - Alice edits locally with `agent-sheet`.
@@ -28,7 +34,7 @@ Alice hands the proposal to Bob with:
 
 - `sheet-git push review <proposal>`
 
-That creates or updates the hosted review proposal and keeps the proposal in `needs-review`.
+That creates or updates the hosted review session under the same proposal-shaped local handle and keeps it in `needs-review`.
 
 ### 3. Follow-up revisions
 
@@ -39,7 +45,7 @@ If Alice revises after feedback:
 - `sheet-git commit`
 - `sheet-git push review <same proposal>`
 
-That should produce hosted `r2`, `r3`, and so on under the same proposal.
+That should produce hosted `r2`, `r3`, and so on under the same review session.
 
 ## Comment loop
 

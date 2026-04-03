@@ -62,6 +62,8 @@ metadata:
 ## Highest-signal gotchas
 
 - imported local entries can be healthy even when later `file info` shows `unitId: null`; keep operating on `entryId`
+- `origin attach` binds remote identity but does not prove local materialization to the observed remote revision
+- a read-only `script js` after daemon restart can reconcile snapshot state without fabricating a local batch
 - `file info` is metadata only; it does not prove sheet count, sheet names, or formula state
 - do not run `init` inside an already initialized workspace tree; nested workspace refusal is expected
 - non-English sheet names work, but quote the full A1 range string in the shell
