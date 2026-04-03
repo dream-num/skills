@@ -31,6 +31,8 @@ Current authority split:
 Use `agent-sheet` to create, edit, attach, and persist workbook content.
 Use `sheet-git` when the task becomes:
 
+- binding a local repo to one hosted review scope
+- cloning an existing hosted review repo into a fresh local workspace
 - capturing persisted local workbook changes into repo history
 - creating and tracking proposals
 - handing proposals to hosted review
@@ -68,10 +70,17 @@ If the task is already in review or origin sync, do not guess. Read the current 
 
 ### Local capture
 
+- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>` when the repo should publish to hosted review
 - `sheet-git init`
 - `sheet-git stage --entry-id <id>` or `sheet-git stage --all`
 - `sheet-git commit --message "..."`
 - `sheet-git proposal create`
+
+### Start from an existing hosted repo
+
+- `sheet-git clone <owner>/<repo> --base-url <base-url>`
+- or `sheet-git clone <review-url>`
+- this creates a fresh local workspace, binds the hosted scope, and restores the latest materialized entries
 
 ### Publish to Bob
 
@@ -103,7 +112,9 @@ Read [references/recovery.md](references/recovery.md) when `fetch`, `pull`, or `
 
 | Task | Command |
 |---|---|
+| clone an existing hosted repo | `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>` |
 | initialize repo | `sheet-git init` |
+| bind hosted review scope | `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>` |
 | stage one workbook | `sheet-git stage --entry-id <id>` |
 | stage all capturable workbooks | `sheet-git stage --all` |
 | inspect repo state | `sheet-git status` |

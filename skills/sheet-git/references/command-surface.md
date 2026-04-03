@@ -10,7 +10,10 @@ Mental model:
 
 ## Core repo commands
 
+- `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>`
+- `sheet-git clone <review-url> [<path>]`
 - `sheet-git init`
+- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
 - `sheet-git stage --entry-id <id> [--entry-id <id>...]`
 - `sheet-git stage --all`
 - `sheet-git reset --entry-id <id> [--entry-id <id>...]`
@@ -37,10 +40,15 @@ Mental model:
 
 ## Hosted review handoff
 
+- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
+- `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>`
+- `sheet-git clone <review-url> [<path>]`
 - `sheet-git push review <proposal>`
 
 Meaning:
 
+- bind the current local repo to one hosted review scope with `remote add review`
+- hydrate a fresh local workspace from an existing hosted review scope with `clone`
 - publish the current local proposal revision into hosted review
 - keep the same proposal id when publishing a follow-up revision
 - do not implicitly approve
@@ -76,6 +84,8 @@ Typical fields worth reading:
 
 - The command is `history`, not `log`.
 - The hosted handoff command is `push review`, not `proposal publish`.
+- The hosted scope command is `remote add review`, not ad-hoc env-only configuration.
+- The repo entry command is `clone`; it restores the latest materialized entries from hosted/origin into a fresh local workspace.
 - The origin step is still `push origin`, even when hosted review has already been merged.
 - `fetch origin` is the remote-ahead probe; `pull origin` is the replay/materialization step.
 - Do not ask for or invent `rebase origin`; it is not part of the current surface.
