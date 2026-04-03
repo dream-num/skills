@@ -79,6 +79,7 @@ If the task is already in review or origin sync, do not guess. Read the current 
 ### Start from an existing hosted repo
 
 - `sheet-git clone <owner>/<repo> --base-url <base-url>`
+- or `sheet-git clone <host>/<owner>/<repo>` for browser-copied host shorthand
 - or `sheet-git clone <review-url>`
 - this creates a fresh local workspace, binds the hosted scope, and restores the latest materialized entries
 
@@ -113,6 +114,7 @@ Read [references/recovery.md](references/recovery.md) when `fetch`, `pull`, or `
 | Task | Command |
 |---|---|
 | clone an existing hosted repo | `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>` |
+| clone from host shorthand | `sheet-git clone <host>/<owner>/<repo> [<path>]` |
 | initialize repo | `sheet-git init` |
 | bind hosted review scope | `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>` |
 | stage one workbook | `sheet-git stage --entry-id <id>` |

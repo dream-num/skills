@@ -11,6 +11,7 @@ Mental model:
 ## Core repo commands
 
 - `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>`
+- `sheet-git clone <host>/<owner>/<repo> [<path>]`
 - `sheet-git clone <review-url> [<path>]`
 - `sheet-git init`
 - `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
@@ -42,6 +43,7 @@ Mental model:
 
 - `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
 - `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>`
+- `sheet-git clone <host>/<owner>/<repo> [<path>]`
 - `sheet-git clone <review-url> [<path>]`
 - `sheet-git push review <proposal>`
 
