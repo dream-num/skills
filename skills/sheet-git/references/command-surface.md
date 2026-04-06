@@ -75,6 +75,12 @@ Meaning:
 - `sheet-git pull origin <proposal-or-entry-id>`
 - `sheet-git pull origin --force-to-latest <proposal-or-entry-id>`
 
+Meaning:
+
+- `fetch origin` can now report `draft-replay-required` when local unstaged draft should be preserved across pull
+- in that case the normal next command is still `sheet-git pull origin <proposal-or-entry-id>`
+- `--force-to-latest` is the destructive fallback for unsafe repair, not the default answer for transformable local draft
+
 ## Agent-facing review packet
 
 `sheet-git proposal comments <proposal>` is the machine-facing review command.
@@ -100,4 +106,5 @@ Typical fields worth reading:
 - The repo entry command is `clone`; it restores the latest materialized entries from hosted/origin into a fresh local workspace.
 - The origin step is still `push origin`, even when hosted review has already been merged.
 - `fetch origin` is the remote-ahead probe; `pull origin` is the replay/materialization step.
+- `draft-replay-required` is a real readiness state, not an error wording variant.
 - Do not ask for or invent `rebase origin`; it is not part of the current surface.

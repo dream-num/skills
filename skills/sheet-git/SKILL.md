@@ -51,6 +51,8 @@ Use `sheet-git` when the task becomes:
 - Treat `push origin --resume <replay-run>` as replay continuation, not a separate merge system.
 - Treat hosted web `Merge` as review closure plus a materialization handoff. Alice may still need `sheet-git push origin <proposal>` unless a daemon claims the request.
 - Follow refusal output literally. `fetch origin`, `pull origin`, and `push origin` already emit the next safe command when collaboration state is blocked.
+- Treat `draft-replay-required` as the preserved-draft path: `pull origin` should keep Alice local draft and replay it onto the newer remote base when the shape is safe.
+- Treat `--force-to-latest` as an explicit escape hatch, not the default answer for transformable local draft.
 
 ## First path
 
@@ -137,7 +139,7 @@ Read [references/recovery.md](references/recovery.md) when `fetch`, `pull`, or `
 | resume a replay run | `sheet-git push origin --resume <replay-run>` |
 | see remote-ahead state | `sheet-git fetch origin <entry-id>` |
 | materialize remote changes locally | `sheet-git pull origin <proposal-or-entry-id>` |
-| force local materialization repair | `sheet-git pull origin --force-to-latest <proposal-or-entry-id>` |
+| force destructive local repair | `sheet-git pull origin --force-to-latest <proposal-or-entry-id>` |
 | blame one cell | `sheet-git blame --entry-id <id> --cell 'Sheet1!A1' [<commit>]` |
 | inspect history | `sheet-git history [--limit <n>]` |
 | inspect one revision | `sheet-git show [<commit>]` |
