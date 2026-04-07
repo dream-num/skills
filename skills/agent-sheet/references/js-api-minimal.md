@@ -29,6 +29,7 @@ Switch to `script js` when you can clearly explain the gap, for example:
 - "I need to freeze rows/columns or adjust row height/column width."
 - "I need merge/unmerge behavior."
 - "I need a bounded API workflow that is awkward or impossible with current `read.*` / `write.*` / `sheet.*`."
+- "I need conditional formatting rules (highlight cells, data bars, color scales, icon sets)."
 
 **Related**: [../playbooks/40-script-fallback.md](../playbooks/40-script-fallback.md)
 
@@ -56,6 +57,16 @@ univerAPI (Global Entry Point)
     └── getActiveWorkbook() → FWorkbook (Workbook Object)
         ├── getSheetByName(name) → FWorksheet | null (✅ RECOMMENDED - explicit sheet access)
         │   └── getRange() → FRange (Cell Range Object)
+        │   ├── createConditionalFormattingRule() → FConditionalFormattingBuilder (✅ shortcut: range auto-bound)
+        │   ├── getConditionalFormattingRules() → IConditionFormattingRule[]
+        │   └── clearConditionalFormatRules() → FRange
+        │   ├── newConditionalFormattingRule() → FConditionalFormattingBuilder (✅ conditional formatting builder)
+        │   ├── addConditionalFormattingRule(rule) → FWorksheet
+        │   ├── getConditionalFormattingRules() → IConditionFormattingRule[]
+        │   ├── deleteConditionalFormattingRule(cfId) → FWorksheet
+        │   ├── moveConditionalFormattingRule(cfId, toCfId, type?) → FWorksheet
+        │   ├── setConditionalFormattingRule(cfId, rule) → FWorksheet
+        │   └── clearConditionalFormatRules() → FWorksheet
         ├── getSheets() → FWorksheet[] (get all worksheets)
         ├── create() → FWorksheet
         └── deleteSheet() → boolean
@@ -139,6 +150,26 @@ async () => {
 - `univerAPI.Enum.BorderStyleTypes.THICK` - Thick line
 - `univerAPI.Enum.BorderStyleTypes.DASHED` - Dashed line
 - `univerAPI.Enum.BorderStyleTypes.DOUBLE` - Double line
+
+**Enum.ConditionFormatNumberOperatorEnum Constants** (for `setAverage()` and icon set operators):
+- `univerAPI.Enum.ConditionFormatNumberOperatorEnum.greaterThan`
+- `univerAPI.Enum.ConditionFormatNumberOperatorEnum.greaterThanOrEqual`
+- `univerAPI.Enum.ConditionFormatNumberOperatorEnum.lessThan`
+- `univerAPI.Enum.ConditionFormatNumberOperatorEnum.lessThanOrEqual`
+- `univerAPI.Enum.ConditionFormatNumberOperatorEnum.equal`
+- `univerAPI.Enum.ConditionFormatNumberOperatorEnum.notEqual`
+
+**Enum.ConditionFormatTimePeriodOperatorEnum Constants** (for `whenDate()`):
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.today`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.yesterday`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.tomorrow`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.last7Days`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.thisMonth`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.lastMonth`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.nextMonth`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.thisWeek`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.lastWeek`
+- `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.nextWeek`
 
 ---
 
@@ -239,6 +270,102 @@ async () => {
 - `mergeAcross() → void` - Merge cells horizontally
 - `mergeVertically() → void` - Merge cells vertically
 - `autoFill(destRange, fillType?) → Promise<void>` - Auto-fill data from source range to destination range. destRange must include source. fillType: 'SERIES' (default) or 'COPY'. Async method, use await
+
+
+---
+
+## FConditionalFormattingBuilder (Conditional Formatting Rule Builder)
+**How to get**: `fWorksheet.newConditionalFormattingRule()` or `fRange.createConditionalFormattingRule()`
+
+Two entry points:
+- `fWorksheet.newConditionalFormattingRule()` — worksheet-level, requires `.setRanges()` manually
+- `fRange.createConditionalFormattingRule()` — range-level, range is auto-bound (shortcut)
+
+The builder uses a **two-step chain pattern**:
+1. **Condition** (`when*` / `set*` methods) — defines the trigger condition
+2. **Style** (`setBackground`, `setBold`, etc.) — defines the visual format when triggered
+3. **Finalize** — `.setRanges([...])` then `.build()`
+
+### Rule Type 1: Highlight Cell (condition + style)
+
+**Number conditions** (parameter is a number):
+- `whenNumberGreaterThan(value)` — value > N
+- `whenNumberGreaterThanOrEqualTo(value)` — value >= N
+- `whenNumberLessThan(value)` — value < N
+- `whenNumberLessThanOrEqualTo(value)` — value <= N
+- `whenNumberEqualTo(value)` — value == N
+- `whenNumberNotEqualTo(value)` — value != N
+- `whenNumberBetween(start, end)` — start <= value <= end (order-independent)
+- `whenNumberNotBetween(start, end)` — value outside range
+
+**Text conditions** (parameter is a string):
+- `whenTextContains(text)` — cell text contains substring
+- `whenTextDoesNotContain(text)` — cell text does not contain substring
+- `whenTextStartsWith(text)` — cell text starts with prefix
+- `whenTextEndsWith(text)` — cell text ends with suffix
+- `whenTextEqualTo(text)` — cell text matches exactly
+- `whenCellEmpty()` — cell is empty
+- `whenCellNotEmpty()` — cell has content
+
+**Date/Time conditions**:
+- `whenDate(operator)` — use `univerAPI.Enum.ConditionFormatTimePeriodOperatorEnum.*` (e.g., `.last7Days`, `.today`)
+
+**Formula condition**:
+- `whenFormulaSatisfied(formulaString)` — custom formula (must start with `=`)
+
+**Special conditions** (no parameter):
+- `setAverage(operator)` — above/below average, use `univerAPI.Enum.ConditionFormatNumberOperatorEnum.*`
+- `setUniqueValues()` — highlight unique values
+- `setDuplicateValues()` — highlight duplicate values
+- `setRank({ isBottom, isPercent, value })` — top/bottom N or N%
+
+**Style methods** (chain after condition, only for Highlight Cell rules):
+- `setBackground(color)` — background color (CSS string, e.g., `'#FF0000'`, `'red'`; omit or pass `undefined` to remove)
+- `setFontColor(color)` — font color (CSS string)
+- `setBold(isBold)` — bold (boolean)
+- `setItalic(isItalic)` — italic (boolean)
+- `setUnderline(isUnderline)` — underline (boolean)
+- `setStrikethrough(isStrikethrough)` — strikethrough (boolean)
+
+**Range and finalize** (all rule types):
+- `setRanges([fRange.getRange()])` — set target range (required for worksheet-level builder; auto-bound for range-level builder)
+- `build()` — build the rule object (pass to `addConditionalFormattingRule`)
+- `copy()` — deep clone the builder (new cfId generated automatically)
+
+### Rule Type 2: Data Bar
+
+- `setDataBar({ min, max, positiveColor, nativeColor, isGradient?, isShowValue? })` — set data bar rule
+  - `min` / `max`: `{ type: 'num' | 'min' | 'max' | 'percent' | 'percentile' | 'formula', value?: number | string }`
+  - `positiveColor`: CSS color string for positive values
+  - `nativeColor`: CSS color string for negative values
+  - `isGradient`: boolean (default true)
+  - `isShowValue`: boolean (default true)
+
+### Rule Type 3: Color Scale
+
+- `setColorScale([...])` — set color scale rule
+  - Array of `{ index: number, color: string, value: { type, value? } }`
+
+### Rule Type 4: Icon Set
+
+- `setIconSet({ iconConfigs, isShowValue })` — set icon set rule
+  - `iconConfigs`: array of `{ iconType: string, iconId: string, operator, value }`
+  - `isShowValue`: boolean
+  - Use `builder.getIconMap()` to discover available icon types
+
+### Worksheet-level management methods:
+- `fWorksheet.addConditionalFormattingRule(rule)` — add a rule (pass the built rule object)
+- `fWorksheet.getConditionalFormattingRules()` — get all rules for the sheet
+- `fWorksheet.deleteConditionalFormattingRule(cfId)` — delete by rule ID
+- `fWorksheet.setConditionalFormattingRule(cfId, rule)` — update existing rule
+- `fWorksheet.moveConditionalFormattingRule(cfId, toCfId, type?)` — reorder (type: 'before' | 'after', default 'after')
+- `fWorksheet.clearConditionalFormatRules()` — clear all rules on sheet
+
+### Range-level methods:
+- `fRange.getConditionalFormattingRules()` — get rules intersecting this range
+- `fRange.clearConditionalFormatRules()` — clear rules for this range
+
+**Important**: `addConditionalFormattingRule` returns the rule ID (cfId) is inside the built rule object. To get it: `const rules = fWorksheet.getConditionalFormattingRules(); rules[0].cfId`
 
 
 ---
@@ -498,6 +625,58 @@ Set number formats for range with values
   ])
 
   return { success: true, formattedRange: 'A1:B3' }
+}
+```
+
+## Example 12: Highlight cells greater than a value
+Red background for values > 100
+```javascript
+() => {
+  const workbook = univerAPI.getActiveWorkbook()
+  const sheet = workbook.getSheetByName('Sales')
+  if (!sheet) return { success: false, error: 'Sheet "Sales" not found' }
+
+  const fRange = sheet.getRange('B2:B100')
+  const rule = fRange.createConditionalFormattingRule()
+    .whenNumberGreaterThan(100)
+    .setBackground('#FF0000')
+    .build()
+
+  sheet.addConditionalFormattingRule(rule)
+  return { success: true }
+}
+```
+
+## Example 13: Data bar and color scale
+```javascript
+() => {
+  const workbook = univerAPI.getActiveWorkbook()
+  const sheet = workbook.getSheetByName('Dashboard')
+  if (!sheet) return { success: false, error: 'Sheet not found' }
+
+  // Data bar: auto-range green/red gradient
+  const barRange = sheet.getRange('C2:C50')
+  sheet.addConditionalFormattingRule(
+    sheet.newConditionalFormattingRule()
+      .setDataBar({ min: { type: 'min' }, max: { type: 'max' }, positiveColor: '#638EC6', nativeColor: '#FF0000' })
+      .setRanges([barRange.getRange()])
+      .build()
+  )
+
+  // Color scale: 3-point green-yellow-red
+  const scaleRange = sheet.getRange('D2:D50')
+  sheet.addConditionalFormattingRule(
+    sheet.newConditionalFormattingRule()
+      .setColorScale([
+        { index: 0, color: '#00FF00', value: { type: 'num', value: 0 } },
+        { index: 1, color: '#FFFF00', value: { type: 'num', value: 50 } },
+        { index: 2, color: '#FF0000', value: { type: 'num', value: 100 } },
+      ])
+      .setRanges([scaleRange.getRange()])
+      .build()
+  )
+
+  return { success: true }
 }
 ```
 
