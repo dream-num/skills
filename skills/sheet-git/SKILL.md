@@ -53,6 +53,7 @@ Use `sheet-git` when the task becomes:
 - Follow refusal output literally. `fetch origin`, `pull origin`, and `push origin` already emit the next safe command when collaboration state is blocked.
 - Treat `draft-replay-required` as the preserved-draft path: `pull origin` should keep Alice local draft and replay it onto the newer remote base when the shape is safe.
 - Treat `--force-to-latest` as an explicit escape hatch, not the default answer for transformable local draft.
+- In the common gold-user-story case of `remote ahead + local unsynced commits 0`, ordinary `pull origin` is the main path even if `status` still shows snapshot-only capture noise.
 
 ## First path
 
@@ -68,6 +69,18 @@ If the task is already in review or origin sync, do not guess. Read the current 
 - `sheet-git proposal status <proposal>`
 - `sheet-git proposal comments <proposal>`
 - `sheet-git fetch origin <entry-id>`
+
+When `fetch origin` reports:
+
+- `remote ahead yes`
+- `local unsynced commits 0`
+- `pull readiness ready`
+
+prefer plain:
+
+- `sheet-git pull origin <entry-id>`
+
+Do not escalate to `--force-to-latest` unless the refusal path or recovery state explicitly requires it.
 
 ## Highest-signal playbooks
 
@@ -111,6 +124,11 @@ Read [references/hosted-review.md](references/hosted-review.md) when the task in
 - `sheet-git fetch origin <entry-id>`
 - `sheet-git pull origin <proposal-or-entry-id>`
 
+Hosted gate rule:
+
+- do not assume you must run `proposal status` before `push origin`
+- `push origin` now refreshes hosted approval state on the main path
+
 Read [references/recovery.md](references/recovery.md) when `fetch`, `pull`, or `push` refuses and emits a next step.
 
 ## Quick routes
@@ -153,3 +171,4 @@ For exact command semantics and output expectations, read [references/command-su
 - Drop to raw cell diff or blame only when the summary is not enough.
 - When reporting a blocked state, include the exact refusal text and the suggested next command.
 - In multi-repo situations, always report the hosted scope as `{owner}/{repo}`, not just the proposal id.
+- Treat `status` / `diff` snapshot-only blocked output as capture/staging context, not automatically as a veto on safe `pull origin`.
