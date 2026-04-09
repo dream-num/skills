@@ -1,8 +1,8 @@
-# Script Fallback Playbook
+# Script JS Playbook
 
 ## When to use
 
-Use `script js` when workbook-native API logic is the clearest bounded path, or when built-in `agent-sheet` commands cannot express the requested workbook change cleanly.
+Use `script js` when you need full univerAPI access for arbitrary workbook operations — formatting, layout, multi-step logic, or any capability that built-in commands do not expose directly.
 
 Typical reasons:
 
@@ -15,13 +15,12 @@ Typical reasons:
 
 Do not use `script js` for:
 
-- ordinary cell writes, table writeback, or sheet lifecycle already covered by built-in commands
+- simple cell writes, table writeback, or sheet lifecycle already covered by built-in commands — they are more predictable and self-verifying
 - broad mutations with unclear workbook boundaries
 - guessed API methods
 
 ## Before you run it
 
-- state why built-in commands are not enough
 - list the touched sheets and A1 ranges
 - decide how the result will be verified
 - read [../references/js-api-minimal.md](../references/js-api-minimal.md) and stay inside the documented subset
@@ -119,7 +118,6 @@ Stop and escalate when:
 
 Include:
 
-- why built-in commands were insufficient
 - exact workbook boundary touched
 - what the script changed or returned
 - verification outcome

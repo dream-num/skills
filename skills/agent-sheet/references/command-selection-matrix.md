@@ -13,7 +13,7 @@ Use this before writing so the mutation path stays small and verifiable.
 | build a shell pipeline from workbook data | `read range --to-stdout` plus shell tools | keeps workbook read path on `agent-sheet` |
 | import a source workbook and continue editing | `file import` | resolves a local entry first |
 | export a final handoff file | `file export --output <path>` | explicit final path |
-| change formatting or a missing workbook-native behavior | `script js` | fallback only when built-ins do not express it cleanly |
+| change formatting, layout, or access any univerAPI capability | `script js` | full univerAPI access when built-in commands do not cover it |
 
 ## Fast heuristics
 

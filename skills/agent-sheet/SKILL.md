@@ -31,15 +31,16 @@ metadata:
 ## Use it for
 
 - resolving a workbook and keeping the target explicit with `--entry-id`
+- executing arbitrary workbook operations via `script js` with full univerAPI access
 - inspecting workbook structure, sheets, ranges, formulas, and search hits
 - writing sparse cells, bounded ranges, anchored review tables, or formula fills
 - importing a local workbook, continuing edits, and exporting a final file
 - streaming workbook data through shell tools, then writing verified results back
-- using bounded `script js` only when built-in commands do not express the workbook change cleanly
 
 ## Do not default to
 
 - reopening the workbook with a local workbook library for reads or writes that `agent-sheet` already covers
+- using `script js` for simple cell writes, table writeback, or sheet lifecycle that built-in commands handle more predictably
 - using shell transforms when a direct `write cells`, `write range`, `write table`, `write fill`, or `sheet ...` command is clearer
 - trusting metadata-only surfaces such as `file info` as proof of workbook structure
 - finishing after a write without a task-specific verification pass
@@ -80,7 +81,7 @@ Read [references/gotchas.md](references/gotchas.md) when the task looks routine 
 | verify a mutation, shell roundtrip, or handoff | [playbooks/15-verify.md](playbooks/15-verify.md) |
 | create, import, open, or export a local workbook | [playbooks/30-file-lifecycle.md](playbooks/30-file-lifecycle.md) |
 | stream workbook data through shell tools | [references/shell-patterns.md](references/shell-patterns.md) |
-| formatting, layout, or other built-in command gaps | [playbooks/40-script-fallback.md](playbooks/40-script-fallback.md) |
+| formatting, layout, or arbitrary workbook-native operations | [playbooks/40-script-js.md](playbooks/40-script-js.md) |
 | import/handoff, `entryId` targeting, `file info`, or shell verification edge cases | [references/gotchas.md](references/gotchas.md) |
 
 ## Output style
@@ -114,7 +115,7 @@ Read only the file needed for the task:
 | [playbooks/15-verify.md](playbooks/15-verify.md) | proving a mutation or handoff actually succeeded |
 | [playbooks/20-write-safe.md](playbooks/20-write-safe.md) | choosing the smallest safe mutation path |
 | [playbooks/30-file-lifecycle.md](playbooks/30-file-lifecycle.md) | creating, importing, opening, or exporting a local workbook |
-| [playbooks/40-script-fallback.md](playbooks/40-script-fallback.md) | built-in commands cannot express the requested workbook change |
+| [playbooks/40-script-js.md](playbooks/40-script-js.md) | built-in commands cannot express the requested workbook change |
 | [references/shell-patterns.md](references/shell-patterns.md) | the task is naturally a shell pipeline |
 | [references/gotchas.md](references/gotchas.md) | the task involves common real-world failure modes |
 | [references/js-api-minimal.md](references/js-api-minimal.md) | `script js` is necessary and must stay tightly bounded |
