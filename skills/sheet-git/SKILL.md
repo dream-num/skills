@@ -46,14 +46,14 @@ Use `sheet-git` when the task becomes:
 - Operate on persisted local entry files only.
 - Start from `agent-sheet` if the workbook content itself still needs to change.
 - Treat `push review` as handoff only. It publishes to hosted review; it does not approve.
-- Treat `proposal comments` as the agent-facing review surface. It returns JSON packets.
+- Treat `proposal comments` as the agent-facing review surface. It returns JSON packets, and the default read is now a continuity view: current revision plus unresolved carried-forward threads from the same review session.
 - Treat `push origin` as the real origin materialization step.
 - Treat `push origin --resume <replay-run>` as replay continuation, not a separate merge system.
-- Treat hosted web `Merge` as review closure plus a materialization handoff. Alice may still need `sheet-git push origin <proposal>` unless a daemon claims the request.
+- Treat hosted web as an approve-only human review surface. The main human routes are `/` for the simple home page, `/owners/{owner}/repos/{repo}/reviews` for the scoped list, and `/owners/{owner}/repos/{repo}/reviews/sessions/{reviewId}` for review detail.
 - Follow refusal output literally. `fetch origin`, `pull origin`, and `push origin` already emit the next safe command when collaboration state is blocked.
 - Treat `draft-replay-required` as the preserved-draft path: `pull origin` should keep Alice local draft and replay it onto the newer remote base when the shape is safe.
 - Treat `--force-to-latest` as an explicit escape hatch, not the default answer for transformable local draft.
-- In the common gold-user-story case of `remote ahead + local unsynced commits 0`, ordinary `pull origin` is the main path even if `status` still shows snapshot-only capture noise.
+- In the common gold-user-story case of `remote ahead + local unsynced commits 0`, ordinary `pull origin` is the main path even if `status` still shows staging constraints.
 
 ## First path
 
@@ -92,6 +92,12 @@ Do not escalate to `--force-to-latest` unless the refusal path or recovery state
 - `sheet-git commit --message "..."`
 - `sheet-git proposal create`
 
+Stage behavior:
+
+- `stage` auto-flushes live dirty local workbook state when it is safe
+- `stage` also attempts to auto-reconcile simple persisted drift into a replayable local batch
+- if it still refuses, treat that as “the current workbook state could not be reconstructed as a replayable local change”, not as a signal that pull is necessarily blocked
+
 ### Start from an existing hosted repo
 
 - `sheet-git clone <owner>/<repo> --base-url <base-url>`
@@ -111,7 +117,8 @@ Read [references/hosted-review.md](references/hosted-review.md) when the task in
 ### Pull review feedback
 
 - `sheet-git proposal comments <proposal>`
-- default output is JSON review packet
+- default output is JSON review packet with continuity semantics
+- current revision threads stay marked as current, and unresolved old threads stay visible as carried-forward items
 - selection-based comments may include `selectionAttachment`
 - revise locally, commit again, then `sheet-git push review <same proposal>`
 
@@ -171,4 +178,4 @@ For exact command semantics and output expectations, read [references/command-su
 - Drop to raw cell diff or blame only when the summary is not enough.
 - When reporting a blocked state, include the exact refusal text and the suggested next command.
 - In multi-repo situations, always report the hosted scope as `{owner}/{repo}`, not just the proposal id.
-- Treat `status` / `diff` snapshot-only blocked output as capture/staging context, not automatically as a veto on safe `pull origin`.
+- Treat `status` / `diff` staging-constraint output as capture/staging context, not automatically as a veto on safe `pull origin`.

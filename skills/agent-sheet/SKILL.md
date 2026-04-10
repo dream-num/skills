@@ -32,7 +32,6 @@ Current product reality:
 
 - treat `agent-sheet` as a **local-first editor**
 - do not rely on it as a direct remote-origin editor
-- `file attach` / remote-oriented legacy flows are not the default path for syncing reviewed origin changes
 
 ## Use it for
 
@@ -70,7 +69,6 @@ Current product reality:
 ## Highest-signal gotchas
 
 - imported local entries can be healthy even when later `file info` shows `unitId: null`; keep operating on `entryId`
-- `origin attach` binds remote identity but does not prove local materialization to the observed remote revision
 - do not use `agent-sheet` as the tool for “user directly edits origin workbook”; that actor should be a real remote user in the browser
 - a read-only `script js` after daemon restart can reconcile snapshot state without fabricating a local batch
 - `file info` is metadata only; it does not prove sheet count, sheet names, or formula state

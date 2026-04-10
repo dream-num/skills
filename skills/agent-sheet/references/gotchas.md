@@ -25,11 +25,6 @@ Use this when the task looks straightforward but real-world workflows have hidde
 - it is not sufficient for sheet count, sheet names, formula state, or handoff structure
 - use `sheet list` or `inspect workbook` for workbook-visible structure
 
-## `origin attach` vs local materialization
-
-- `origin attach` binds remote identity; it does not prove the local workbook is already materialized to the observed remote revision
-- treat observed remote revision and confirmed local materialization as different states
-- if the workflow moves from attach into collaboration, let `sheet-git fetch origin` and `sheet-git pull origin` drive the sync step instead of assuming attach was enough
 
 ## Shell roundtrip verification
 

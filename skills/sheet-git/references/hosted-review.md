@@ -84,36 +84,37 @@ Alice pulls comments through:
 Important:
 
 - this is the machine-readable surface
+- default output is a same-session continuity view, not just “latest revision only”
+- unresolved older threads remain visible as carried-forward items while keeping their original `revisionId`
 - comments may carry semantic locators
 - comments may also carry `selectionAttachment` for exact ranges
 
-## Approval and merge semantics
+## Approval semantics
 
 ### CLI approval
 
 `sheet-git proposal approve <proposal>` is a real hosted review action from CLI.
 
-### Web merge
+### Web approval / human review
 
-Hosted web `Merge` closes the review record.
+Hosted web is now an **approve-only** human review surface.
 
 Current model:
 
-- merge creates a hosted materialization request
-- review is merged
-- origin may still be waiting
+- human detail can comment
+- human detail can approve
+- origin materialization is still a separate `sheet-git push origin` step
 
-So after Bob merges, Alice may still need:
+So after Bob approves, Alice may still need:
 
 - `sheet-git push origin <proposal>`
-
-or a daemon may claim the materialization request and run that command.
 
 ## Materialization handoff
 
 When hosted review shows:
 
-- `Waiting for origin materialization`
+- `Approved`
+- or `Waiting for origin replay`
 
 interpret it as:
 
@@ -130,7 +131,9 @@ The handoff can be completed by:
 
 When hosted web serves many repos:
 
-- `/review` is the repo index
+- `/` is the simple hosted home page
+- `/owners/{owner}/repos/{repo}/reviews` is the scoped list
+- `/owners/{owner}/repos/{repo}/reviews/sessions/{reviewId}` is the review detail page
 - each repo inbox/detail page stays scoped to one `{owner}/{repo}`
 - proposal ids are not globally unique enough by themselves; always carry the hosted scope with them when speaking about a review item
 

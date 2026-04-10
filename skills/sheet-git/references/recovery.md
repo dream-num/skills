@@ -98,7 +98,7 @@ This is not inconsistent. It means the review decision is closed but origin work
 ## What not to do
 
 - do not manually edit local repo workflow state files
-- do not assume hosted `Merge` means origin is already updated
+- do not assume hosted approval or hosted detail closure means origin is already updated
 - do not open a new proposal when the intent is a follow-up revision on the same proposal
 - do not bypass refusal output with ad hoc file mutations
 - do not ask for or simulate `rebase origin`; the current system routes recovery through `fetch` plus `pull`

@@ -55,16 +55,6 @@ Meaning:
 - keep the same proposal id when publishing a follow-up revision
 - do not implicitly approve
 
-## Multi-repo hosted notes
-
-- Hosted review scope is always `{owner}/{repo}`.
-- One hosted web instance may serve many scopes at once.
-- `/review` is the repo index when more than one hosted repo exists.
-- `remote add review` is the right entry for an existing local workspace that now needs hosted review.
-- `clone` is the right entry for starting from an existing hosted repo.
-- If the hosted repo exists but no origin workbook has been materialized yet, `clone` binds the hosted scope but does not restore workbook content yet.
-- Repo-local hosted scope configuration is the primary source of truth; ad-hoc env-only review routing is only a fallback.
-
 ## Origin collaboration
 
 - `sheet-git push origin --dry-run <proposal>`
@@ -88,7 +78,8 @@ Meaning:
 Default behavior:
 
 - outputs JSON
-- defaults to the latest revision and unresolved comments
+- defaults to a continuity view of the current review session
+- includes current revision threads plus unresolved carried-forward threads from older revisions
 - can be widened with `--revision-id <id>` and `--all`
 
 Typical fields worth reading:
@@ -97,6 +88,7 @@ Typical fields worth reading:
 - semantic `locator`
 - optional `selectionAttachment`
 - current vs requested revision metadata
+- `origin` / `isCurrentRevisionThread` continuity markers
 
 ## Command naming warnings
 
@@ -105,6 +97,7 @@ Typical fields worth reading:
 - The hosted scope command is `remote add review`, not ad-hoc env-only configuration.
 - The repo entry command is `clone`; it restores the latest materialized entries from hosted/origin into a fresh local workspace.
 - The origin step is still `push origin`, even when hosted review has already been merged.
+- Hosted web is approve-only; do not ask it to perform a product-level merge step.
 - `fetch origin` is the remote-ahead probe; `pull origin` is the replay/materialization step.
 - `draft-replay-required` is a real readiness state, not an error wording variant.
 - Do not ask for or invent `rebase origin`; it is not part of the current surface.
