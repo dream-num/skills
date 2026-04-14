@@ -25,6 +25,7 @@ Use this when the task looks straightforward but real-world workflows have hidde
 - it is not sufficient for sheet count, sheet names, formula state, or handoff structure
 - use `sheet list` or `inspect workbook` for workbook-visible structure
 
+
 ## Shell roundtrip verification
 
 - correct row count is not enough
@@ -49,6 +50,19 @@ Use this when the task looks straightforward but real-world workflows have hidde
 - imported workbooks can contain non-English sheet names and still work normally
 - quote the full range string in the shell, for example `--range '工作表1!A1:J3'`
 - verify imported templates with readback, not assumptions about the original file
+
+## Daemon restart boundaries
+
+- a read-only `script js` after daemon restart may reconcile local snapshot state without producing a collab-visible local batch
+- do not treat that as proof the workbook changed semantically
+- verify the workbook-visible result first, then inspect local-batch state only if the task actually depends on lineage production
+
+## Pending mutations vs on-disk mutations file
+
+- when a workbook is open through the daemon, the newest local draft may live in the git-snapshot-manager pending-mutation buffer before it is rewritten to `workbook.mutations.jsonl`
+- do not assume an empty on-disk mutations file means there is no live local draft
+- if the workflow depends on durable lineage production, use `persist` / `sheet-git stage` / `sheet-git pull origin` to force the system to serialize daemon-resident pending mutations into a real local batch
+- when debugging collaboration recovery, inspect both workbook-visible state and `local-batch` state before concluding the draft is gone
 
 ## Legacy surfaces
 

@@ -2,9 +2,19 @@
 
 Use this file when you need exact command names, not just the workflow shape.
 
+Mental model:
+
+- `proposal` is the Git-shaped local read model
+- hosted review truth is a review session
+- origin execution truth is a replay run
+
 ## Core repo commands
 
+- `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>`
+- `sheet-git clone <host>/<owner>/<repo> [<path>]`
+- `sheet-git clone <review-url> [<path>]`
 - `sheet-git init`
+- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
 - `sheet-git stage --entry-id <id> [--entry-id <id>...]`
 - `sheet-git stage --all`
 - `sheet-git reset --entry-id <id> [--entry-id <id>...]`
@@ -31,10 +41,16 @@ Use this file when you need exact command names, not just the workflow shape.
 
 ## Hosted review handoff
 
+- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
+- `sheet-git clone <owner>/<repo> [<path>] --base-url <base-url>`
+- `sheet-git clone <host>/<owner>/<repo> [<path>]`
+- `sheet-git clone <review-url> [<path>]`
 - `sheet-git push review <proposal>`
 
 Meaning:
 
+- bind the current local repo to one hosted review scope with `remote add review`
+- hydrate a fresh local workspace from an existing hosted review scope with `clone`
 - publish the current local proposal revision into hosted review
 - keep the same proposal id when publishing a follow-up revision
 - do not implicitly approve
@@ -44,11 +60,16 @@ Meaning:
 - `sheet-git push origin --dry-run <proposal>`
 - `sheet-git push origin --explain <proposal>`
 - `sheet-git push origin <proposal>`
-- `sheet-git push origin --resume <merge-run>`
+- `sheet-git push origin --resume <replay-run>`
+- `sheet-git fetch origin <entry-id>`
 - `sheet-git pull origin <proposal-or-entry-id>`
 - `sheet-git pull origin --force-to-latest <proposal-or-entry-id>`
-- `sheet-git fetch origin <entry-id>`
-- `sheet-git rebase origin <entry-id>`
+
+Meaning:
+
+- `fetch origin` can now report `draft-replay-required` when local unstaged draft should be preserved across pull
+- in that case the normal next command is still `sheet-git pull origin <proposal-or-entry-id>`
+- `--force-to-latest` is the destructive fallback for unsafe repair, not the default answer for transformable local draft
 
 ## Agent-facing review packet
 
@@ -57,7 +78,8 @@ Meaning:
 Default behavior:
 
 - outputs JSON
-- defaults to the latest revision and unresolved comments
+- defaults to a continuity view of the current review session
+- includes current revision threads plus unresolved carried-forward threads from older revisions
 - can be widened with `--revision-id <id>` and `--all`
 
 Typical fields worth reading:
@@ -66,9 +88,16 @@ Typical fields worth reading:
 - semantic `locator`
 - optional `selectionAttachment`
 - current vs requested revision metadata
+- `origin` / `isCurrentRevisionThread` continuity markers
 
 ## Command naming warnings
 
 - The command is `history`, not `log`.
 - The hosted handoff command is `push review`, not `proposal publish`.
+- The hosted scope command is `remote add review`, not ad-hoc env-only configuration.
+- The repo entry command is `clone`; it restores the latest materialized entries from hosted/origin into a fresh local workspace.
 - The origin step is still `push origin`, even when hosted review has already been merged.
+- Hosted web is approve-only; do not ask it to perform a product-level merge step.
+- `fetch origin` is the remote-ahead probe; `pull origin` is the replay/materialization step.
+- `draft-replay-required` is a real readiness state, not an error wording variant.
+- Do not ask for or invent `rebase origin`; it is not part of the current surface.

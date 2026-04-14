@@ -2,6 +2,13 @@
 
 Use this file when `sheet-git` refuses a command or collaboration state is unclear.
 
+Current model:
+
+- `fetch origin` tells you whether remote moved
+- `pull origin` materializes remote state and absorbs replay when needed
+- `push origin --resume <replay-run>` continues an interrupted replay
+- if `fetch origin` reports `draft-replay-required`, the default path is still `pull origin`, not `--force-to-latest`
+
 ## Rule zero
 
 Do not work around refusal text.
@@ -43,13 +50,22 @@ Possible causes:
 - local proposal is still draft
 - local materialization drift requires repair
 - another collaborator pushed to origin first
+- local staged work exists and cannot be safely preserved by the current path
+
+Another important case:
+
+- `fetch origin` can report `draft-replay-required`
+- this means local unstaged draft is transformable and should be preserved across pull
+- in that case the first next step is still `sheet-git pull origin <entry-id>`
+- do not jump straight to `--force-to-latest` unless the refusal/output explicitly says the draft shape is unsafe
 
 Typical next steps:
 
 - `sheet-git proposal status <proposal>`
 - `sheet-git fetch origin <entry-id>`
-- `sheet-git rebase origin <entry-id>`
-- `sheet-git pull origin --force-to-latest <proposal-or-entry-id>`
+- `sheet-git pull origin <proposal-or-entry-id>`
+- `sheet-git pull origin --force-to-latest <proposal-or-entry-id>` only when the refusal/output explicitly routes you there
+- `sheet-git push origin --resume <replay-run>` when the refusal points at an interrupted replay
 
 Choose the command suggested by the refusal message first.
 
@@ -77,11 +93,13 @@ This is not inconsistent. It means the review decision is closed but origin work
 2. `sheet-git proposal status <proposal>` if a proposal is involved
 3. `sheet-git proposal comments <proposal>` if review feedback is involved
 4. `sheet-git fetch origin <entry-id>` if remote collaboration may have moved
-5. only then consider `pull origin`, `rebase origin`, or `push origin`
+5. only then consider `pull origin`, `push origin --resume`, or `push origin`
 
 ## What not to do
 
 - do not manually edit local repo workflow state files
-- do not assume hosted `Merge` means origin is already updated
+- do not assume hosted approval or hosted detail closure means origin is already updated
 - do not open a new proposal when the intent is a follow-up revision on the same proposal
 - do not bypass refusal output with ad hoc file mutations
+- do not ask for or simulate `rebase origin`; the current system routes recovery through `fetch` plus `pull`
+- do not treat `--force-to-latest` as the normal fix for local draft anymore; it is the destructive fallback

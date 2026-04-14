@@ -2,6 +2,12 @@
 
 Use this file when the task spans Alice CLI, Bob hosted web review, proposal revisions, or materialization handoff.
 
+Current authority split:
+
+- local CLI speaks in proposal ids
+- hosted review truth is a review session
+- origin execution truth is a replay run
+
 ## Collaboration model
 
 - Alice edits locally with `agent-sheet`.
@@ -9,6 +15,32 @@ Use this file when the task spans Alice CLI, Bob hosted web review, proposal rev
 - Bob reviews in hosted web.
 - Hosted review is the review authority.
 - Origin is the workbook materialization authority.
+- Hosted scope is `{owner}/{repo}`, and one hosted web may contain many repos.
+
+## Entering a hosted repo
+
+### Existing local workspace -> hosted review
+
+If Alice already has a local workspace and wants review for it:
+
+- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
+- `sheet-git push review <proposal>`
+
+This is the first-path for a brand new hosted repo.
+
+### Existing hosted repo -> fresh local workspace
+
+If Alice or Charlie starts from a hosted repo that already exists:
+
+- `sheet-git clone <owner>/<repo> --base-url <base-url>`
+- or `sheet-git clone <host>/<owner>/<repo>`
+- or `sheet-git clone <review-url>`
+
+This creates a fresh local workspace and binds it to that hosted scope.
+
+If the repo has already materialized an origin workbook, clone restores the latest materialized entries.
+
+If the repo exists but has not materialized origin yet, clone still binds the hosted scope, but there may be no workbook content to restore yet.
 
 ## Proposal lifecycle
 
@@ -28,7 +60,7 @@ Alice hands the proposal to Bob with:
 
 - `sheet-git push review <proposal>`
 
-That creates or updates the hosted review proposal and keeps the proposal in `needs-review`.
+That creates or updates the hosted review session under the same proposal-shaped local handle and keeps it in `needs-review`.
 
 ### 3. Follow-up revisions
 
@@ -39,7 +71,7 @@ If Alice revises after feedback:
 - `sheet-git commit`
 - `sheet-git push review <same proposal>`
 
-That should produce hosted `r2`, `r3`, and so on under the same proposal.
+That should produce hosted `r2`, `r3`, and so on under the same review session.
 
 ## Comment loop
 
@@ -52,36 +84,37 @@ Alice pulls comments through:
 Important:
 
 - this is the machine-readable surface
+- default output is a same-session continuity view, not just “latest revision only”
+- unresolved older threads remain visible as carried-forward items while keeping their original `revisionId`
 - comments may carry semantic locators
 - comments may also carry `selectionAttachment` for exact ranges
 
-## Approval and merge semantics
+## Approval semantics
 
 ### CLI approval
 
 `sheet-git proposal approve <proposal>` is a real hosted review action from CLI.
 
-### Web merge
+### Web approval / human review
 
-Hosted web `Merge` closes the review record.
+Hosted web is now an **approve-only** human review surface.
 
 Current model:
 
-- merge creates a hosted materialization request
-- review is merged
-- origin may still be waiting
+- human detail can comment
+- human detail can approve
+- origin materialization is still a separate `sheet-git push origin` step
 
-So after Bob merges, Alice may still need:
+So after Bob approves, Alice may still need:
 
 - `sheet-git push origin <proposal>`
-
-or a daemon may claim the materialization request and run that command.
 
 ## Materialization handoff
 
 When hosted review shows:
 
-- `Waiting for origin materialization`
+- `Approved`
+- or `Waiting for origin replay`
 
 interpret it as:
 
@@ -93,6 +126,16 @@ The handoff can be completed by:
 
 - Alice running `sheet-git push origin <proposal>`
 - or a daemon claiming the request and running the same command
+
+## Multi-repo hosted UI
+
+When hosted web serves many repos:
+
+- `/` is the simple hosted home page
+- `/owners/{owner}/repos/{repo}/reviews` is the scoped list
+- `/owners/{owner}/repos/{repo}/reviews/sessions/{reviewId}` is the review detail page
+- each repo inbox/detail page stays scoped to one `{owner}/{repo}`
+- proposal ids are not globally unique enough by themselves; always carry the hosted scope with them when speaking about a review item
 
 ## Best reading order during collaboration
 
