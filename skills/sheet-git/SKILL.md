@@ -77,7 +77,10 @@ Use `agent-sheet` to create or edit workbook content. Use `sheet-git` after the 
 - `sheet-git fetch origin <entry-id>`
 - `sheet-git pull origin <proposal-or-entry-id>`
 - `sheet-git push origin <proposal>`
+- `sheet-git push origin --skip-review-check <proposal>`
 - `sheet-git push origin --resume <replay-run>`
+
+By default, `sheet-git push origin <proposal>` checks hosted approval before replaying. Use `--skip-review-check` only when you need the explicit bypass path.
 
 Follow refusal output literally. If `sheet-git` tells you the next safe command, use that instead of improvising.
 
@@ -97,9 +100,9 @@ Follow refusal output literally. If `sheet-git` tells you the next safe command,
 | inspect proposal state | `sheet-git proposal status <proposal>` |
 | publish to hosted review | `sheet-git push review <proposal>` |
 | read review comments | `sheet-git proposal comments <proposal>` |
-| approve from CLI | `sheet-git proposal approve <proposal> [--actor <name>]` |
 | preview origin materialization | `sheet-git push origin --dry-run <proposal>` |
 | materialize to origin | `sheet-git push origin <proposal>` |
+| bypass hosted review check | `sheet-git push origin --skip-review-check <proposal>` |
 | resume interrupted replay | `sheet-git push origin --resume <replay-run>` |
 | inspect remote-ahead state | `sheet-git fetch origin <entry-id>` |
 | pull remote changes locally | `sheet-git pull origin <proposal-or-entry-id>` |

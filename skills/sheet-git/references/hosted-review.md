@@ -13,9 +13,9 @@ Use this file for the normal hosted review path in `sheet-git`.
 
 ## Approval and origin
 
-- `sheet-git proposal approve <proposal> [--actor <name>]` is the CLI approval command.
-- hosted approval and origin materialization are separate steps.
-- after approval, origin work still goes through `sheet-git push origin <proposal>`.
+- hosted approval and origin materialization are separate steps, but `sheet-git push origin <proposal>` checks hosted approval by default before replaying.
+- `sheet-git push origin --skip-review-check <proposal>` is the explicit bypass path.
+- after replay success, `sheet-git` writes back hosted merged state and closes out the local merged/proposal state in the same flow.
 
 ## Existing hosted repo
 
