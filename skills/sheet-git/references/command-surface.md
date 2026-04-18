@@ -33,11 +33,12 @@ Use these after capture, not before workbook editing.
 ## Happy path 4: sync with origin
 
 - `sheet-git push origin <proposal>`
+- `sheet-git push origin --skip-review-check <proposal>`
 - `sheet-git fetch origin <entry-id>`
 - `sheet-git pull origin <proposal-or-entry-id>`
 - `sheet-git push origin --resume <replay-run>`
 
-Use `fetch` / `pull` when remote may have moved. Use `push origin` after review approval or when origin materialization is the goal.
+Use `fetch` / `pull` when remote may have moved. Use `push origin` when origin materialization is the goal; it checks hosted approval by default before replaying. Use `--skip-review-check` only for the explicit bypass path.
 
 ## Happy path 5: join an existing remote workbook
 
@@ -54,10 +55,10 @@ Use `fetch` / `pull` when remote may have moved. Use `push origin` after review 
 - `sheet-git proposal show <proposal>`
 - `sheet-git proposal status <proposal>`
 - `sheet-git proposal comments <proposal>`
-- `sheet-git proposal approve <proposal> [--actor <name>]`
 - `sheet-git pull origin --force-to-latest <proposal-or-entry-id>`
 - `sheet-git push origin --dry-run <proposal>`
 - `sheet-git push origin --explain <proposal>`
+- `sheet-git push origin --skip-review-check <proposal>`
 
 Use these only when the happy path needs inspection, preview, reset, or destructive repair.
 
