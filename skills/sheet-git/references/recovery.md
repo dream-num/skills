@@ -1,105 +1,44 @@
-# Recovery and Refusal Guide
+# Recovery
 
-Use this file when `sheet-git` refuses a command or collaboration state is unclear.
+Use this file when a `sheet-git` happy path stops midway.
 
-Current model:
+## Rule
 
-- `fetch origin` tells you whether remote moved
-- `pull origin` materializes remote state and absorbs replay when needed
-- `push origin --resume <replay-run>` continues an interrupted replay
-- if `fetch origin` reports `draft-replay-required`, the default path is still `pull origin`, not `--force-to-latest`
+Follow the refusal output literally. If `sheet-git` gives a next command, prefer that command.
 
-## Rule zero
+## Happy path breaks and next steps
 
-Do not work around refusal text.
+### Local capture already happened, but the proposal is not in hosted review
 
-`sheet-git` already emits the next safe command in many blocked states. Quote that next command back to the user and follow it.
+- next: `sheet-git push review <proposal>`
 
-## Common blocked states
+### Review is done, but origin is still pending
 
-### Proposal exists locally but Bob cannot see it
+- next: `sheet-git push origin <proposal>`
 
-Cause:
+### Remote changed before local sync finished
 
-- Alice created a local proposal
-- Alice did not publish it to hosted review
+- check: `sheet-git fetch origin <entry-id>`
+- then: `sheet-git pull origin <proposal-or-entry-id>` if that is the suggested path
 
-Next step:
+### Origin replay was interrupted
 
-- `sheet-git push review <proposal>`
+- next: `sheet-git push origin --resume <replay-run>`
 
-### Hosted review is approved or merged, but origin is still pending
+### Local workspace was not attached to the existing remote workbook
 
-Symptoms:
+- next: `sheet-git origin bind-existing <remote-workbook-id>`
 
-- `proposal status` shows hosted overlay
-- `pull origin <proposal>` refuses
-- status mentions waiting or failed materialization
-
-Next step:
-
-- `sheet-git push origin <proposal>`
-
-If hosted review already merged and a daemon/CLI claim is in play, let the claimant finish instead of racing it.
-
-### `pull origin` refuses because collaboration moved ahead
-
-Possible causes:
-
-- hosted review advanced to a newer revision
-- local proposal is still draft
-- local materialization drift requires repair
-- another collaborator pushed to origin first
-- local staged work exists and cannot be safely preserved by the current path
-
-Another important case:
-
-- `fetch origin` can report `draft-replay-required`
-- this means local unstaged draft is transformable and should be preserved across pull
-- in that case the first next step is still `sheet-git pull origin <entry-id>`
-- do not jump straight to `--force-to-latest` unless the refusal/output explicitly says the draft shape is unsafe
-
-Typical next steps:
-
-- `sheet-git proposal status <proposal>`
-- `sheet-git fetch origin <entry-id>`
-- `sheet-git pull origin <proposal-or-entry-id>`
-- `sheet-git pull origin --force-to-latest <proposal-or-entry-id>` only when the refusal/output explicitly routes you there
-- `sheet-git push origin --resume <replay-run>` when the refusal points at an interrupted replay
-
-Choose the command suggested by the refusal message first.
-
-### First push to origin on an unattached workbook
-
-Current expectation:
-
-- `push origin` can bootstrap the remote workbook
-- first successful push should bind a `remoteWorkbookId`
-
-Do not require a pre-existing remote workbook id before trying the first safe `push origin`.
-
-### Hosted review merged but inbox/detail still needs attention
-
-Interpretation:
-
-- review closure happened
-- materialization is waiting, dispatching, or failed
-
-This is not inconsistent. It means the review decision is closed but origin work is still outstanding.
-
-## Practical debugging order
+## Read in this order
 
 1. `sheet-git status`
 2. `sheet-git proposal status <proposal>` if a proposal is involved
 3. `sheet-git proposal comments <proposal>` if review feedback is involved
-4. `sheet-git fetch origin <entry-id>` if remote collaboration may have moved
-5. only then consider `pull origin`, `push origin --resume`, or `push origin`
+4. `sheet-git fetch origin <entry-id>` if remote sync is involved
 
-## What not to do
+## Do not do
 
-- do not manually edit local repo workflow state files
-- do not assume hosted approval or hosted detail closure means origin is already updated
-- do not open a new proposal when the intent is a follow-up revision on the same proposal
-- do not bypass refusal output with ad hoc file mutations
-- do not ask for or simulate `rebase origin`; the current system routes recovery through `fetch` plus `pull`
-- do not treat `--force-to-latest` as the normal fix for local draft anymore; it is the destructive fallback
+- do not invent recovery commands
+- do not manually edit workflow state files
+- do not open a new proposal when the intent is a follow-up revision
+- do not invent `rebase origin`

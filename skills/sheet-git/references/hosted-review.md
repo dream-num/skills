@@ -1,148 +1,32 @@
-# Hosted Review Collaboration
+# Hosted Review
 
-Use this file when the task spans Alice CLI, Bob hosted web review, proposal revisions, or materialization handoff.
+Use this file for the normal hosted review path in `sheet-git`.
 
-Current authority split:
+## Happy path
 
-- local CLI speaks in proposal ids
-- hosted review truth is a review session
-- origin execution truth is a replay run
+1. Capture local work with `sheet-git stage`, `sheet-git commit`, and `sheet-git proposal create`.
+2. Bind hosted scope with `sheet-git remote add review [<base-url>] --owner <owner-id> --repo <repo-id>`.
+3. Publish with `sheet-git push review <proposal>`.
+4. Read review state with `sheet-git proposal status <proposal>`.
+5. Read machine-facing comments with `sheet-git proposal comments <proposal>`.
+6. Revise locally and republish with the same proposal id.
 
-## Collaboration model
+## Approval and origin
 
-- Alice edits locally with `agent-sheet`.
-- Alice captures and versions changes with `sheet-git`.
-- Bob reviews in hosted web.
-- Hosted review is the review authority.
-- Origin is the workbook materialization authority.
-- Hosted scope is `{owner}/{repo}`, and one hosted web may contain many repos.
+- `sheet-git proposal approve <proposal> [--actor <name>]` is the CLI approval command.
+- hosted approval and origin materialization are separate steps.
+- after approval, origin work still goes through `sheet-git push origin <proposal>`.
 
-## Entering a hosted repo
-
-### Existing local workspace -> hosted review
-
-If Alice already has a local workspace and wants review for it:
-
-- `sheet-git remote add review <base-url> --owner <owner-id> --repo <repo-id>`
-- `sheet-git push review <proposal>`
-
-This is the first-path for a brand new hosted repo.
-
-### Existing hosted repo -> fresh local workspace
-
-If Alice or Charlie starts from a hosted repo that already exists:
+## Existing hosted repo
 
 - `sheet-git clone <owner>/<repo> --base-url <base-url>`
-- or `sheet-git clone <host>/<owner>/<repo>`
-- or `sheet-git clone <review-url>`
+- `sheet-git clone <host>/<owner>/<repo>`
+- `sheet-git clone <review-url>`
 
-This creates a fresh local workspace and binds it to that hosted scope.
+Use this when the happy path starts from an existing hosted repo instead of a local workspace.
 
-If the repo has already materialized an origin workbook, clone restores the latest materialized entries.
+## Reminders
 
-If the repo exists but has not materialized origin yet, clone still binds the hosted scope, but there may be no workbook content to restore yet.
-
-## Proposal lifecycle
-
-### 1. Local proposal
-
-Alice creates a local proposal first:
-
-- `sheet-git stage ...`
-- `sheet-git commit --message "..."`
-- `sheet-git proposal create`
-
-This does not put anything into Bob's inbox yet.
-
-### 2. Publish handoff
-
-Alice hands the proposal to Bob with:
-
-- `sheet-git push review <proposal>`
-
-That creates or updates the hosted review session under the same proposal-shaped local handle and keeps it in `needs-review`.
-
-### 3. Follow-up revisions
-
-If Alice revises after feedback:
-
-- edit locally
-- `sheet-git stage`
-- `sheet-git commit`
-- `sheet-git push review <same proposal>`
-
-That should produce hosted `r2`, `r3`, and so on under the same review session.
-
-## Comment loop
-
-Bob comments in hosted web.
-
-Alice pulls comments through:
-
-- `sheet-git proposal comments <proposal>`
-
-Important:
-
-- this is the machine-readable surface
-- default output is a same-session continuity view, not just “latest revision only”
-- unresolved older threads remain visible as carried-forward items while keeping their original `revisionId`
-- comments may carry semantic locators
-- comments may also carry `selectionAttachment` for exact ranges
-
-## Approval semantics
-
-### CLI approval
-
-`sheet-git proposal approve <proposal>` is a real hosted review action from CLI.
-
-### Web approval / human review
-
-Hosted web is now an **approve-only** human review surface.
-
-Current model:
-
-- human detail can comment
-- human detail can approve
-- origin materialization is still a separate `sheet-git push origin` step
-
-So after Bob approves, Alice may still need:
-
-- `sheet-git push origin <proposal>`
-
-## Materialization handoff
-
-When hosted review shows:
-
-- `Approved`
-- or `Waiting for origin replay`
-
-interpret it as:
-
-- Bob's review decision is done
-- origin has not necessarily been updated yet
-- `push origin` is still the real materialization step
-
-The handoff can be completed by:
-
-- Alice running `sheet-git push origin <proposal>`
-- or a daemon claiming the request and running the same command
-
-## Multi-repo hosted UI
-
-When hosted web serves many repos:
-
-- `/` is the simple hosted home page
-- `/owners/{owner}/repos/{repo}/reviews` is the scoped list
-- `/owners/{owner}/repos/{repo}/reviews/sessions/{reviewId}` is the review detail page
-- each repo inbox/detail page stays scoped to one `{owner}/{repo}`
-- proposal ids are not globally unique enough by themselves; always carry the hosted scope with them when speaking about a review item
-
-## Best reading order during collaboration
-
-When dropped into an existing collaborative situation:
-
-1. `sheet-git proposal status <proposal>`
-2. `sheet-git proposal comments <proposal>`
-3. if origin is involved, `sheet-git fetch origin <entry-id>` or `sheet-git pull origin <proposal-or-entry-id>`
-
-Do not infer the state from inbox labels alone when CLI is available.
+- treat `{owner}/{repo}` as the hosted scope
+- keep using the same proposal id for follow-up revisions
+- do not infer final state from web labels alone when CLI state is available
