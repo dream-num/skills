@@ -60,7 +60,7 @@ Use this when the task looks straightforward but real-world workflows have hidde
 
 - when a workbook is open through the daemon, the newest local draft may live in the git-snapshot-manager pending-mutation buffer before it is rewritten to `workbook.mutations.jsonl`
 - do not assume an empty on-disk mutations file means there is no live local draft
-- if the workflow depends on durable lineage production, use `persist` / `sheet-git stage` / `sheet-git pull origin` to force the system to serialize daemon-resident pending mutations into a real local batch
+- if the workflow depends on durable lineage production, verify workbook-visible state first, then use the normal repo path such as `sheet-git stage` or sync path such as `sheet-git pull origin` to force the system to materialize daemon-resident pending mutations into a real local batch
 - when debugging collaboration recovery, inspect both workbook-visible state and `local-batch` state before concluding the draft is gone
 
 ## Legacy surfaces
