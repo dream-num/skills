@@ -2,7 +2,7 @@
 
 ## When to use
 
-Use this lane when the task is about creating, importing, opening, or exporting a local workbook rather than editing cell contents directly.
+Use this lane when the task is about creating, importing, opening, or exporting a local workbook rather than mutating workbook contents directly.
 
 ## Required input
 
@@ -17,7 +17,7 @@ Use this lane when the task is about creating, importing, opening, or exporting 
 | start a fresh local workbook | `file create <name> --json` | new local `entryId` |
 | start from local `xlsx` / `csv` | `file import <path> --json` | imported local `entryId` |
 | inspect entry metadata | `file info --entry-id <id> --json` | metadata only |
-| inspect workbook structure | `sheet list --entry-id <id> --json` or `inspect workbook --entry-id <id>` | sheets and workbook-visible structure |
+| inspect workbook structure | `inspect workbook --entry-id <id>` | workbook-visible structure |
 | open resolved workbook | `file open --entry-id <id> --json` | workbook open payload |
 | export workbook | `file export --entry-id <id> --output <path>` | local file output |
 
@@ -26,7 +26,7 @@ Use this lane when the task is about creating, importing, opening, or exporting 
 - resolve an `entryId` first and keep using `--entry-id`
 - for imported local entries, trust the `entryId` from `file import` even if later `file info` shows `unitId: null`
 - use `file info` for mode, origin, and local-vs-remote metadata only
-- use `sheet list` or `inspect workbook` for sheet count, sheet names, and handoff structure checks
+- use `inspect workbook` for worksheet count, worksheet names, and handoff structure checks
 - local export hard-fails when the local snapshot JSON exceeds `100MB`
 - legacy `file export --manifest ...` and `file use` are removed surfaces; treat invalid-args failure as expected
 
@@ -45,7 +45,7 @@ Extract the returned `entryId` from the JSON response, then continue with `--ent
 
 ```bash
 agent-sheet file import ./input.xlsx --json
-agent-sheet sheet list --entry-id <entry-id> --json
+agent-sheet inspect workbook --entry-id <entry-id>
 ```
 
 If local import fails, stop and report the blocker. Do not claim the workbook is available unless `file import` actually returned an `entryId`.
@@ -62,7 +62,7 @@ Use this when you want to import one file and later export the edited workbook t
 
 ```bash
 agent-sheet file import <source.xlsx> --json
-agent-sheet sheet list --entry-id <entry-id> --json
+agent-sheet inspect workbook --entry-id <entry-id>
 ...
 agent-sheet file export --entry-id <entry-id> --output <target.xlsx>
 test -s <target.xlsx>
@@ -91,12 +91,13 @@ agent-sheet file export --entry-id <entry-id> --output ./output.xlsx
 test -s ./output.xlsx
 ```
 
-### Imported workbook with non-English sheet names
+### Imported workbook with non-English worksheet names
 
 Quote the full A1 range string in the shell:
 
 ```bash
-agent-sheet read range --entry-id <entry-id> --range '工作表1!A1:J3' --format csv --to-stdout
+agent-sheet pipe out --entry-id <entry-id> --range '工作表1!A1:J3' --format csv \
+  > ./artifacts/template_anchor.csv
 ```
 
 Reusable assets:
