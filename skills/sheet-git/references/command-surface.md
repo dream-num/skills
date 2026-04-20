@@ -9,7 +9,7 @@ Use this file when you need the `sheet-git` happy path in command form.
 3. `sheet-git stage --entry-id <id>` or `sheet-git stage --all`
 4. `sheet-git diff`
 5. `sheet-git commit --message "..."`
-6. `sheet-git proposal create`
+6. `sheet-git review create`
 
 Use these when the workbook is already persisted and you want repo history plus a review unit.
 
@@ -26,16 +26,16 @@ Use these after capture, not before workbook editing.
 ## Happy path 3: send work to review
 
 - `sheet-git remote add review [<base-url>] --owner <owner-id> --repo <repo-id>`
-- `sheet-git push review <proposal>`
-- `sheet-git proposal status <proposal>`
-- `sheet-git proposal comments <proposal>`
+- `sheet-git push review <session>`
+- `sheet-git review status <session>`
+- `sheet-git review comments <session>`
 
 ## Happy path 4: sync with origin
 
-- `sheet-git push origin <proposal>`
-- `sheet-git push origin --skip-review-check <proposal>`
+- `sheet-git push origin <session>`
+- `sheet-git push origin --skip-review-check <session>`
 - `sheet-git fetch origin <entry-id>`
-- `sheet-git pull origin <proposal-or-entry-id>`
+- `sheet-git pull origin <session-or-entry-id>`
 - `sheet-git push origin --resume <replay-run>`
 
 Use `fetch` / `pull` when remote may have moved. Use `push origin` when origin materialization is the goal; it checks hosted approval by default before replaying. Use `--skip-review-check` only for the explicit bypass path.
@@ -51,14 +51,14 @@ Use `fetch` / `pull` when remote may have moved. Use `push origin` when origin m
 - `sheet-git clone <review-url> [<path>]`
 - `sheet-git reset --entry-id <id> [--entry-id <id>...]`
 - `sheet-git reset --all`
-- `sheet-git proposal list`
-- `sheet-git proposal show <proposal>`
-- `sheet-git proposal status <proposal>`
-- `sheet-git proposal comments <proposal>`
-- `sheet-git pull origin --force-to-latest <proposal-or-entry-id>`
-- `sheet-git push origin --dry-run <proposal>`
-- `sheet-git push origin --explain <proposal>`
-- `sheet-git push origin --skip-review-check <proposal>`
+- `sheet-git review list`
+- `sheet-git review show <session>`
+- `sheet-git review status <session>`
+- `sheet-git review comments <session>`
+- `sheet-git pull origin --force-to-latest <session-or-entry-id>`
+- `sheet-git push origin --dry-run <session>`
+- `sheet-git push origin --explain <session>`
+- `sheet-git push origin --skip-review-check <session>`
 
 Use these only when the happy path needs inspection, preview, reset, or destructive repair.
 

@@ -4,18 +4,18 @@ Use this file for the normal hosted review path in `sheet-git`.
 
 ## Happy path
 
-1. Capture local work with `sheet-git stage`, `sheet-git commit`, and `sheet-git proposal create`.
+1. Capture local work with `sheet-git stage`, `sheet-git commit`, and `sheet-git review create`.
 2. Bind hosted scope with `sheet-git remote add review [<base-url>] --owner <owner-id> --repo <repo-id>`.
-3. Publish with `sheet-git push review <proposal>`.
-4. Read review state with `sheet-git proposal status <proposal>`.
-5. Read machine-facing comments with `sheet-git proposal comments <proposal>`.
-6. Revise locally and republish with the same proposal id.
+3. Publish with `sheet-git push review <session>`.
+4. Read review state with `sheet-git review status <session>`.
+5. Read machine-facing comments with `sheet-git review comments <session>`.
+6. Revise locally, create a new local review session, and let `push review` decide whether to reuse the same hosted thread.
 
 ## Approval and origin
 
-- hosted approval and origin materialization are separate steps, but `sheet-git push origin <proposal>` checks hosted approval by default before replaying.
-- `sheet-git push origin --skip-review-check <proposal>` is the explicit bypass path.
-- after replay success, `sheet-git` writes back hosted merged state and closes out the local merged/proposal state in the same flow.
+- hosted approval and origin materialization are separate steps, but `sheet-git push origin <session>` checks hosted approval by default before replaying.
+- `sheet-git push origin --skip-review-check <session>` is the explicit bypass path.
+- after replay success, the local review session closes immediately; hosted merged writeback is best-effort and does not change local truth.
 
 ## Existing hosted repo
 
@@ -28,5 +28,5 @@ Use this when the happy path starts from an existing hosted repo instead of a lo
 ## Reminders
 
 - treat `{owner}/{repo}` as the hosted scope
-- keep using the same proposal id for follow-up revisions
+- follow-up revisions create a new local review session; hosted thread reuse is decided by `push review`
 - do not infer final state from web labels alone when CLI state is available
