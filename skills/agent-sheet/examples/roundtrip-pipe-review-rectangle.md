@@ -1,4 +1,4 @@
-# Example: Shell Roundtrip to Review Rectangle
+# Example: Pipe Roundtrip to Review Rectangle
 
 Use this when workbook data must flow through `awk` and return as a bounded review region.
 

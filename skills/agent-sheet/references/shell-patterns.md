@@ -46,4 +46,4 @@ awk -F'\t' 'NR==1 || $5=="P1"{print $0}' ./artifacts/claims.tsv > ./artifacts/cl
 - if you need external processing, start from `agent-sheet pipe out` rather than reopening the workbook with a local workbook library
 - if `awk`, `sed`, or `python` are unnecessary, prefer the direct `agent-sheet` primitive
 - after writeback, verify header row, first sample rows, key columns, and row count together; count-only verification is not enough
-- for a reusable skeleton, start from [../examples/roundtrip-awk-write-table.md](../examples/roundtrip-awk-write-table.md) and [../scripts/verify_csv_preview.py](../scripts/verify_csv_preview.py)
+- for a reusable skeleton, start from [../examples/roundtrip-pipe-review-rectangle.md](../examples/roundtrip-pipe-review-rectangle.md) and [../scripts/verify_csv_preview.py](../scripts/verify_csv_preview.py)

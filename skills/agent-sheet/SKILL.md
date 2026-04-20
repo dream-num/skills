@@ -109,7 +109,7 @@ Use these before improvising shell snippets:
 
 | Asset | Use when |
 |---|---|
-| [examples/roundtrip-awk-write-table.md](examples/roundtrip-awk-write-table.md) | building a review-style dataset through shell roundtrip |
+| [examples/roundtrip-pipe-review-rectangle.md](examples/roundtrip-pipe-review-rectangle.md) | building a review-style dataset through shell roundtrip |
 | [examples/handoff-verify.md](examples/handoff-verify.md) | exporting, importing, and proving handoff structure |
 | [examples/template-import-anchor-check.md](examples/template-import-anchor-check.md) | importing a template workbook and checking anchor cells |
 | [scripts/verify_csv_preview.py](scripts/verify_csv_preview.py) | comparing header, head sample rows, and a key column |
@@ -131,6 +131,6 @@ Read only the file needed for the task:
 | [references/shell-patterns.md](references/shell-patterns.md) | the task is naturally a shell pipeline |
 | [references/gotchas.md](references/gotchas.md) | the task involves common real-world failure modes |
 | [references/js-api-minimal.md](references/js-api-minimal.md) | `run` is necessary and must stay tightly bounded |
-| [examples/roundtrip-awk-write-table.md](examples/roundtrip-awk-write-table.md) | you need a concrete shell roundtrip example |
+| [examples/roundtrip-pipe-review-rectangle.md](examples/roundtrip-pipe-review-rectangle.md) | you need a concrete shell roundtrip example |
 | [examples/handoff-verify.md](examples/handoff-verify.md) | you need a concrete export/import handoff example |
 | [examples/template-import-anchor-check.md](examples/template-import-anchor-check.md) | you need a concrete non-English template import example |

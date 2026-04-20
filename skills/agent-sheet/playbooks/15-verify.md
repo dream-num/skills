@@ -81,7 +81,7 @@ agent-sheet pipe out --entry-id <entry-id> --range 'ApprovalQueue!B2:B6' --forma
 
 Reusable assets:
 
-- [../examples/roundtrip-awk-write-table.md](../examples/roundtrip-awk-write-table.md)
+- [../examples/roundtrip-pipe-review-rectangle.md](../examples/roundtrip-pipe-review-rectangle.md)
 - [../scripts/verify_csv_preview.py](../scripts/verify_csv_preview.py)
 
 ### Import/export handoff verification
