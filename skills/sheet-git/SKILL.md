@@ -67,6 +67,8 @@ Use `agent-sheet` to create or edit workbook content. Use `sheet-git` after the 
 - `sheet-git clone <host>/<owner>/<repo>`
 - `sheet-git clone <review-url>`
 
+Here `{owner}/{repo}` is the hosted review scope for this scenario. It does not need to be pre-created; if the scenario has no existing scope yet, choose stable values and reuse them consistently.
+
 ### Publish for review
 
 - `sheet-git push review <session>`
@@ -118,6 +120,8 @@ Follow refusal output literally. If `sheet-git` tells you the next safe command,
 - the command is `history`, not `log`
 - the hosted handoff command is `push review`
 - use `clone` and `remote add review` as documented; do not invent alternate names
+- `--owner` / `--repo` define the hosted review scope for this scenario
+- if the scenario has no pre-existing hosted scope, pick stable values and keep reusing them
 - do not ask for or simulate `rebase origin`
 
 ## References

@@ -11,6 +11,8 @@ Use this file for the normal hosted review path in `sheet-git`.
 5. Read machine-facing comments with `sheet-git review comments <session>`.
 6. Revise locally, create a new local review session, and let `push review` decide whether to reuse the same hosted thread.
 
+`<owner-id>` and `<repo-id>` define the hosted review scope for this scenario. They do not need to be pre-created. If the scenario has no existing scope yet, choose stable values and reuse them consistently.
+
 ## Approval and origin
 
 - hosted approval and origin materialization are separate steps, but `sheet-git push origin <session>` checks hosted approval by default before replaying.
@@ -28,5 +30,6 @@ Use this when the happy path starts from an existing hosted repo instead of a lo
 ## Reminders
 
 - treat `{owner}/{repo}` as the hosted scope
+- if the target scenario has no existing hosted scope yet, choose a stable `{owner}/{repo}` and keep reusing it
 - follow-up revisions create a new local review session; hosted thread reuse is decided by `push review`
 - do not infer final state from web labels alone when CLI state is available

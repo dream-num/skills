@@ -30,6 +30,8 @@ Use these after capture, not before workbook editing.
 - `sheet-git review status <session>`
 - `sheet-git review comments <session>`
 
+`<owner-id>` and `<repo-id>` here define the hosted review scope for this scenario. They do not need to be pre-created. If the scenario does not already have a scope, choose stable values and reuse them consistently.
+
 ## Happy path 4: sync with origin
 
 - `sheet-git push origin <session>`
@@ -67,4 +69,5 @@ Use these only when the happy path needs inspection, preview, reset, or destruct
 - use `history`, not `log`
 - use `push review`, not invented publish aliases
 - use `remote add review`, not ad-hoc remote naming
+- treat `<owner-id>` / `<repo-id>` as the scenario's hosted scope, and keep them stable once chosen
 - do not invent `rebase origin`
