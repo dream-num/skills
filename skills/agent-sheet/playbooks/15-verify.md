@@ -2,7 +2,7 @@
 
 ## When to use
 
-Use this after any mutation, shell roundtrip, import/export handoff, or bounded `script js` execution.
+Use this after any mutation, shell roundtrip, import/export handoff, or bounded `run` execution.
 
 ## Rule
 
@@ -14,14 +14,14 @@ Do not stop at "the command succeeded". Prove the workbook state that matters fo
 
 ```bash
 agent-sheet inspect workbook --entry-id <entry-id>
-agent-sheet sheet list --entry-id <entry-id> --json
+agent-sheet inspect sheet --entry-id <entry-id> --sheet "<worksheet>"
 ```
 
 2. Confirm the changed region.
 
 ```bash
-agent-sheet read range --entry-id <entry-id> --range "<sheet>!A1:H20" --format csv --to-stdout
-agent-sheet inspect range --entry-id <entry-id> --range "<sheet>!A1:H20"
+agent-sheet inspect range --entry-id <entry-id> --range "<worksheet>!A1:H20"
+agent-sheet pipe out --entry-id <entry-id> --range "<worksheet>!A1:H20" --format csv
 ```
 
 3. Confirm the task-specific invariant.
@@ -40,14 +40,14 @@ agent-sheet inspect range --entry-id <entry-id> --range "<sheet>!A1:H20"
 Use a bounded column that should be populated for every data row.
 
 ```bash
-agent-sheet read range --entry-id <entry-id> --range 'OrdersRaw!A2:A2801' --format csv --to-stdout \
+agent-sheet pipe out --entry-id <entry-id> --range 'OrdersRaw!A2:A2801' --format csv \
   | awk -F ',' '{v=$1; gsub(/^"|"$/, "", v); if (v != "") c++} END {print c + 0}'
 ```
 
 ### Search hit count
 
 ```bash
-agent-sheet read search --entry-id <entry-id> urgent --match-entire-cell --sheet OrdersRaw --limit 5000 --format jsonl --to-stdout \
+agent-sheet search --entry-id <entry-id> --query urgent --match-entire-cell --sheet OrdersRaw --limit 5000 --format jsonl \
   | wc -l | tr -d ' '
 ```
 
@@ -56,9 +56,9 @@ agent-sheet read search --entry-id <entry-id> urgent --match-entire-cell --sheet
 Use both structure and sample values.
 
 ```bash
-agent-sheet inspect range --entry-id <entry-id> --range 'OrdersRaw!O1:S20'
-agent-sheet read range --entry-id <entry-id> --range 'OrdersRaw!O2:S6' --type formula --format csv --to-stdout
-agent-sheet read range --entry-id <entry-id> --range 'OrdersRaw!O2:S6' --format csv --to-stdout
+agent-sheet inspect formulas --entry-id <entry-id> --range 'OrdersRaw!O2:S6'
+agent-sheet pipe out --entry-id <entry-id> --range 'OrdersRaw!O2:S6' --type formula --format csv
+agent-sheet pipe out --entry-id <entry-id> --range 'OrdersRaw!O2:S6' --format csv
 ```
 
 ### Shell roundtrip verification
@@ -75,8 +75,8 @@ Verify all of:
 Example:
 
 ```bash
-agent-sheet read range --entry-id <entry-id> --range 'ApprovalQueue!A1:G5' --format csv --to-stdout
-agent-sheet read range --entry-id <entry-id> --range 'ApprovalQueue!B2:B6' --format csv --to-stdout
+agent-sheet pipe out --entry-id <entry-id> --range 'ApprovalQueue!A1:G5' --format csv
+agent-sheet pipe out --entry-id <entry-id> --range 'ApprovalQueue!B2:B6' --format csv
 ```
 
 Reusable assets:
@@ -86,31 +86,31 @@ Reusable assets:
 
 ### Import/export handoff verification
 
-Use metadata plus workbook structure.
+Use metadata plus workbook-visible structure.
 
 ```bash
 agent-sheet file info --entry-id <entry-id> --json
-agent-sheet sheet list --entry-id <entry-id> --json
+agent-sheet inspect workbook --entry-id <entry-id>
 test -s ./handoff.xlsx
 ```
 
-`file info` proves metadata only. It does not prove sheet count or sheet names.
+`file info` proves metadata only. It does not prove worksheet count or worksheet names.
 
 Reusable assets:
 
 - [../examples/handoff-verify.md](../examples/handoff-verify.md)
 
-### Presentation-only `script js`
+### Presentation-only `run`
 
-If built-in commands cannot inspect the visual state, return a structured script summary and state that the verification mode is execution-only rather than independently observable.
+If built-in primitives cannot inspect the visual state, return a structured run summary and state that the verification mode is execution-only rather than independently observable.
 
 ## Anti-patterns
 
 - counting rows and skipping header or sample checks after a shell transform
-- using `file info` as a substitute for `sheet list` or `inspect workbook`
+- using `file info` as a substitute for `inspect workbook`
 - verifying formulas from displayed values only when the formula surface matters
 - claiming success because the export command returned zero without checking the output file
-- skipping quoted-range verification for imported non-English sheets
+- skipping quoted-range verification for imported non-English worksheets
 
 ## Stop / escalate
 
