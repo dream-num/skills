@@ -13,37 +13,35 @@ set -euo pipefail
 : "${SOURCE_RANGE:?set SOURCE_RANGE}"
 : "${DEST_RANGE:?set DEST_RANGE}"
 : "${DEST_PREVIEW_RANGE:?set DEST_PREVIEW_RANGE}"
-: "${DEST_COUNT_RANGE:?set DEST_COUNT_RANGE}"
+: "${DEST_COUNT_RANGE:?set DEST_COUNT_RANGE}" # key/data column only, no header row
 
 mkdir -p ./artifacts
 
-agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$SOURCE_RANGE" --format csv \
-  > ./artifacts/source.csv
+agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$SOURCE_RANGE" --format tsv \
+  > ./artifacts/source.tsv
 
-awk -F ',' 'BEGIN{OFS=","} NR==1 || $5=="P1" {print $1,$2,$5}' \
-  ./artifacts/source.csv > ./artifacts/roundtrip.csv
-head -n 5 ./artifacts/roundtrip.csv > ./artifacts/expected_preview.csv
+awk -F '\t' 'BEGIN{OFS="\t"} NR==1 || $5=="P1" {print $1,$2,$5}' \
+  ./artifacts/source.tsv > ./artifacts/roundtrip.tsv
+head -n 5 ./artifacts/roundtrip.tsv > ./artifacts/expected_preview.tsv
 
-cat ./artifacts/roundtrip.csv \
-  | agent-sheet pipe in --entry-id "$ENTRY_ID" --range "$DEST_RANGE" --input-format csv
+cat ./artifacts/roundtrip.tsv \
+  | agent-sheet pipe in --entry-id "$ENTRY_ID" --range "$DEST_RANGE" --input-format tsv
 
-agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$DEST_PREVIEW_RANGE" --format csv \
-  > ./artifacts/actual_preview.csv
+agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$DEST_PREVIEW_RANGE" --format tsv \
+  > ./artifacts/actual_preview.tsv
 
 python3 - <<'PY'
-import csv
-
-with open("./artifacts/expected_preview.csv", newline="", encoding="utf-8") as f:
-    expected = list(csv.reader(f))
-with open("./artifacts/actual_preview.csv", newline="", encoding="utf-8") as f:
-    actual = list(csv.reader(f))
+with open("./artifacts/expected_preview.tsv", newline="", encoding="utf-8") as f:
+    expected = [line.rstrip("\n").split("\t") for line in f]
+with open("./artifacts/actual_preview.tsv", newline="", encoding="utf-8") as f:
+    actual = [line.rstrip("\n").split("\t") for line in f]
 
 assert actual == expected, "preview mismatch"
 print("preview verified")
 PY
 
-agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$DEST_COUNT_RANGE" --format csv \
-  | awk -F ',' '{v=$1; gsub(/^"|"$/, "", v); if (v != "") c++} END {print c + 0}'
+agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$DEST_COUNT_RANGE" --format tsv \
+  | awk -F '\t' '{if ($1 != "") c++} END {print c + 0}'
 ```
 
 ## What to verify
@@ -51,7 +49,7 @@ agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$DEST_COUNT_RANGE" --format
 - staged output has the expected header before writeback
 - destination preview matches the expected header and first sample rows exactly
 - one key column still looks correct in the preview
-- row count is checked separately instead of replacing preview verification
+- row count is checked separately on a key/data column range that starts below the header row
 
 ## Why it matters
 
