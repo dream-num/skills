@@ -125,11 +125,11 @@ npm install -g agent-sheet@latest
 - It is powered by [Univer](https://github.com/dream-num/univer), a widely used spreadsheet framework with **12.6k GitHub stars as of March 20, 2026**.
 - The repository is narrowly scoped around workbook workflows rather than generic prompt bundles.
 - The primary skill favors explicit targeting, bounded writes, and post-mutation verification.
-- Supporting assets are organized as readable playbooks, references, examples, and helper scripts instead of opaque generated blobs.
+- Supporting assets are organized as readable playbooks, references, and examples instead of opaque generated blobs.
 
 ## Safety Notes
 
-- Review [`skills/agent-sheet/SKILL.md`](./skills/agent-sheet/SKILL.md) and any referenced scripts before installing in a trusted environment.
+- Review [`skills/agent-sheet/SKILL.md`](./skills/agent-sheet/SKILL.md) and any referenced playbooks or examples before installing in a trusted environment.
 - Expect local command execution through the `agent-sheet` CLI and common shell tools.
 - Treat write operations as incomplete until verification has been run on the relevant workbook surface.
 - Prefer the smallest built-in write command that solves the task before falling back to custom scripting.
@@ -139,9 +139,9 @@ npm install -g agent-sheet@latest
 This repository does not currently ship a separate `evals/` directory. The current trust and validation signals come from the skill design itself:
 
 - verification-first instructions in [`skills/agent-sheet/SKILL.md`](./skills/agent-sheet/SKILL.md)
-- dedicated verification guidance in [`skills/agent-sheet/playbooks/15-verify.md`](./skills/agent-sheet/playbooks/15-verify.md)
+- dedicated verification guidance in [`skills/agent-sheet/playbooks/03-handoff-and-verification.md`](./skills/agent-sheet/playbooks/03-handoff-and-verification.md)
 - concrete mutation and handoff examples in [`skills/agent-sheet/examples/`](./skills/agent-sheet/examples/)
-- helper scripts for spot-checking workbook outputs in [`skills/agent-sheet/scripts/`](./skills/agent-sheet/scripts/)
+- command references and workflow playbooks under [`skills/agent-sheet/references/`](./skills/agent-sheet/references/) and [`skills/agent-sheet/playbooks/`](./skills/agent-sheet/playbooks/)
 
 The roadmap for this repo includes stronger automated eval coverage.
 
