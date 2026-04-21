@@ -44,6 +44,7 @@ Start small. If `inspect`, `search`, `fill`, or `pipe` cleanly expresses the job
 
 ## Default operating model
 
+- if you do not have an `entry-id` yet, get one first with `file list`, `file create`, or `file import`, then stay on that workbook
 - resolve one workbook and keep its `--entry-id` for the whole task
 - start with `inspect` so worksheet names, headers, formulas, and write boundaries are real rather than guessed
 - use `search` before mutation when the target is content-defined

@@ -6,6 +6,21 @@
 - Resolve one workbook, keep its `--entry-id`, and stay on that workbook for the whole task.
 - Read workbook-visible state before deciding how to mutate it.
 
+## First touch: get an `entry-id`
+
+If you do not have an `entry-id` yet, start with one of these:
+
+```bash
+agent-sheet file list
+agent-sheet file create --name "<workbook-name>" --json
+agent-sheet file import ./input.xlsx --json
+```
+
+- use `file list` when the workbook already exists in the current workspace and you need to pick its `entryId`
+- use `file create` when you need a brand-new workbook and want the returned `entryId`
+- use `file import` when the workbook starts from a local file and you want the imported entry's `entryId`
+- use `init` only when the local workspace or runtime is not set up yet; once initialization is done, come back to `file list`, `file create`, or `file import`
+
 ## Why `inspect` comes first
 
 Use `inspect` first because command success does not tell you worksheet names, layout, headers, or the real write boundary.
