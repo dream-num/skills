@@ -156,8 +156,11 @@ Example:
 
 Clear APIs:
 
+- `clear() -> void`
 - `clearContent() -> void`
 - `clearFormat() -> void`
+
+Use `clear()` when the task is to clear the full range. Use `clearContent()` or `clearFormat()` when you only want one part of that behavior.
 
 Cell shift APIs:
 
@@ -177,7 +180,7 @@ Example:
     const sheet = workbook.getSheetByName('Queue');
     if (!sheet) return { success: false, error: 'Sheet "Queue" not found' };
 
-    sheet.getRange('B2:C3').clearContent();
+    sheet.getRange('B2:C3').clear();
     sheet.getRange('D2:D10').insertCells(univerAPI.Enum.Dimension.ROWS);
 
     return { success: true };
