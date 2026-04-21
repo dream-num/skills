@@ -2,7 +2,7 @@
 
 Use this reference when `agent-sheet run` is necessary.
 
-`run` is the default programmable workbook surface. It is not the first choice for ordinary reconnaissance, hit localization, propagation, or bulk transfer, but it remains the right path when those smaller primitives cannot express the task cleanly, especially for:
+Start with smaller primitives. Use `run` only when you can name an explicit workbook-native gap that `inspect`, `search`, `fill`, and `pipe` do not cover cleanly, especially for:
 
 - workbook styling and presentation
 - row/column sizing, visibility, and freeze panes
@@ -23,7 +23,7 @@ Use built-in primitives first:
 - `pipe out`
 - `pipe in`
 
-Switch to `run` when you can clearly explain the gap, for example:
+Switch to `run` only when you can clearly explain the workbook-native gap, for example:
 
 - "I need borders, fonts, colors, alignment, or number formats."
 - "I need to freeze rows/columns or adjust row height/column width."

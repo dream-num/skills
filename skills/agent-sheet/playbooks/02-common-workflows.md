@@ -52,6 +52,7 @@ When to use: a shell transform is easier than workbook-local logic.
 
 ```bash
 agent-sheet pipe out --entry-id <entry-id> --range "<worksheet>!A1:H200" --format csv > /tmp/input.csv
+awk 'NR==1{print; next} {print}' /tmp/input.csv > /tmp/output.csv
 cat /tmp/output.csv | agent-sheet pipe in --entry-id <entry-id> --range "<worksheet>!A1:H200" --input-format csv
 agent-sheet pipe out --entry-id <entry-id> --range "<worksheet>!A1:H8" --format csv
 ```
