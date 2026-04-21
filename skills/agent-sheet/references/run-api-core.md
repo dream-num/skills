@@ -12,17 +12,22 @@ const workbook = univerAPI.getActiveWorkbook();
 
 Related top-level APIs:
 
-- `univerAPI.getActiveWorkbook() -> FWorkbook`
-- `univerAPI.getFormula() -> FFormula`
+- `univerAPI.getActiveWorkbook() -> FWorkbook` - get the current active workbook
+- `univerAPI.getFormula() -> FFormula` - get the formula engine instance used for calculation synchronization
+
+Dimension constants used by range cell-shift operations:
+
+- `univerAPI.Enum.Dimension.ROWS` - row dimension constant for `insertCells()` and `deleteCells()`
+- `univerAPI.Enum.Dimension.COLUMNS` - column dimension constant for `insertCells()` and `deleteCells()`
 
 ## Workbook Access
 
 Use the workbook object to locate, list, create, and delete sheets.
 
-- `getSheetByName(name) -> FWorksheet | null`
-- `getSheets() -> FWorksheet[]`
-- `create(name, rows, cols) -> FWorksheet`
-- `deleteSheet(sheetId) -> boolean`
+- `getSheetByName(name) -> FWorksheet | null` - recommended explicit lookup by sheet name
+- `getSheets() -> FWorksheet[]` - list all worksheets; useful when the task first needs sheet names
+- `create(name, rows, cols) -> FWorksheet` - create a new worksheet with an initial shape
+- `deleteSheet(sheetId) -> boolean` - delete the specified worksheet by sheet id
 
 Example:
 
@@ -43,36 +48,41 @@ Example:
 
 Important worksheet reads:
 
-- `getSheetId() -> number`
-- `getSheetName() -> string`
-- `getLastRow() -> number`
-- `getLastColumn() -> number`
-- `hasHiddenGridLines() -> boolean`
+- `getSheetId() -> number` - worksheet id
+- `getSheetName() -> string` - worksheet name
+- `getLastRow() -> number` - 0-based index of the last row with data; returns `15` if data extends to spreadsheet row 16
+- `getLastColumn() -> number` - 0-based index of the last column with data; returns `4` if data extends to column `E`
+- `hasHiddenGridLines() -> boolean` - check whether gridlines are hidden
 
 Important worksheet writes:
 
-- `setName(name) -> void`
-- `insertRows(rowIndex, numRows) -> FWorksheet`
-- `deleteRows(rowIndex, numRows) -> FWorksheet`
-- `insertColumns(columnIndex, numColumns) -> FWorksheet`
-- `deleteColumns(columnIndex, numColumns) -> FWorksheet`
-- `setFrozenRows(rows)` or `setFrozenRows(startRow, endRow) -> FWorksheet`
-- `setFrozenColumns(columns)` or `setFrozenColumns(startColumn, endColumn) -> FWorksheet`
-- `setHiddenGridlines(hidden) -> FWorksheet`
-- `setGridLinesColor(color) -> FWorksheet`
+- `setName(name) -> void` - rename the worksheet
+- `insertRows(rowIndex, numRows) -> FWorksheet` - insert rows at a 0-based starting index
+- `deleteRows(rowIndex, numRows) -> FWorksheet` - delete rows at a 0-based starting index
+- `insertColumns(columnIndex, numColumns) -> FWorksheet` - insert columns at a 0-based starting index
+- `deleteColumns(columnIndex, numColumns) -> FWorksheet` - delete columns at a 0-based starting index
+- `setFrozenRows(rows)` or `setFrozenRows(startRow, endRow) -> FWorksheet` - freeze the first `rows` rows, or freeze a row range
+- `setFrozenColumns(columns)` or `setFrozenColumns(startColumn, endColumn) -> FWorksheet` - freeze the first `columns` columns, or freeze a column range
+- `setHiddenGridlines(hidden) -> FWorksheet` - show or hide sheet gridlines
+- `setGridLinesColor(color) -> FWorksheet` - set gridline color; `undefined` or `null` resets to default
 
 Also available for row and column presentation work:
 
-- `setRowHeight(rowIndex, height) -> FWorksheet`
-- `setRowHeights(startRow, numRows, height) -> FWorksheet`
-- `showRows(rowIndex, numRows) -> FWorksheet`
-- `hideRows(rowIndex, numRows) -> FWorksheet`
-- `autoResizeRows(startRow, numRows) -> FWorksheet`
-- `setColumnWidth(columnIndex, width) -> FWorksheet`
-- `setColumnWidths(startColumn, numColumns, width) -> FWorksheet`
-- `showColumns(columnIndex, numColumns) -> FWorksheet`
-- `hideColumns(columnIndex, numColumns) -> FWorksheet`
-- `autoResizeColumns(startColumn, numColumns) -> FWorksheet`
+- `setRowHeight(rowIndex, height) -> FWorksheet` - set one row height in pixels
+- `setRowHeights(startRow, numRows, height) -> FWorksheet` - set multiple row heights
+- `showRows(rowIndex, numRows) -> FWorksheet` - show hidden rows
+- `hideRows(rowIndex, numRows) -> FWorksheet` - hide rows
+- `autoResizeRows(startRow, numRows) -> FWorksheet` - auto-size row heights to content
+- `setColumnWidth(columnIndex, width) -> FWorksheet` - set one column width in pixels
+- `setColumnWidths(startColumn, numColumns, width) -> FWorksheet` - set multiple column widths
+- `showColumns(columnIndex, numColumns) -> FWorksheet` - show hidden columns
+- `hideColumns(columnIndex, numColumns) -> FWorksheet` - hide columns
+- `autoResizeColumns(startColumn, numColumns) -> FWorksheet` - auto-size column widths to content
+
+Formula wait API:
+
+- `onCalculationResultApplied() -> Promise<void>` - wait until formula-calculation results are applied before reading computed values
+- note: if a real calculation runs, it resolves when results are applied; if no calculation starts quickly, it can resolve automatically instead of hanging forever
 
 ## `getRange()`
 
@@ -82,6 +92,8 @@ Supported forms:
 
 - `getRange('A1')`
 - `getRange('A1:C10')`
+- `getRange('A:A')`
+- `getRange('1:1')`
 - `getRange(row, col)`
 - `getRange(row, col, rowCount, colCount)`
 

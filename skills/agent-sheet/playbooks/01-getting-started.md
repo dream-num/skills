@@ -45,21 +45,49 @@ agent-sheet inspect range --entry-id <entry-id> --range "<worksheet>!A1:H40"
 
 Use when you need workbook structure, sheet shape, a bounded rectangle, or formulas before choosing a write path.
 
+```bash
+agent-sheet inspect workbook --entry-id <entry-id>
+agent-sheet inspect range --entry-id <entry-id> --range "Sheet1!A1:H20"
+```
+
 ### `search`
 
 Use when the target rows are not pinned down yet and you need to localize matches before editing.
+
+```bash
+agent-sheet search --entry-id <entry-id> --query "renewal"
+```
 
 ### `fill`
 
 Use for workbook-native propagation from a known seed range into a larger target range.
 
+```bash
+agent-sheet fill --entry-id <entry-id> --sheet "Sheet1" --source-range B2:B3 --target-range B2:B200
+```
+
 ### `run`
 
 Use for workbook-local logic or structural work that smaller primitives do not express cleanly. Keep the touched sheets and A1 ranges explicit.
 
+```bash
+agent-sheet run --entry-id <entry-id> --code '() => {
+  const workbook = univerAPI.getActiveWorkbook();
+  const sheet = workbook.getSheetByName("Sheet1");
+  if (!sheet) return { success: false, error: "Sheet1 not found" };
+  sheet.getRange("A1").setValue("ready");
+  return { success: true };
+}'
+```
+
 ### `pipe`
 
 Use `pipe out` when the shell should inspect or transform rectangular data. Use `pipe in` when writing a known rectangle back into the workbook.
+
+```bash
+agent-sheet pipe out --entry-id <entry-id> --range "Sheet1!A1:D20" --format tsv
+cat ./patch.tsv | agent-sheet pipe in --entry-id <entry-id> --range "Sheet1!F2:I20" --input-format tsv
+```
 
 ## Default first steps
 

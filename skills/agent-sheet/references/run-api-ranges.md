@@ -6,15 +6,15 @@ This page groups cell and range operations for ordinary `run` tasks.
 
 Get a range from `sheet.getRange(...)`, then use these reads:
 
-- `getValue() -> any`
-- `getRawValue() -> any`
-- `getValues() -> any[][]`
-- `getRawValues() -> any[][]`
-- `getFormulas() -> string[][]`
-- `getA1Notation(withSheet?) -> string`
-- `forEach(callback) -> void`
-- `isMerged() -> boolean`
-- `isPartOfMerge() -> boolean`
+- `getValue() -> any` - get the top-left cell value as the normal displayed value
+- `getRawValue() -> any` - get the top-left cell raw underlying value
+- `getValues() -> any[][]` - get all cell values in the range as a 2D array
+- `getRawValues() -> any[][]` - get all underlying raw values in the range as a 2D array
+- `getFormulas() -> string[][]` - get formulas in A1 notation
+- `getA1Notation(withSheet?) -> string` - get the range A1 notation; `withSheet=true` includes the sheet name
+- `forEach(callback) -> void` - iterate cells in the range
+- `isMerged() -> boolean` - check whether the range itself is merged
+- `isPartOfMerge() -> boolean` - check whether the range falls inside a merged region
 
 Example:
 
@@ -38,9 +38,9 @@ Example:
 
 Core writes:
 
-- `setValue(value) -> FRange`
-- `setValues(values) -> FRange`
-- `setFormula(formula) -> void`
+- `setValue(value) -> FRange` - set one value across the target range; if the value starts with `=`, it can also write a formula
+- `setValues(values) -> FRange` - batch set values from a 2D array
+- `setFormula(formula) -> void` - set a formula in A1 notation such as `=SUM(A1:B10)`
 
 Example:
 
@@ -67,6 +67,8 @@ Example:
 - one row per worksheet row in the target range
 - one column per worksheet column in the target range
 - keep every inner array the same length
+- use `getRange('A1:C10')` or `getRange(0, 0, 10, 3)` to define the full target shape
+- `getRange(row, col)` without size only targets a single cell
 
 Correct:
 
@@ -116,16 +118,16 @@ async () => {
 Available formula wait API:
 
 - `univerAPI.getFormula() -> FFormula`
-- `onCalculationResultApplied() -> Promise<void>`
+- `onCalculationResultApplied() -> Promise<void>` - wait for formula-calculation results to be applied before reading the computed value
 
 ## Merge And Unmerge
 
 Merge APIs:
 
-- `merge(options?) -> void`
-- `breakApart() -> void`
-- `mergeAcross() -> void`
-- `mergeVertically() -> void`
+- `merge(options?) -> void` - merge cells into one block
+- `breakApart() -> void` - unmerge cells
+- `mergeAcross() -> void` - merge each row across the selected columns
+- `mergeVertically() -> void` - merge each column down the selected rows
 
 Typical uses:
 
@@ -133,6 +135,7 @@ Typical uses:
 - `mergeAcross()` to merge each row across the selected columns
 - `mergeVertically()` to merge each column down the selected rows
 - `breakApart()` to remove merges
+- use `merge({ isForceMerge: true })` if you need to clear overlapping merges first
 
 Example:
 
@@ -156,16 +159,16 @@ Example:
 
 Clear APIs:
 
-- `clear() -> void`
-- `clearContent() -> void`
-- `clearFormat() -> void`
+- `clear() -> void` - clear the full range
+- `clearContent() -> void` - clear only content and keep formatting
+- `clearFormat() -> void` - clear only formatting and keep content
 
 Use `clear()` when the task is to clear the full range. Use `clearContent()` or `clearFormat()` when you only want one part of that behavior.
 
 Cell shift APIs:
 
-- `insertCells(dimension) -> void`
-- `deleteCells(dimension) -> void`
+- `insertCells(dimension) -> void` - insert cells and shift existing cells in the given dimension
+- `deleteCells(dimension) -> void` - delete cells and shift remaining cells in the given dimension
 
 Dimension constants:
 
@@ -191,7 +194,13 @@ Example:
 
 Use `autoFill()` when a correct seed pattern already exists and the workbook should propagate it.
 
-- `autoFill(destRange, fillType?) -> Promise<void>`
+- `autoFill(destRange, fillType?) -> Promise<void>` - propagate from the source range into a larger destination that includes the source
+
+Notes:
+
+- `destRange` must include the source range
+- `fillType` can be `'SERIES'` (default) or `'COPY'`
+- this method is async; use `await`
 
 Example:
 

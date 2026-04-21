@@ -25,3 +25,13 @@ Use this when the task looks straightforward but `agent-sheet` behavior has a no
 - imported workbooks can contain non-English worksheet names and still work normally
 - quote the full range string in the shell, for example `--range '工作表1!A1:J3'`
 - verify imported templates by reading a small anchor range and checking a few exact cells plus one non-empty cell
+
+## `run` API gotchas
+
+- all `run` code must be wrapped in an arrow function: `() => { ... }` or `async () => { ... }`
+- always return an object such as `{ success: true, ... }`; do not rely on implicit return values
+- only use methods explicitly documented in the `run-api*.md` references; do not guess method names or overloads
+- prefer `getSheetByName(...)` so the worksheet boundary stays explicit and reviewable
+- numeric coordinate overloads are 0-based, so `getRange(0, 0)` is `A1`
+- if `setValue('=...')` or `setFormula('=...')` writes a formula, wait for `await univerAPI.getFormula().onCalculationResultApplied()` before reading the computed result
+- `setValues()` requires a rectangular 2D array whose shape exactly matches the target range; `getRange(row, col)` without size only targets one cell

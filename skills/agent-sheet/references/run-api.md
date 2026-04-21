@@ -22,6 +22,18 @@ Do not use `run` when a smaller surface already expresses the job cleanly:
 
 `run` is the standard programmable surface for bounded workbook logic.
 
+## Object hierarchy
+
+```text
+univerAPI (Global Entry Point)
+    └── getActiveWorkbook() -> FWorkbook (Workbook Object)
+        ├── getSheetByName(name) -> FWorksheet | null (recommended)
+        │   └── getRange() -> FRange (Cell Range Object)
+        ├── getSheets() -> FWorksheet[] (list available worksheets)
+        ├── create() -> FWorksheet
+        └── deleteSheet() -> boolean
+```
+
 ## Quick start
 
 Use this command shape:
@@ -43,6 +55,26 @@ Then verify from workbook-visible reads:
 agent-sheet inspect range --entry-id <entry-id> --range "Sheet1!A1:B5"
 ```
 
+## Core access pattern
+
+Use explicit sheet access and keep the touched boundary readable:
+
+```javascript
+() => {
+    const workbook = univerAPI.getActiveWorkbook();
+    const sheet = workbook.getSheetByName('Sheet1');
+    if (!sheet) {
+        return { success: false, error: 'Sheet "Sheet1" not found' };
+    }
+
+    const range = sheet.getRange('A1');
+    const value = range.getValue();
+    range.setValue(value * 2);
+
+    return { success: true, original: value, result: value * 2 };
+}
+```
+
 ## Execution Environment
 
 - code runs inside the Univer spreadsheet engine JavaScript runtime
@@ -55,11 +87,20 @@ agent-sheet inspect range --entry-id <entry-id> --range "Sheet1!A1:B5"
 
 - always wrap the program in an arrow function
 - always return an object
+- strictly use documented methods; do not guess or invent API names
 - prefer A1 notation for fixed ranges
 - remember that coordinate overloads are 0-based
 - check for missing sheets before writing
 - keep the operation bounded to the workbook task at hand
 - verify the result with workbook-visible reads after the command
+
+## Constraint reminders
+
+- arrow-function wrapper: write `() => {}` or `async () => {}`
+- explicit return object: return `{ success: true, ... }`
+- explicit sheet lookup: `getSheetByName(...)` is safer than relying on implicit context
+- 0-based numeric coordinates: `getRange(0, 0)` is `A1`
+- A1 notation is usually clearer for fixed workbook-facing ranges
 
 ## How to use this reference family
 
@@ -78,6 +119,11 @@ await univerAPI.getFormula().onCalculationResultApplied();
 ```
 
 Without that wait, readback can be stale.
+
+This applies to both:
+
+- `range.setFormula('=SUM(B1:B10)')`
+- `range.setValue('=SUM(B1:B10)')`
 
 ## Minimal Standard Example
 
