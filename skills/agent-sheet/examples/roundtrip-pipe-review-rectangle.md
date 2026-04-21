@@ -14,14 +14,14 @@ set -euo pipefail
 : "${DEST_RANGE:?set DEST_RANGE}"
 : "${DEST_PREVIEW_RANGE:?set DEST_PREVIEW_RANGE}"
 : "${DEST_COUNT_RANGE:?set DEST_COUNT_RANGE}"
-: "${TRANSFORM_AWK:?set TRANSFORM_AWK}"
 
 mkdir -p ./artifacts
 
 agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$SOURCE_RANGE" --format csv \
   > ./artifacts/source.csv
 
-awk -f "$TRANSFORM_AWK" ./artifacts/source.csv > ./artifacts/roundtrip.csv
+awk -F ',' 'BEGIN{OFS=","} NR==1 || $5=="P1" {print $1,$2,$5}' \
+  ./artifacts/source.csv > ./artifacts/roundtrip.csv
 head -n 5 ./artifacts/roundtrip.csv > ./artifacts/expected_preview.csv
 
 cat ./artifacts/roundtrip.csv \
@@ -57,4 +57,5 @@ agent-sheet pipe out --entry-id "$ENTRY_ID" --range "$DEST_COUNT_RANGE" --format
 
 - shell roundtrips can preserve row count while drifting headers or keys
 - staging the transformed file makes the review boundary explicit
+- an inline transform keeps the example self-contained and easy to copy
 - an inline preview assertion keeps the example self-contained and avoids helper-script dependencies
