@@ -1,8 +1,6 @@
 # Shell Patterns Reference
 
-Use these patterns when the task is fundamentally a stream transform, large-data extraction, or rectangular review build.
-
-These companion tools are optional. If they are unavailable, stay on built-in commands or write an intermediate artifact first.
+Use these only when the task is fundamentally a shell roundtrip. Do not repeat a playbook when a small pattern is enough.
 
 ## TSV pipeline for filter/project/writeback
 
@@ -12,38 +10,50 @@ agent-sheet pipe out --entry-id <entry-id> --range "Claims!A1:H200000" --format 
   | agent-sheet pipe in --entry-id <entry-id> --range "ClaimsP1Review!A1:C200000" --input-format tsv
 ```
 
-## Exact-value pipeline for ID/amount logic
+Use this when simple projection/filter logic fits in one pipeline and the destination is a bounded review rectangle.
+
+## Raw-value export for exact comparisons
 
 ```bash
 agent-sheet pipe out --entry-id <entry-id> --range "Claims!A1:H200000" --type rawValue --format tsv \
-  | awk -F'\t' 'BEGIN{OFS="\t"} NR==1 || ($1 ~ /^00/ && $6 > 1000) {print $1,$3,$6}' \
-  | agent-sheet pipe in --entry-id <entry-id> --range "ClaimsExactReview!A1:C200000" --input-format tsv
+  | awk -F'\t' 'BEGIN{OFS="\t"} NR==1 || ($1 ~ /^00/ && $6 > 1000) {print $1,$3,$6}'
 ```
 
-## Python one-liner for richer transforms
+Use `--type rawValue` when formatted display text is not safe enough for downstream logic.
+
+## Inline preview assertion after writeback
 
 ```bash
-agent-sheet pipe out --entry-id <entry-id> --range "Sales!A1:F120000" --type rawValue --format csv \
-  | python -c 'import csv,sys; r=csv.reader(sys.stdin); w=csv.writer(sys.stdout); h=next(r); w.writerow(h+["amount_with_tax"]); [w.writerow(row+[str(round(float(row[4])*1.06,2))]) for row in r if row and row[4]]' \
-  | agent-sheet pipe in --entry-id <entry-id> --range "SalesEnriched!A1:G120000" --input-format csv
+agent-sheet pipe out --entry-id <entry-id> --range 'ApprovalQueue!A1:G5' --format csv \
+  > ./artifacts/actual_preview.csv
+
+python3 - <<'PY'
+import csv
+
+with open("./artifacts/expected_preview.csv", newline="", encoding="utf-8") as f:
+    expected = list(csv.reader(f))
+with open("./artifacts/actual_preview.csv", newline="", encoding="utf-8") as f:
+    actual = list(csv.reader(f))
+
+assert actual[:5] == expected[:5], "preview mismatch"
+print("preview verified")
+PY
 ```
 
-## Reusable file artifact
+Use a tiny inline assertion when you only need to compare a short preview and do not want a shipped helper script.
+
+## Quoted range for imported templates
 
 ```bash
-agent-sheet pipe out --entry-id <entry-id> --range "Claims!A1:H200000" --format tsv \
-  > ./artifacts/claims.tsv
-awk -F'\t' 'NR==1 || $5=="P1"{print $0}' ./artifacts/claims.tsv > ./artifacts/claims_p1.tsv
+agent-sheet pipe out --entry-id <entry-id> --range '工作表1!A1:J3' --format csv \
+  > ./artifacts/template_anchor.csv
 ```
+
+Use a quoted full A1 range string when the worksheet name is non-English or otherwise shell-sensitive.
 
 ## Notes
 
-- prefer TSV over CSV when `awk` or `sed` are the next consumer
-- `pipe out` already expresses stdout-first stream behavior; keep redirects explicit in the shell
-- `pipe out` emits real workbook data shape; if you need to skip a real source header row, do it in the transform step
-- use `--type rawValue` when the next step depends on exact typed values rather than formatted display values
-- use explicit destination ranges for `pipe in`
-- if you need external processing, start from `agent-sheet pipe out` rather than reopening the workbook with a local workbook library
-- if `awk`, `sed`, or `python` are unnecessary, prefer the direct `agent-sheet` primitive
-- after writeback, verify header row, first sample rows, key columns, and row count together; count-only verification is not enough
-- for a reusable skeleton, start from [../examples/roundtrip-pipe-review-rectangle.md](../examples/roundtrip-pipe-review-rectangle.md) and [../scripts/verify_csv_preview.py](../scripts/verify_csv_preview.py)
+- prefer TSV when `awk` is the next consumer
+- keep `pipe in` destination ranges explicit
+- stage an artifact first if the transform or verification needs a stable preview
+- after writeback, verify header, first rows, one key column, and row count together
