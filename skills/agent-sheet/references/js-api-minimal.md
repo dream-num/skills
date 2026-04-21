@@ -30,7 +30,7 @@ Switch to `run` when you can clearly explain the gap, for example:
 - "I need merge/unmerge behavior."
 - "I need a bounded API workflow that is awkward or impossible with the smaller primitives."
 
-**Related**: [../playbooks/40-script-fallback.md](../playbooks/40-script-fallback.md)
+**Related**: [../playbooks/02-common-workflows.md](../playbooks/02-common-workflows.md)
 
 ## Description
 
