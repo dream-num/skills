@@ -2,6 +2,8 @@
 
 `run` is the programmable workbook surface in `agent-sheet`. It executes a bounded JavaScript function inside the Univer spreadsheet engine so you can read workbook state, apply workbook-native edits, and return a structured result.
 
+Read this page first when you know the job belongs in `run` but have not chosen the exact API yet.
+
 Use `run` when the work is workbook-local logic that is clearer or more reliable in API form, especially for:
 
 - styling and presentation
@@ -20,6 +22,27 @@ Do not use `run` when a smaller surface already expresses the job cleanly:
 
 `run` is the standard programmable surface for bounded workbook logic.
 
+## Quick start
+
+Use this command shape:
+
+```bash
+agent-sheet run --entry-id <entry-id> --code '() => {
+  const workbook = univerAPI.getActiveWorkbook();
+  const sheet = workbook.getSheetByName("Sheet1");
+  if (!sheet) return { success: false, error: "Sheet1 not found" };
+
+  sheet.getRange("A1").setValue("ready");
+  return { success: true, changedRanges: ["Sheet1!A1"] };
+}'
+```
+
+Then verify from workbook-visible reads:
+
+```bash
+agent-sheet inspect range --entry-id <entry-id> --range "Sheet1!A1:B5"
+```
+
 ## Execution Environment
 
 - code runs inside the Univer spreadsheet engine JavaScript runtime
@@ -37,6 +60,14 @@ Do not use `run` when a smaller surface already expresses the job cleanly:
 - check for missing sheets before writing
 - keep the operation bounded to the workbook task at hand
 - verify the result with workbook-visible reads after the command
+
+## How to use this reference family
+
+- stay on this page if you only need the command shape, execution rules, and a quick reminder of when `run` is appropriate
+- go to [run-api-core.md](run-api-core.md) for workbook, worksheet, structure, coordinates, and `getRange()`
+- go to [run-api-ranges.md](run-api-ranges.md) for values, formulas, merges, clear, cell insertion and deletion, and autofill
+- go to [run-api-formatting.md](run-api-formatting.md) for fonts, fills, alignment, borders, and number formats
+- go to [run-api-advanced.md](run-api-advanced.md) to understand what is intentionally out of the current stable reference set
 
 ## Formula Warning
 

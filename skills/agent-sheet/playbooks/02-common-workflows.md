@@ -1,8 +1,10 @@
 # Common Workflows
 
-## Reconnaissance first
+Use this page by matching the task to a workflow. Each workflow starts with the smallest command surface that keeps the job explicit and verifiable.
 
-When to use: every task that starts from an existing workbook.
+## I need to understand the workbook before deciding anything
+
+When to use: every task that starts from an existing workbook or imported template.
 
 ```bash
 agent-sheet inspect workbook --entry-id <entry-id>
@@ -16,9 +18,9 @@ Key verification:
 - header row and sample rows match the task
 - the intended write area is bounded
 
-## Search before mutation
+## I need to find the target rows before editing
 
-When to use: the target rows are defined by content rather than a fixed range.
+When to use: the target rows are defined by content rather than fixed coordinates.
 
 ```bash
 agent-sheet search --entry-id <entry-id> --query "<query>"
@@ -30,9 +32,9 @@ Key verification:
 - the hits are on the expected sheet
 - the mutation range is derived from real hits, not guessed coordinates
 
-## Propagate with `fill`
+## I need to extend a correct seed formula or series
 
-When to use: copy formulas or workbook-native series from a known seed.
+When to use: the workbook already contains a correct formula, pattern, or series that should propagate naturally.
 
 ```bash
 agent-sheet inspect range --entry-id <entry-id> --range "<worksheet>!A1:E8"
@@ -46,9 +48,9 @@ Key verification:
 - propagated formulas appear in the target rows
 - displayed values on sample rows look correct
 
-## Roundtrip with `pipe out` and `pipe in`
+## I need a shell transform on a bounded rectangle
 
-When to use: a shell transform is easier than workbook-local logic.
+When to use: the data movement is rectangular and shell tools express the transform more cleanly than workbook-local code.
 
 ```bash
 agent-sheet pipe out --entry-id <entry-id> --range "<worksheet>!A1:H200" --format csv > /tmp/input.csv
@@ -63,9 +65,9 @@ Key verification:
 - first 2-5 rows still align with key columns
 - row count alone is not enough
 
-## Workbook-local logic with `run`
+## I need workbook-local logic or structure changes
 
-When to use: bounded logic, structural edits, or workbook APIs that `fill` and `pipe` do not cover cleanly.
+When to use: bounded logic, structural edits, formatting, or workbook APIs that `fill` and `pipe` do not cover cleanly.
 
 ```bash
 agent-sheet run --entry-id <entry-id> --code '() => {
@@ -83,9 +85,9 @@ Key verification:
 - touched sheets and ranges are explicit
 - verify from workbook-visible surfaces after the run
 
-## Import, mutate, export
+## I need to start from a local file and hand back a local file
 
-When to use: start from a local file and hand back a local file.
+When to use: a workbook comes from disk and the result also needs to leave as a file artifact.
 
 ```bash
 agent-sheet file import ./input.xlsx --json
