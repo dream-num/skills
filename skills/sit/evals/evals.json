@@ -1,0 +1,23 @@
+{
+  "skill_name": "sit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use sit to inspect the repo state for this persisted workbook, capture all current workbook changes, review the diff, and commit with a clear message.",
+      "expected_output": "Uses `sit status`, `sit add <univer-path>` or `sit add --all`, `sit diff`, and `sit commit --message`, without inventing `stage` or `history`.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use sit to create a review session for the current committed workbook changes, publish it to hosted review, then read machine-readable review feedback.",
+      "expected_output": "Uses `sit review create`, `sit push review <session>`, `sit review status <session>`, and `sit review comments <session>` with stable owner/repo scope when needed.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Use sit to diagnose an origin sync refusal and tell me the next safe command without forcing or inventing a rebase flow.",
+      "expected_output": "Uses `sit fetch origin`, `sit pull origin`, `sit push origin --dry-run` or `--explain` as appropriate, follows refusal guidance literally, and avoids `rebase origin`.",
+      "files": []
+    }
+  ]
+}
