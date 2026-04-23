@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sit"
+  short_description: "Workbook repo, review, and origin workflows"
+  default_prompt: "Use $sit to inspect `.sit` status, diff, commits, review sessions, hosted feedback, or origin sync for this workbook workspace."

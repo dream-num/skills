@@ -1,0 +1,23 @@
+{
+  "skill_name": "univer-cli",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Use univer-cli to create a new ./Budget.univer workbook, inspect it, and report the workbook-visible sheets before making any edits.",
+      "expected_output": "Uses `univer new`, follows with `univer inspect workbook`, and treats inspect output rather than command success as proof.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Use univer-cli to import ./input.xlsx into ./Imported.univer, summarize the sheet names and formulas, then export a handoff xlsx and verify the handoff exists.",
+      "expected_output": "Uses `univer import`, `inspect workbook` plus formula inspection when needed, `univer export`, and verifies the exported file plus workbook-visible structure.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Use univer-cli to pipe a bounded review rectangle through a shell transform, write it back, and prove the header row and first sample rows still line up.",
+      "expected_output": "Uses `pipe out` and `pipe in` on explicit ranges, stages or previews transformed data, and verifies structure plus sample rows rather than row count alone.",
+      "files": []
+    }
+  ]
+}

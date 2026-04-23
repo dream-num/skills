@@ -1,0 +1,4 @@
+interface:
+  display_name: "Univer CLI"
+  short_description: "Workbook inspection, edits, and verified roundtrips"
+  default_prompt: "Use $univer-cli to inspect, edit, import/export, or verify this `.univer` workbook with explicit workbook-visible checks."

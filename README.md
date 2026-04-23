@@ -1,35 +1,46 @@
 # Official Univer Skills for Spreadsheet Automation
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Skills](https://img.shields.io/badge/skills-1-0a7ea4.svg)
+![Skills](https://img.shields.io/badge/skills-4-0a7ea4.svg)
 ![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
-Official Univer skills for spreadsheet automation across Claude Code, Codex, and Cursor.
+Official Univer skills for workbook automation and Git-shaped workbook collaboration across Claude Code, Codex, and Cursor.
 
-This repository currently centers on one primary skill, [`agent-sheet`](./skills/agent-sheet/SKILL.md): a workbook-native skill for agents that need real sheet structure, precise writes, import or export handoff, and verification-first spreadsheet workflows.
+This repository exposes two canonical skills:
 
-## Why `agent-sheet`
+- [`univer-cli`](./skills/univer-cli/SKILL.md): path-first workbook work through `univer` / `unv`
+- [`sit`](./skills/sit/SKILL.md): `.sit` repo, review-session, hosted review, and origin sync workflows
 
-`agent-sheet` is built for local, shell-native spreadsheet work:
+Legacy aliases remain for compatibility with older prompts and installs:
 
-- Fully local for core workbook workflows. No network connection or account signup is required.
-- Powered by [Univer](https://github.com/dream-num/univer), which has **12.6k GitHub stars as of March 20, 2026** and provides a modern spreadsheet engine without requiring Excel, LibreOffice, or a cloud spreadsheet account.
-- Shell-native by design, so it works naturally with `awk`, `grep`, `sed`, `jq`, Python, and other native tooling.
-- Better suited for large datasets and complex spreadsheet tasks where plain prompts or browser spreadsheets become brittle.
-- Backed by the broader Univer spreadsheet engine ecosystem for rich workbook structure, formulas, sheets, ranges, and spreadsheet-native operations.
+- [`agent-sheet`](./skills/agent-sheet/SKILL.md)
+- [`sheet-git`](./skills/sheet-git/SKILL.md)
+
+## Why These Skills
+
+The canonical split mirrors the product split:
+
+- `univer-cli` is for workbook-visible work: `new`, `import`, `export`, `inspect`, `search`, `fill`, `run`, and `pipe`
+- `sit` is for repo-visible work: `add`, `reset`, `status`, `commit`, `log`, `show`, `diff`, `blame`, `checkpoint`, `review`, `push`, `fetch`, and `pull`
+
+Keep workbook authoring distinct from repo and collaboration workflow. For combined tasks, finish and verify workbook edits with `univer-cli`, then use `sit` for history, review, or origin sync.
 
 ## Quick Install
 
-Recommended path:
+Install the workbook CLI:
 
 ```bash
-# Install the workbook CLI used by the skill
-npm install -g agent-sheet@latest
+npm install -g univer-cli@latest
+```
 
-# Install this skill repository with the skills CLI
+Install this skill repository:
+
+```bash
 npx skills add dream-num/skills
 ```
+
+For `sit`, make sure a `sit` binary is available on `PATH`. Its runtime distribution is environment-specific today, so the skill documents the command surface and assumes the binary already exists.
 
 Manual install:
 
@@ -39,121 +50,67 @@ cd skills
 
 # Claude Code
 mkdir -p ~/.claude/skills
-cp -R skills/agent-sheet ~/.claude/skills/
+cp -R skills/univer-cli ~/.claude/skills/
+cp -R skills/sit ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
-cp -R skills/agent-sheet ~/.codex/skills/
+cp -R skills/univer-cli ~/.codex/skills/
+cp -R skills/sit ~/.codex/skills/
 
 # Cursor
 mkdir -p ~/.cursor/skills
-cp -R skills/agent-sheet ~/.cursor/skills/
+cp -R skills/univer-cli ~/.cursor/skills/
+cp -R skills/sit ~/.cursor/skills/
 ```
 
-Project-scoped installs follow the same pattern with `.claude/skills/`, `.codex/skills/`, or `.cursor/skills/` in your repository root.
+If you still need legacy aliases, copy `skills/agent-sheet/` and `skills/sheet-git/` as well.
 
 ## Available Skills
 
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
-| [`agent-sheet`](./skills/agent-sheet/SKILL.md) | Spreadsheet automation with workbook inspection, precise writes, import/export handoff, and verification-first workflows | sheet inspection, formula review, bounded edits, review-table generation, shell roundtrips | primary |
-
-## `agent-sheet` at a Glance
-
-Use `agent-sheet` when the task needs:
-
-- fully local spreadsheet work without network access or signup
-- spreadsheet automation without depending on Excel, LibreOffice, or Google Sheets
-- workbook inspection with explicit `entryId` context
-- sheet, range, formula, and search analysis
-- sparse writes, range replacement, anchored tables, and formula fills
-- import or export handoff for local workbooks
-- shell roundtrips with `awk`, `grep`, `sed`, `jq`, or Python followed by workbook-safe writeback and verification
-
-Do not default to it for:
-
-- plain CSV cleanup that does not need workbook semantics
-- ad-hoc local workbook library code for operations already covered by the CLI
-- mutation flows that skip verification after writing
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, fill, run, and shell-native roundtrips | workbook inspection, formula review, bounded edits, verification-first authoring, handoff | canonical |
+| [`sit`](./skills/sit/SKILL.md) | Git-shaped workbook repo workflow with `.sit`, review sessions, hosted review, and origin sync | local history, review handoff, origin recovery, blame, diff, pull/push | canonical |
+| [`agent-sheet`](./skills/agent-sheet/SKILL.md) | Legacy workbook skill kept for compatibility | older prompt surfaces that still call the historical skill name | legacy |
+| [`sheet-git`](./skills/sheet-git/SKILL.md) | Legacy repo skill kept for compatibility | older prompt surfaces that still call the historical skill name | legacy |
 
 ## Example Prompts
 
-Use prompts like these after installing the skill:
-
 ```text
-Use agent-sheet to inspect this workbook, list all sheets, and summarize the formulas on the pricing sheet before making any edits.
+Use univer-cli to inspect this workbook, list all sheets, and summarize the formulas on the pricing sheet before making any edits.
 ```
 
 ```text
-Use agent-sheet to import the attached xlsx, add a review table to a bounded range on the QA sheet, then verify the anchor cells and header row.
+Use univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded review table, then verify the header row and anchor cells.
 ```
 
 ```text
-Use agent-sheet to export the orders sheet, transform it with shell tools, write the cleaned result back as a table, and verify the structure plus the first rows.
+Use sit to inspect the local repo state for this workbook, create a review session if needed, and tell me the next safe review or origin command.
 ```
 
-## Supported Clients and Requirements
-
-Supported clients:
-
-- Claude Code
-- Codex
-- Cursor
-
-Runtime requirements from [`agent-sheet`](./skills/agent-sheet/SKILL.md):
+## Requirements
 
 - OS: Linux or macOS
-- Required binary: `agent-sheet`
-- Common companion tools: `awk`, `sed`, `python3` or `python`
+- `univer-cli` skill: requires `univer`; `unv` is the short alias
+- `sit` skill: requires `sit`; it usually travels with a compatible `univer` runtime in the same environment
+- common companion tools for shell roundtrips: `awk`, `sed`, `python3` or `python`
 
-Operational advantages:
+## Validation
 
-- core workflows stay local
-- no account registration required
-- no Excel app, LibreOffice app, or cloud spreadsheet dependency
-- native fit for shell pipelines and large data processing tasks
+Canonical skills include prompt-level eval seeds:
 
-Install the CLI runtime with:
+- [`skills/univer-cli/evals/evals.json`](./skills/univer-cli/evals/evals.json)
+- [`skills/sit/evals/evals.json`](./skills/sit/evals/evals.json)
 
-```bash
-npm install -g agent-sheet@latest
-```
-
-## Why Trust This Repo
-
-- It is positioned as the official Univer skill repository for spreadsheet automation.
-- It is powered by [Univer](https://github.com/dream-num/univer), a widely used spreadsheet framework with **12.6k GitHub stars as of March 20, 2026**.
-- The repository is narrowly scoped around workbook workflows rather than generic prompt bundles.
-- The primary skill favors explicit targeting, bounded writes, and post-mutation verification.
-- Supporting assets are organized as readable playbooks, references, and examples instead of opaque generated blobs.
-
-## Safety Notes
-
-- Review [`skills/agent-sheet/SKILL.md`](./skills/agent-sheet/SKILL.md) and any referenced playbooks or examples before installing in a trusted environment.
-- Expect local command execution through the `agent-sheet` CLI and common shell tools.
-- Treat write operations as incomplete until verification has been run on the relevant workbook surface.
-- Prefer the smallest built-in write command that solves the task before falling back to custom scripting.
-
-## Validation Approach
-
-This repository does not currently ship a separate `evals/` directory. The current trust and validation signals come from the skill design itself:
-
-- verification-first instructions in [`skills/agent-sheet/SKILL.md`](./skills/agent-sheet/SKILL.md)
-- dedicated verification guidance in [`skills/agent-sheet/playbooks/03-handoff-and-verification.md`](./skills/agent-sheet/playbooks/03-handoff-and-verification.md)
-- concrete mutation and handoff examples in [`skills/agent-sheet/examples/`](./skills/agent-sheet/examples/)
-- command references and workflow playbooks under [`skills/agent-sheet/references/`](./skills/agent-sheet/references/) and [`skills/agent-sheet/playbooks/`](./skills/agent-sheet/playbooks/)
-
-The roadmap for this repo includes stronger automated eval coverage.
-
+These evals are intentionally small prompts that exercise command choice and verification behavior. Expand them when command surfaces or workflow semantics change.
 
 ## Contributing
 
-Contributions should preserve the current repo style:
-
 - keep each skill self-contained under `skills/<skill-name>/`
-- prefer explicit instructions over vague prompt prose
-- keep reference material out of the main `SKILL.md` when progressive disclosure is clearer
-- add verification guidance for any mutation-oriented workflow
+- keep `SKILL.md` concise and move details into one-level `references/`
+- add or update eval prompts for behavior changes
+- avoid diverging canonical skills and legacy aliases by accident; update canonical skills first
 
 ## License
 
