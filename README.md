@@ -12,10 +12,9 @@ This repository exposes two canonical skills:
 - [`univer-cli`](./skills/univer-cli/SKILL.md): path-first workbook work through `univer` / `unv`
 - [`sit`](./skills/sit/SKILL.md): `.sit` repo, review-session, hosted review, and origin sync workflows
 
-Legacy aliases remain for compatibility with older prompts and installs:
+Deprecated legacy aliases remain only for compatibility with older prompts and installs:
 
 - [`agent-sheet`](./skills/agent-sheet/SKILL.md)
-- [`sheet-git`](./skills/sheet-git/SKILL.md)
 
 ## Why These Skills
 
@@ -64,7 +63,7 @@ cp -R skills/univer-cli ~/.cursor/skills/
 cp -R skills/sit ~/.cursor/skills/
 ```
 
-If you still need legacy aliases, copy `skills/agent-sheet/` and `skills/sheet-git/` as well.
+If you still need deprecated legacy aliases, copy `skills/agent-sheet/` alone.
 
 ## Available Skills
 
@@ -72,8 +71,7 @@ If you still need legacy aliases, copy `skills/agent-sheet/` and `skills/sheet-g
 |---|---|---|---|
 | [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, fill, run, and shell-native roundtrips | workbook inspection, formula review, bounded edits, verification-first authoring, handoff | canonical |
 | [`sit`](./skills/sit/SKILL.md) | Git-shaped workbook repo workflow with `.sit`, review sessions, hosted review, and origin sync | local history, review handoff, origin recovery, blame, diff, pull/push | canonical |
-| [`agent-sheet`](./skills/agent-sheet/SKILL.md) | Legacy workbook skill kept for compatibility | older prompt surfaces that still call the historical skill name | legacy |
-| [`sheet-git`](./skills/sheet-git/SKILL.md) | Legacy repo skill kept for compatibility | older prompt surfaces that still call the historical skill name | legacy |
+| [`agent-sheet`](./skills/agent-sheet/SKILL.md) | Deprecated legacy workbook skill kept for compatibility | older prompt surfaces that still call the historical skill name | deprecated |
 
 ## Example Prompts
 
