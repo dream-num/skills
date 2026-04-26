@@ -39,13 +39,47 @@ Treat the workbook package as the source of truth. Read from workbook-visible st
 Use the smallest surface that cleanly matches the task:
 
 - `new` / `import` / `export`: workbook lifecycle and handoff
-- `inspect`: first read, reconnaissance, workbook-visible structure, formulas, ranges, lint signals
+- `inspect <subcommand>`: first read, reconnaissance, workbook-visible structure, formulas, ranges, lint signals
 - `search`: first-class localization before edits
 - `fill`: spreadsheet-native propagation when a correct seed already exists
 - `run`: default programmable workbook surface for bounded workbook-local logic
 - `pipe out` / `pipe in`: bulk rectangular data plane for shell roundtrips
 
 Start small. If `inspect`, `search`, `fill`, or `pipe` cleanly expresses the job, use that surface directly. Use `run` when the work is programmable workbook logic rather than bulk data movement.
+
+
+## Command choice
+
+| Intent | Prefer |
+|---|---|
+| inspect workbook shape, formulas, or a target range before deciding | `inspect workbook|sheet|range|formulas` |
+| locate rows or cells that match a condition before editing | `search` |
+| extend an existing formula, series, or filled pattern | `fill` |
+| move a bounded rectangle through shell tools and write it back | `pipe out` -> shell transform -> `pipe in` |
+| start from a local workbook file | `import` |
+| export a handoff workbook to disk | `export` |
+| apply bounded workbook-native logic or formatting | `run` |
+| none of the smaller surfaces fit cleanly | `run` |
+
+## Public command surface
+
+- lifecycle
+  - `univer new <univer-path> [--name <name>] [--json]`
+  - `univer import <input-path> <univer-path> [--name <name>] [--json]`
+  - `univer export <univer-path> <output-path> [--json]`
+- reconnaissance
+  - `univer inspect workbook <univer-path> [--json-summary]`
+  - `univer inspect sheet <univer-path> [--sheet <name>|<sheet-name>] [--json-summary]`
+  - `univer inspect range <univer-path> --range <sheet!A1:B2> [--json-summary]`
+  - `univer inspect formulas <univer-path> [--sheet <name>] [--range <sheet!A1:B2>] [--json-summary]`
+  - `univer inspect lint <univer-path> [--json-summary]`
+  - `univer search <univer-path> [--query <text>|<text>] [--format jsonl|ndjson|csv|tsv] [--to-stdout]`
+- mutation
+  - `univer fill <univer-path> --sheet <name> --source-range <A1> --target-range <A1> [--json]`
+  - `univer fill <univer-path> --range <sheet!A1:B2> --value <value> [--json]`
+  - `univer pipe out <univer-path> --range <sheet!A1:B2> [--type displayValue|rawValue|formula] [--format csv|tsv|json] [--to-stdout] [--output <path>]`
+  - `univer pipe in <univer-path> --range <sheet!A1:B2> [--input-format json|csv|tsv] [--data-file <path>|--data-stdin|--data-json <json>] [--json]`
+  - `univer run <univer-path> (--code <script>|--file <path>|<path>|-) [--json-summary] [--json]`
 
 ## Default operating model
 
@@ -61,7 +95,7 @@ Start small. If `inspect`, `search`, `fill`, or `pipe` cleanly expresses the job
 ## Hard defaults
 
 - prefer explicit `<univer-path>`; do not treat `unitId`, `sessionId`, or manifest ids as file identity
-- start with `inspect`
+- start with `inspect <subcommand>`
 - treat `run` as the default programmable workbook surface
 - treat `pipe out` / `pipe in` as the bulk rectangular data plane
 - verify from workbook-visible results, not metadata alone
@@ -79,6 +113,13 @@ Start small. If `inspect`, `search`, `fill`, or `pipe` cleanly expresses the job
 - shell pipelines can preserve the expected row count while still shifting headers or keys; verify the first rows and key columns after writeback
 - if workbook-visible verification disagrees with metadata, trust the workbook-visible surface first
 
+## Verification defaults
+
+- after `new` or `import`: `univer inspect workbook <univer-path>`
+- after formula work: `univer inspect formulas <univer-path> --range <sheet!A1:B2>`
+- after rectangular writeback: inspect the header row, first sample rows, and key columns
+- before handoff: inspect the source workbook, export, check the output file exists, then re-import or inspect the handoff path when needed
+
 ## Read next
 
 Read only what matches the task:
@@ -86,7 +127,6 @@ Read only what matches the task:
 - [playbooks/01-getting-started.md](playbooks/01-getting-started.md): first contact, target resolution, basic flow
 - [playbooks/02-common-workflows.md](playbooks/02-common-workflows.md): workflow recipes by task intent
 - [playbooks/03-handoff-and-verification.md](playbooks/03-handoff-and-verification.md): handoff, completion checks, workbook-visible verification
-- [references/command-surface.md](references/command-surface.md): exact public commands and command choice
 - [references/run-api.md](references/run-api.md): `run` entry point and reference map for bounded programmable workbook logic
 - [references/shell-patterns.md](references/shell-patterns.md): small shell-native patterns for `pipe` workflows
 - [references/gotchas.md](references/gotchas.md): real-world failure modes and edge cases
