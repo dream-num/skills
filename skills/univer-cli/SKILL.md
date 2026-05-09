@@ -19,7 +19,8 @@ Use this skill when the task involves any of these:
 - changing formulas, formatting, layout, sheet structure, or derived workbook data
 - streaming a bounded rectangle through shell tools such as `awk`, `sort`, `uniq`, `wc`, or `jq`
 - opening a readonly local preview with `univer view`
-- checking or checkpointing local workbook changes with `status` and `commit`
+- checking local workbook status and creating local changesets with `status` and `commit`
+- cloning, pulling, or syncing workbook versioning state with a configured remote
 - exporting a handoff file and proving it is usable
 
 Do not use this skill as an API reference. For exact command syntax, run `univer help`, `univer help <command>`, or `univer help <group> <command>`. For `run` APIs, use `univer help run` and `univer help run <topic>`.
@@ -35,7 +36,7 @@ Default to this loop:
 5. Mutate through public CLI commands, not by editing package internals.
 6. Verify the changed workbook-visible state with `inspect` or `pipe out`.
 7. Export only after verification when the user needs a handoff file.
-8. Commit only after verified changes when the workflow needs a local checkpoint.
+8. Commit only after verified changes when the workflow needs a local changeset.
 
 The workbook path is the local identity. Do not treat `unitId`, `sessionId`, or manifest ids as the CLI target.
 
@@ -64,7 +65,11 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 | Write a known rectangular matrix back | `univer pipe in` |
 | Apply bounded workbook-local logic | `univer run --file` |
 | Preview readonly workbook state | `univer view --no-open --json` or `univer view` |
-| Check or checkpoint local changes | `univer status`, then `univer commit` |
+| Check local versioning state | `univer status` |
+| Create a local changeset from local mutations | `univer commit --message <message>` |
+| Initialize a local package from an existing remote unit | `univer clone --unit-id <unitID>` |
+| Pull remote-only changes | `univer pull` |
+| Sync local and remote versioning state | `univer sync` |
 | Diagnose runtime problems | `univer doctor`, `univer daemon status` |
 
 Start small. If `inspect`, `pipe`, or another narrow surface expresses the job, use it directly. Reach for `run` when the task needs workbook-native logic rather than bulk data movement.
@@ -188,7 +193,7 @@ univer view "$WB" --no-open --json
 
 Use `univer help view` for port and browser-opening options.
 
-### Checkpoint Verified Changes
+### Commit Verified Changes
 
 Check status before committing. Commit only after workbook-visible verification.
 
@@ -197,6 +202,37 @@ univer status "$WB"
 univer commit "$WB" --message "Update review ranges"
 univer status "$WB"
 ```
+
+`commit` creates a local changeset from current local mutations. It does not push to a remote.
+
+### Clone, Pull, And Sync
+
+Use `clone` when a remote workbook unit already exists and you need a new local package path. The
+target `.univer` path must be nonexistent or empty.
+
+```bash
+WB=./budget.univer
+univer clone "$WB" --unit-id unit-remote --json
+univer status "$WB"
+univer inspect workbook "$WB"
+```
+
+Use `pull` when you only need missing remote changesets for a package already bound to a remote
+unit. Use `sync` to sync local and remote versioning state.
+
+```bash
+univer status "$WB"
+univer pull "$WB"
+univer status "$WB"
+
+univer commit "$WB" --message "Update review ranges"
+univer sync "$WB"
+univer status "$WB"
+```
+
+`sync` creates the remote workbook first when the package is still local-only. It pulls remote
+changes and pushes local changesets, but it does not push uncommitted local mutations.
+Remote endpoints come from `collaboration.defaultRemote` and `collaboration.remotes.<name>.url`.
 
 ### Export Handoff
 
@@ -259,5 +295,10 @@ Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can pri
 - Shell row counts can pass while headers, columns, or keys shift. Check headers, samples, and key columns together.
 - `pipe in` writes parsed matrix data and reports a summary; it does not echo input.
 - `view` is readonly preview. Do not treat it as mutation verification unless the task is visual review.
+- `commit` is local only; use `sync` to push local changesets.
+- `sync` does not push uncommitted local mutations. Commit verified workbook changes first.
+- If `sync` reports an invalid remote binding, stop and diagnose the package or remote setup.
+- `pull` requires a package already bound to a remote unit. Use `sync` for first remote creation or `clone --unit-id` for an existing remote unit.
+- `clone` replaced older remote binding wording. Do not use or invent a `bind` command.
 - If runtime-backed commands fail to start, inspect `univer daemon status` before retrying blindly.
 - If workbook-visible reads disagree with package metadata, trust workbook-visible reads first.
