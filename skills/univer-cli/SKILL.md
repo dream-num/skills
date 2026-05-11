@@ -7,6 +7,8 @@ description: "Use when solving spreadsheet workbook problems with the `univer` o
 
 `univer-cli` is a shell-native spreadsheet workbook CLI for agents. Use it when the workbook itself is the source of truth: Excel-compatible handoff, real sheet structure, formulas, formatting, rich spreadsheet edits, local preview, versioning, or verified rectangular data roundtrips.
 
+Install it with `npm i -g univer-cli`.
+
 Prefer `univer` over ad hoc CSV/text handling when the task depends on workbook-visible state. The executable is `univer`; `unv` may be available as a short alias.
 
 ## When To Use
