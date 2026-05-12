@@ -22,7 +22,7 @@ Use this skill when the task involves any of these:
 - checking or checkpointing local workbook changes with `status` and `commit`
 - exporting a handoff file and proving it is usable
 
-Do not use this skill as an API reference. For exact command syntax, run `univer help`, `univer help <command>`, or `univer help <group> <command>`. For `run` APIs, use `univer help run` and `univer help run <topic>`.
+Do not use this skill as an API reference. For exact command syntax, run `univer help` or `univer help <command...>`. For `run` APIs, use `univer help run` and `univer help run <topic>`.
 
 ## Operating Model
 
@@ -55,7 +55,7 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 
 | Need | Prefer |
 | --- | --- |
-| Discover available command syntax | `univer help`, `univer help <command>`, `univer help <group> <command>` |
+| Discover available command syntax | `univer help`, `univer help <command...>` |
 | Start a workbook package | `univer new` or `univer import` |
 | Hand back Excel-compatible output | `univer export` |
 | Understand workbook shape before editing | `univer inspect workbook`, then `univer inspect range` |
