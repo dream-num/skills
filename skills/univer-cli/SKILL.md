@@ -293,6 +293,7 @@ Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can pri
 - Local file identity is the workbook path, such as `./budget.univer`, not `unitId`, `sessionId`, or manifest ids.
 - Command success is not enough after import, mutation, export, or handoff. Verify workbook-visible state.
 - A non-zero `$?` means the operation failed. Read stderr for the diagnostic, usage, and retry guidance.
+- Top-level help group headings are visual sections only. Do not run `univer help read`, `univer help stream`, or group-prefixed leaf topics such as `univer help read inspect range`; use canonical command help such as `univer help inspect range` and `univer help pipe out`.
 - Quote the full range: `--range '工作表1!A1:J20'`, not just the sheet name fragment.
 - Shell row counts can pass while headers, columns, or keys shift. Check headers, samples, and key columns together.
 - `pipe in` writes parsed matrix data and reports a summary; it does not echo input.
