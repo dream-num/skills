@@ -288,6 +288,8 @@ Hard rules:
 
 - Read `univer help run` before using unfamiliar script APIs.
 - Read `univer help run <topic>` for API families such as ranges, formulas, sheets, or formatting.
+- For conditional formatting, read `univer help run conditional-formatting` and use the documented facade builders instead of editing internal rule model shapes.
+- For conditional formatting color scales, data bars, and icon sets, prefer official enum references over bare strings: `ConditionFormatIconSetTypeEnum` supplies `setIconSet().iconConfigs[].iconType`, and `ConditionFormatValueTypeEnum` supplies value config `type` values.
 - Wrap code in `() => { ... }` or `async () => { ... }`.
 - Return a plain object with explicit success/error fields.
 - Use explicit sheet lookup, usually `getSheetByName(...)`.
