@@ -56,7 +56,7 @@ cp -R skills/univer-cli ~/.cursor/skills/
 
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, fill, run, and shell-native roundtrips | workbook inspection, formula review, bounded edits, verification-first authoring, handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 
 ## Example Prompts
 
