@@ -69,7 +69,7 @@ If you still need deprecated legacy aliases, copy `skills/agent-sheet/` alone.
 
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, fill, run, and shell-native roundtrips | workbook inspection, formula review, bounded edits, verification-first authoring, handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 | [`sit`](./skills/sit/SKILL.md) | Git-shaped workbook repo workflow with `.sit`, review sessions, hosted review, and origin sync | local history, review handoff, origin recovery, blame, diff, pull/push | canonical |
 | [`agent-sheet`](./skills/agent-sheet/SKILL.md) | Deprecated legacy workbook skill kept for compatibility | older prompt surfaces that still call the historical skill name | deprecated |
 

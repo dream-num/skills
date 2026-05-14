@@ -62,7 +62,7 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 | Start a workbook package | `univer new` or `univer import` |
 | Hand back Excel-compatible output | `univer export` |
 | Understand workbook shape before editing | `univer inspect workbook`, then `univer inspect range` |
-| Locate content-defined targets | `univer search` when available; fall back to bounded `inspect range` |
+| Locate content-defined cells | `univer search`, scoped with `--sheet` and/or `--range` when possible |
 | Stream rectangular data through shell tools | `univer pipe out` |
 | Write a known rectangular matrix back | `univer pipe in` |
 | Apply bounded workbook-local logic | `univer run --file` |
@@ -120,13 +120,41 @@ univer inspect workbook "$WB"
 
 ### Locate Before Editing
 
-Prefer a content search when it returns real matches in your installed CLI:
+Use `search` before editing when the target is defined by visible workbook content:
 
 ```bash
 univer search "$WB" West
 ```
 
-If search is unavailable or reports a pending implementation, inspect a bounded range and derive the edit boundary from visible headers and sample rows:
+Plain text output is one A1 reference per matched cell, which keeps shell pipelines clean. With no
+matches, stdout is empty and the command still succeeds. Use `--json` when you need match metadata,
+the matched cell data preview, truncation flags, counts, or the searched scope:
+
+```bash
+univer search "$WB" West --sheet Orders --range 'A1:Z200' --json
+```
+
+By default, search checks `displayValue`, so formatted values such as dates are searchable by the
+same strings a user sees in the sheet. Use `--type rawValue` for underlying numeric/string values
+such as spreadsheet date serials, and `--type formula` for formulas:
+
+```bash
+univer search "$WB" 2024-01-01
+univer search "$WB" 45292 --type rawValue
+univer search "$WB" SUM --type formula --json
+```
+
+Useful narrowing options:
+
+- `--sheet <name>` may be repeated.
+- `--range <A1>` may be repeated; unqualified ranges require a `--sheet`.
+- `--case-sensitive` and `--whole-cell` tighten matching.
+- `--max-results` limits returned matches; truncation is reported on stderr for text output and in JSON fields for `--json`.
+- `--max-cell-value-length` bounds previewed cell data in JSON.
+
+If `search` fails, read stderr for the diagnostic message before changing approach. If the target is
+not content-defined, inspect a bounded range and derive the edit boundary from visible headers and
+sample rows:
 
 ```bash
 univer inspect range "$WB" --range 'Sheet1!A1:D20'
