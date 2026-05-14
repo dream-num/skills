@@ -1,4 +1,0 @@
-interface:
-  display_name: "Sit"
-  short_description: "Workbook repo, sync, and origin workflows"
-  default_prompt: "Use $sit to inspect workbook-lane `.sit` status, diff, commits, pull-only origin materialization, or Desktop-approved sync for this workbook workspace."
