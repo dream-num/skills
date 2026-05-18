@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when solving spreadsheet workbook problems with the `univer` or `unv` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` or `.unv` packages, workbook inspection, range search, formulas, formatting, rich spreadsheet edits, live preview, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
+description: "Use when solving spreadsheet workbook problems with the `univer` or `unv` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` or `.unv` packages, workbook inspection, range search, formulas, formatting, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
 ---
 
 # univer-cli
@@ -30,6 +30,7 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 - streaming rectangular workbook data through shell tools before reading it into context
 - writing generated matrix data back into a sheet-qualified range
 - previewing workbook state locally with `univer view`
+- reading submitted local viewer review comments with `univer view comments`
 - creating, restoring, resetting, pulling, or syncing local workbook changesets
 - proving that a workbook-visible mutation or export is correct enough to hand back
 
@@ -69,6 +70,7 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 | Write a known rectangular matrix back | `univer pipe in` |
 | Apply bounded workbook-local logic | `univer run --file` |
 | Preview readonly workbook state | `univer view --no-open --json` or `univer view` |
+| Read local viewer review feedback | `univer view comments "$WB" --json` |
 | Check local versioning state | `univer status` |
 | Create a local changeset from local mutations | `univer commit --message <message>` |
 | Discard uncommitted local mutations | `univer restore` |
@@ -225,6 +227,15 @@ Use preview when visual confirmation helps. `--no-open --json` is useful for age
 ```bash
 univer view "$WB" --no-open --json
 ```
+
+When a human submits review feedback in the local viewer, read it without reopening the browser:
+
+```bash
+univer view comments "$WB" --json
+univer view comments --session "<session-id>" --all --json
+```
+
+By default, `view comments` returns actionable submitted comments that are not resolved. Use `--all` when you need pending, submitted, and resolved comments for audit context. These are local viewer review comments, not workbook-native cell notes or collaboration thread comments; the command is read-only and does not start a host, open a browser, create a session, or mutate the workbook.
 
 Use `univer help view` for port and browser-opening options.
 
