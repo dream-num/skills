@@ -7,7 +7,7 @@ description: "Use when solving spreadsheet workbook problems with the `univer` o
 
 `univer` is a spreadsheet engine in the terminal. Use it when an agent needs real workbook semantics: sheets, ranges, formulas, formatting, layout, previews, imports, exports, or versioned workbook state.
 
-Install the CLI with `npm i -g univer-cli`. The executable is `univer`; `unv` may be available as a short alias.
+Install the CLI with `npm i -g univer-cli`. Update the CLI with `univer update`. The executable is `univer`; `unv` may be available as a short alias.
 
 ## Core Mental Model
 
@@ -81,6 +81,7 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 | Pull remote-only changes for a bound package | `univer pull` |
 | Sync local and remote versioning state | `univer sync` |
 | Diagnose runtime problems | `univer doctor`, `univer daemon status` |
+| Prepare a bug report or Univer team support artifact after user authorization | `univer doctor collect` |
 
 Use canonical command help such as `univer help inspect range` and `univer help pipe out`. Top-level help group headings are visual sections only; do not run group-prefixed topics such as `univer help read inspect range`.
 
@@ -368,3 +369,9 @@ Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can pri
 - `clone` replaced older remote binding wording. Do not use or invent a `bind` command.
 - If runtime-backed commands fail to start, inspect `univer daemon status` before retrying blindly.
 - If workbook-visible reads disagree with package metadata, trust workbook-visible reads first.
+
+## Support
+
+Only enter support flow when the user asks to report a suspected CLI bug. Public issue: https://github.com/dream-num/skills/issues. Private artifacts: email developer@univer.ai; get authorization before guiding `univer doctor collect`.
+
+Skill document revision: 2026-05-20.
