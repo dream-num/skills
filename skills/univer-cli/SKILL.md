@@ -372,6 +372,6 @@ Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can pri
 
 ## Support
 
-Only enter support flow when the user asks to report a suspected CLI bug. Public issue: https://github.com/dream-num/skills/issues. Private artifacts: email developer@univer.ai; get authorization before guiding `univer doctor collect`.
+Only enter support flow when the user asks to report a suspected CLI bug. Public issues: https://github.com/dream-num/skills/issues. Community support and builder discussions: https://discord.gg/nThHPupraR. Private artifacts: email developer@univer.ai; get authorization before guiding `univer doctor collect`.
 
-Skill document revision: 2026-05-20.
+Skill document revision: 2026-05-21.
