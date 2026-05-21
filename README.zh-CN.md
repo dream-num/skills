@@ -5,46 +5,46 @@
 ![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
-Languages: [English](./README.md) | [简体中文](./README.zh-CN.md)
+语言: [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-Official Univer skills for workbook automation across Claude Code, Codex, and Cursor.
+面向 Claude Code、Codex 和 Cursor 的官方 Univer workbook automation skills。
 
-This repository exposes one canonical skill:
+这个仓库目前提供一个 canonical skill：
 
-- [`univer-cli`](./skills/univer-cli/SKILL.md): path-first workbook work through `univer` / `unv`
+- [`univer-cli`](./skills/univer-cli/SKILL.md): 通过 `univer` / `unv` 进行 path-first workbook work
 
-## Highlights
+## 亮点
 
-- **🧮 A spreadsheet engine that lives in your terminal**  
-  Drive real workbook semantics from the CLI: formulas, formatting, conditional formatting, charts, shapes, layout, import/export, and live preview.
+- **🧮 住在终端里的电子表格引擎**  
+  直接从 CLI 驱动真实 workbook 语义：公式、格式、条件格式、图表、形状、布局、导入/导出和实时预览。
 
-- **✅ Commits for workbook state**  
-  Agents mutate workbooks fast; humans review the rendered result; only verified changes become explicit, syncable changesets.
+- **✅ 面向 workbook state 的 commits**  
+  Agent 负责高速修改，人类 review 渲染后的结果；只有验证过的变更才会成为明确、可同步的 changeset。
 
-- **☁️ Cloud-backed workbook multiplayer**  
-  Clone, pull, and sync shared workbook state through Univer’s OT-based collaboration layer, so agents can work across machines and regions.
+- **☁️ 云端 workbook multiplayer**  
+  基于 Univer 的 OT 协同层 clone、pull、sync 共享 workbook state，让跨机器、跨地域的 agents 可以协作处理同一份工作簿。
 
-- **🔁 Pipelines over cells, not files**  
-  Stream sheet ranges through `pipe out` / `pipe in`, route them through shell tools, and write back bounded matrices without cracking open workbook packages.
+- **🔁 对 cells 做 pipeline，而不是拆文件**  
+  通过 `pipe out` / `pipe in` 流式处理 sheet ranges，接入 shell 工具链，再把有边界的矩阵写回 workbook，不需要打开 workbook 包内部结构。
 
-- **📊 Excel-compatible handoff**  
-  Import and export `.xlsx` files while agents work against structured Univer workbook state internally.
+- **📊 Excel 兼容交付**  
+  支持 `.xlsx` import/export；agent 内部处理的是结构化 Univer workbook state。
 
-## Quick Install
+## 快速安装
 
-Install the workbook CLI:
+安装 workbook CLI：
 
 ```bash
 npm install -g univer-cli@latest
 ```
 
-Install this skill repository:
+安装这个 skill repository：
 
 ```bash
 npx skills add dream-num/skills
 ```
 
-Manual install:
+手动安装：
 
 ```bash
 git clone https://github.com/dream-num/skills.git
@@ -69,7 +69,7 @@ cp -R skills/univer-cli ~/.cursor/skills/
 |---|---|---|---|
 | [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 
-## Example Prompts
+## 示例 Prompts
 
 ```text
 Use univer-cli to inspect this workbook, list all sheets, and summarize the formulas on the pricing sheet before making any edits.
