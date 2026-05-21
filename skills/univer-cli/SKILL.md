@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when solving spreadsheet workbook problems with the `univer` or `unv` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` or `.unv` packages, workbook inspection, range search, formulas, formatting, charts, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
+description: "Use when solving spreadsheet workbook problems with the `univer` or `unv` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` or `.unv` packages, workbook inspection, range search, formulas, formatting, charts, shapes, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
 ---
 
 # univer-cli
@@ -26,7 +26,7 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 - creating, importing, exporting, or handing off `.xlsx`, `.csv`, `.univer`, or `.unv` files
 - inspecting workbook shape, sheets, ranges, formulas, formatting, or visible cell state
 - locating content-defined rows, columns, headers, or cells before editing
-- making bounded edits to cells, formulas, formatting, charts, layout, or sheet structure
+- making bounded edits to cells, formulas, formatting, charts, shapes, layout, or sheet structure
 - streaming rectangular workbook data through shell tools before reading it into context
 - writing generated matrix data back into a sheet-qualified range
 - previewing workbook state locally with `univer view`
@@ -71,6 +71,7 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 | Write a known rectangular matrix back | `univer pipe in` |
 | Apply bounded workbook-local logic | `univer run --file` |
 | Create or maintain workbook charts | `univer run --file` with `univer help run charts` |
+| Create or maintain workbook shapes and connectors | `univer run --file` with `univer help run shapes` |
 | Preview readonly workbook state | `univer view --no-open --json` or `univer view` |
 | Read local viewer review feedback | `univer view comments "$WB" --json` |
 | Check local versioning state | `univer status` |
@@ -221,6 +222,7 @@ univer inspect range "$WB" --range 'Sheet1!I1:J3'
 - use documented facade builders for conditional formatting instead of editing internal rule model shapes
 - use official enum references for conditional formatting color scales, data bars, and icon sets: `ConditionFormatIconSetTypeEnum` supplies `setIconSet().iconConfigs[].iconType`, and `ConditionFormatValueTypeEnum` supplies value config `type` values
 - use documented chart builders and worksheet chart APIs from `univer help run charts` instead of editing chart resource internals
+- use documented shape builders and worksheet shape APIs from `univer help run shapes` instead of editing drawing or shape resource internals
 - wait for formula calculation with the documented formula wait API before reading same-run computed results
 - prefer `--file` for scripts beyond a short one-liner
 
@@ -243,6 +245,18 @@ Special chart types have stricter source shapes:
 - Sankey charts require a `source, target, value` edge list. The third column must be numeric; avoid reverse edges that create circular Sankey data.
 - Bubble charts need numeric `x`, `y`, and `size` columns.
 - Heatmap charts use the first column as y-axis labels, remaining headers as x-axis labels, and remaining cells as numeric heat values.
+
+### Create Or Maintain Shapes
+
+Use `univer run` for workbook-local shapes and connectors, and `univer view` for visual inspection. Command-line verification should read facade state such as `sheet.getShapes()`, `shape.getShapeId()`, `shape.getShapeType()`, `shape.isLineShape()`, `shape.getPosition()`, and connector connection info.
+
+```bash
+univer help run shapes
+univer run "$WB" --file ./create-shapes.js
+univer view "$WB" --no-open --json
+```
+
+In scripts, configure `sheet.newShape()` or `sheet.newConnector()`, call `build()`, then insert it with `sheet.insertShape(shapeInfo)`. Use `sheet.connectShapes(...)` for connector endpoints, and `sheet.updateShape(shapeInfo)` or `sheet.removeShape(shape)` for maintenance.
 
 ### Preview Locally
 
