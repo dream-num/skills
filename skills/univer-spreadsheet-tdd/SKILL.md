@@ -17,6 +17,24 @@ Ordinary workbook edits can and should be verification-first, but they are not S
 - Do not claim a SaC migration is complete from `univer sac apply` success alone.
 - Completion requires the latest relevant `univer sac verify <workspace> --json` run to report `passed`.
 
+## Workbook Understanding
+
+Understand a SaC workbook from source first:
+
+1. Read the migration plan when present.
+2. Read `migrations/` in ledger order.
+3. Read each relevant pack's `assertions.ts`.
+4. Build the workbook mental model from Facade operations and executable assertions.
+5. Use `univer sac verify` reports as feedback on that model.
+
+SaC migration source and `assertions.ts` are the primary authoring and comprehension surface. The `.univer` or `.unv` artifact is generated output in Spreadsheet TDD.
+
+Auxiliary probes: `inspect`, `pipe out`, and readonly runtime commands are allowed for legacy bootstrap, assertion failure debugging, visible state confirmation, or unclear Facade/runtime behavior. They are not the core workflow and must not become the main source of truth when source and assertions are available.
+
+When a probe reveals useful workbook-visible facts, convert it into migration source, `assertions.ts`, or the plan, then return to `univer sac verify`. Do not claim completion from probe output alone.
+
+When a user provides an existing workbook without SaC source, you may use readonly public commands to discover baseline workbook-visible state. Capture useful facts in the first migration plan, source, or assertions, then resume source-first development once SaC source exists.
+
 ## Plan First
 
 Before editing migration source, write a short plan:
@@ -66,6 +84,12 @@ After editing source or assertions:
 
 If verification passes with skipped packs, mention skipped packs when they are relevant. A changed pack must not be skipped unless the task explicitly excludes assertions.
 
+## Versioning And Checkpoints
+
+Versioning commands support the TDD loop; they are not correctness evidence. `commit` is a checkpoint after verification passes. `reset` is a recovery mechanism for a failed or unwanted attempt. `status` can help explain current workbook state, but passing `univer sac verify <workspace> --json` remains the completion gate.
+
+Versioning success does not replace assertion verification.
+
 ## Handoff
 
 Final handoff for a SaC Spreadsheet TDD task must include:
@@ -74,4 +98,5 @@ Final handoff for a SaC Spreadsheet TDD task must include:
 - the final verification command
 - the final status
 - the `verify-report.json` path
+- readonly probes used, if any, and why they were auxiliary
 - any relevant skipped packs or explicit assertion-free scope
