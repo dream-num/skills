@@ -33,6 +33,17 @@ Assertions should cover:
 
 Keep assertions small and deterministic. Prefer representative ranges over broad workbook snapshots.
 
+Assertions must verify behavior decisions, not just the values the migration happened to write.
+
+For each high-risk decision recorded in the plan's Contract Decision Evidence table, add at least one assertion or readonly probe that distinguishes the chosen rule from a plausible wrong rule. Examples include:
+
+- sort/group/truncation decisions: verify first, middle, last, and the first excluded candidate when output capacity is limited
+- mapping decisions: verify representative source-to-target coordinates, including one row for each side of a category, sign, blank/zero, or boundary mapping when relevant
+- text decisions: verify exact casing, whitespace, abbreviations, and stored value type
+- structural decisions: verify section headers, segment boundaries, and first/last row after the final layout is determined
+
+A passed assertion that only mirrors the migration output is not enough when the underlying semantic decision was ambiguous.
+
 ## Feedback Loop
 
 After editing source or assertions:
