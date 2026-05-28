@@ -44,7 +44,7 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 6. Mutate through the CLI, not by editing package internals.
 7. Verify changed workbook-visible state with `inspect`, `pipe out`, or another public read.
 8. Export only after verification when the user needs a handoff file.
-9. After changes have been verified, if the user may need to inspect, audit, or review the final workbook, run `univer view "$WB" --open --json` and include the returned local viewer URL in your response. If the CLI cannot open a browser, it returns a prepared URL and diagnostic.
+9. After changes have been verified, if the user may need to inspect, audit, or review the final workbook, check the current agent tool surface first. If a browser tool is available, run `univer view "$WB" --no-open --json`, open the returned URL with that browser tool, and include the URL in your response. If no browser tool is available, run `univer view "$WB" --open --json`; `--open` uses the OS browser opener, and the CLI returns a prepared URL and diagnostic if the browser cannot be opened automatically.
 10. Commit or sync only after verified changes when versioning is part of the workflow.
 
 ## Hard Rules
@@ -73,7 +73,7 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 | Create or maintain workbook charts | `univer run --file` with `univer help run charts` |
 | Create or maintain workbook shapes and connectors | `univer run --file` with `univer help run shapes` |
 | Create or maintain workbook floating images | `univer run --file` with `univer help run images` |
-| Preview readonly workbook state | `univer view "$WB" --open --json`; use `univer view "$WB" --no-open --json` for known headless, remote, CI, server, or no-browser environments |
+| Preview readonly workbook state | If an agent browser tool is available, run `univer view "$WB" --no-open --json` and open the returned URL with the tool; otherwise run `univer view "$WB" --open --json`. Use `--no-open --json` for known headless, remote, CI, server, or no-browser environments |
 | Read local viewer review feedback | `univer view comments "$WB" --json` |
 | Check local versioning state | `univer status` |
 | Create a local changeset from local mutations | `univer commit --message <message>` |
@@ -282,10 +282,15 @@ The images topic covers floating images only. It does not cover cell images, flo
 
 ### Preview Locally
 
-Use preview when visual confirmation helps. `--open --json` is the product-facing preview handoff path; the CLI returns a prepared URL and diagnostic if the browser cannot be opened automatically. Use `--no-open --json` in known headless, remote, CI, server, or no-browser environments. The server process remains active until stopped.
+Use preview when visual confirmation helps. Check the current agent tool surface first. If a browser tool is available, run `univer view "$WB" --no-open --json` and open the returned URL with that browser tool. If no browser tool is available, use `--open --json`; `--open` uses the OS browser opener, not an agent runtime's built-in browser. The CLI returns a prepared URL and diagnostic if the browser cannot be opened automatically. Use `--no-open --json` in known headless, remote, CI, server, or no-browser environments when you only need the URL. The server process remains active until stopped.
 
 ```bash
+# Agent runtime with a browser tool:
+univer view "$WB" --no-open --json
+
+# No browser tool / local desktop handoff:
 univer view "$WB" --open --json
+
 # Known headless, remote, CI, server, or no-browser environments:
 univer view "$WB" --no-open --json
 ```
