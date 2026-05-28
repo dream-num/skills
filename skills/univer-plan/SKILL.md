@@ -53,6 +53,12 @@ Use an existing project naming convention if one exists. Keep the plan close to 
 - Preservation and negative constraints:
 - Example/demo/answer-range handling:
 
+## Contract Decision Evidence
+
+| Decision | Candidate interpretations | Evidence read | Chosen rule | Assertions/probes |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
+
 ## Migration Packs
 
 1. `<pack-id>`: durable workbook intent
@@ -84,6 +90,19 @@ Answer ranges and output ranges are constraints and evidence windows. They do no
 For complex workbook behavior, fill the relevant Workbook Behavior Contract fields before editing migration source. The contract should turn ambiguous workbook-visible behavior into explicit plan choices that assertions can verify.
 
 Output-heavy transformations should capture shape, mapping, ordering, and value/formula semantics. Formatting, validation, protection, chart, comment, layout, or sheet-structure changes should capture visible state, presentation or interaction semantics, preservation rules, and negative constraints.
+
+## Contract Decision Evidence Rules
+
+For every high-risk or non-obvious workbook behavior decision, record evidence before editing migration source.
+
+High-risk decisions include ordering precedence, grouping and truncation order, source-to-target mapping, sign-to-column mapping, blank-versus-zero policy, text casing or whitespace preservation, header or section-boundary handling, formula-versus-static-value strategy, and any behavior where the instruction can reasonably be read in more than one way.
+
+- Do not write `Unknowns: none` when a decision depends on domain intuition, ambiguous wording, partial preview data, or an unverified sample/reference pattern.
+- If multiple interpretations are plausible, list the rejected interpretations and why they lost.
+- If the chosen rule is based on workbook-visible evidence, name the source range or cells.
+- If the chosen rule is based only on instruction wording, quote the deciding phrase in the plan.
+- If no decisive evidence exists, mark the decision as an assumption and choose the rule that best satisfies the final target/output wording.
+- Each high-risk decision must have at least one assertion or readonly probe that would fail if the opposite interpretation were used.
 
 ## Pack Decomposition
 
