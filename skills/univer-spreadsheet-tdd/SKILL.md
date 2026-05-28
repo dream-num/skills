@@ -36,6 +36,18 @@ When a probe reveals useful workbook-visible facts, convert it into migration so
 
 When a user provides an existing workbook without SaC source, you may use readonly public commands to discover baseline workbook-visible state. Capture useful facts in the first migration plan, source, or assertions, then resume source-first development once SaC source exists.
 
+## Local Facade Type Assets
+
+New SaC workspaces include local `types/*.d.ts` files. Treat them as the Facade API reference for method names, overloads, enum names, and data shapes.
+
+Before writing unfamiliar Facade calls, search the local type assets with focused patterns, for example `rg "class FRange|setFormula|setValues" types` or `rg "interface ICellData|enum BorderType" types`.
+
+Do not hand-write ambient declarations or shims for `FWorkbook`, `FWorksheet`, `FRange`, `univer:sac/facade-migration-pack`, or `univer:sac/assertions`. Do not add local files such as `facade-globals.d.ts` or replacement `sac-env.d.ts` just to make TypeScript pass.
+
+After editing migration source or assertions, run `pnpm exec tsc -p <workspace>/tsconfig.json --pretty false` or the workspace-local equivalent before applying or verifying. If TypeScript reports a missing Facade API, repair the source to match `types/*.d.ts`. If a public Facade type is missing from the generated type assets, treat it as a CLI type asset gap instead of patching the SaC project with private declarations.
+
+TypeScript success is only an authoring gate. `univer sac verify <workspace> --json` remains the completion gate.
+
 ## Plan First
 
 Before editing migration source, write a short plan:
