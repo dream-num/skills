@@ -55,9 +55,9 @@ Use an existing project naming convention if one exists. Keep the plan close to 
 
 ## Contract Decision Evidence
 
-| Decision | Candidate interpretations | Evidence read | Chosen rule | Assertions/probes |
-| --- | --- | --- | --- | --- |
-|  |  |  |  |  |
+| Decision | Candidate interpretations | Evidence read | Evidence strength | Chosen rule | Assertions/probes |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
 
 ## Migration Packs
 
@@ -103,6 +103,28 @@ High-risk decisions include ordering precedence, grouping and truncation order, 
 - If the chosen rule is based only on instruction wording, quote the deciding phrase in the plan.
 - If no decisive evidence exists, mark the decision as an assumption and choose the rule that best satisfies the final target/output wording.
 - Each high-risk decision must have at least one assertion or readonly probe that would fail if the opposite interpretation were used.
+
+## Evidence Sufficiency Rules
+
+High-risk decisions need discriminating evidence, not only compatible evidence.
+
+Evidence is discriminating only when it makes at least one plausible interpretation unlikely. Evidence that can fit both the chosen rule and a rejected rule is compatible evidence, not proof.
+
+Separate observed workbook facts from semantic labels. A source value changing a balance can prove source sign behavior, but it does not by itself prove which target label should receive that sign. A section boundary can prove where data changes shape, but it does not by itself prove whether headers should be copied, skipped, or rewritten.
+
+Do not treat domain intuition, adjacent-row arithmetic, source-side patterns, or conventional business meanings as decisive target-mapping evidence unless they directly connect to workbook-visible target labels, examples, instruction wording, or existing output.
+
+Use the `Evidence strength` field to mark each high-risk decision as one of:
+
+- `explicit`: directly specified by the instruction or an existing workbook-visible target/example
+- `inferred`: supported by discriminating workbook-visible evidence
+- `underdetermined assumption`: no available evidence rules out another plausible interpretation
+
+For an underdetermined decision:
+
+- In an interactive task, ask the user before editing.
+- In a non-interactive task, proceed only when required, choose the best-effort rule that most closely follows the instruction and target layout, and keep the uncertainty visible in the plan and handoff.
+- Do not present the assumption as workbook-proven evidence.
 
 ## Pack Decomposition
 
