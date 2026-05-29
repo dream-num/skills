@@ -11,8 +11,8 @@
 
 这个仓库目前提供 canonical Univer product skills：
 
-- [`use-univer-cli`](./skills/use-univer-cli/SKILL.md): workbook 任务入口和分流
-- [`univer-cli`](./skills/univer-cli/SKILL.md): 通过 `univer` / `unv` 进行 path-first workbook work
+- [`using-univer-cli`](./skills/using-univer-cli/SKILL.md): workbook 任务的强制入口 skill
+- [`univer-cli`](./skills/univer-cli/SKILL.md): 通过 `univer` 进行 path-first workbook work
 - [`univer-plan`](./skills/univer-plan/SKILL.md): 写入 `plans/` 的 SaC workbook behavior plan
 - [`univer-tdd`](./skills/univer-tdd/SKILL.md): assertion-backed SaC TDD 和 verify repair loop
 
@@ -37,13 +37,13 @@
 
 这些 skills 覆盖互补的 workbook workflow：
 
-- `use-univer-cli` 是推荐入口，先判断普通 workbook work 还是 SaC TDD workflow
+- `using-univer-cli` 是 workbook 任务的强制入口，先把 agent 锁定在 Univer CLI 路径上，避免临时改用 spreadsheet libraries，再判断普通 workbook work 还是 SaC TDD workflow
 - `univer-cli` 负责 workbook-visible work：`new`、`import`、`export`、`inspect`、`search`、`fill`、`run` 和 `pipe`
 - `univer-plan` 负责复杂 SaC workbook behavior planning，把 range roles、Migration Pack boundaries 和 assertion gates 写入 `plans/`
 - `univer-tdd` 负责 assertion-backed SaC TDD、`univer sac verify <workspace> --json` 和 report-driven repair
 
 用 `univer-cli` 做 workbook inspection、bounded edits、formula review、shell-native roundtrips 和 handoff verification。
-当任务可能是普通 workbook automation，也可能是 SaC source authoring 时，先使用 `use-univer-cli`。
+当任务可能是普通 workbook automation，也可能是 SaC source authoring 时，先使用 `using-univer-cli`。
 当 workbook behavior 应该作为 SaC source 构建，并通过 `assertions.ts` 验证时，使用 `univer-plan` 和 `univer-tdd`。
 
 ## 快速安装
@@ -68,21 +68,21 @@ cd skills
 
 # Claude Code
 mkdir -p ~/.claude/skills
-cp -R skills/use-univer-cli ~/.claude/skills/
+cp -R skills/using-univer-cli ~/.claude/skills/
 cp -R skills/univer-cli ~/.claude/skills/
 cp -R skills/univer-plan ~/.claude/skills/
 cp -R skills/univer-tdd ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
-cp -R skills/use-univer-cli ~/.codex/skills/
+cp -R skills/using-univer-cli ~/.codex/skills/
 cp -R skills/univer-cli ~/.codex/skills/
 cp -R skills/univer-plan ~/.codex/skills/
 cp -R skills/univer-tdd ~/.codex/skills/
 
 # Cursor
 mkdir -p ~/.cursor/skills
-cp -R skills/use-univer-cli ~/.cursor/skills/
+cp -R skills/using-univer-cli ~/.cursor/skills/
 cp -R skills/univer-cli ~/.cursor/skills/
 cp -R skills/univer-plan ~/.cursor/skills/
 cp -R skills/univer-tdd ~/.cursor/skills/
@@ -92,7 +92,7 @@ cp -R skills/univer-tdd ~/.cursor/skills/
 
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
-| [`use-univer-cli`](./skills/use-univer-cli/SKILL.md) | 所有 workbook 任务的入口分流，区分普通 CLI work 和 SaC TDD handoff | 行动前选择正确 Univer skill | canonical |
+| [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | workbook 任务的强制入口，把 workbook engine 固定为 Univer CLI，并在需要时 handoff 到 SaC TDD | 行动前选择正确 Univer 路径 | canonical |
 | [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 | [`univer-plan`](./skills/univer-plan/SKILL.md) | Workspace-local SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
 | [`univer-tdd`](./skills/univer-tdd/SKILL.md) | SaC adapted TDD with assertion coverage, apply/verify, `verify-report.json` repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |
@@ -100,21 +100,21 @@ cp -R skills/univer-tdd ~/.cursor/skills/
 ## 示例 Prompts
 
 ```text
-Use use-univer-cli to inspect this workbook, list all sheets, and summarize the formulas on the pricing sheet before making any edits.
+Use using-univer-cli to inspect this workbook, list all sheets, and summarize the formulas on the pricing sheet before making any edits.
 ```
 
 ```text
-Use use-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded review table, then verify the header row and anchor cells.
+Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded review table, then verify the header row and anchor cells.
 ```
 
 ```text
-Use use-univer-cli to build this complex workbook behavior as SaC source. Route through univer-plan and univer-tdd, write the plan under plans/, add assertions.ts coverage, and complete only after univer sac verify <workspace> --json passes.
+Use using-univer-cli to build this complex workbook behavior as SaC source. Route through univer-plan and univer-tdd, write the plan under plans/, add assertions.ts coverage, and complete only after univer sac verify <workspace> --json passes.
 ```
 
 ## Requirements
 
 - OS: Linux or macOS
-- `univer-cli` skill: requires `univer`; `unv` is the short alias
+- `univer-cli` skill: requires `univer`
 - `univer-plan` 和 `univer-tdd` skills: requires `univer` with experimental SaC enabled for `univer sac` workflows
 - common companion tools for shell roundtrips: `awk`, `sed`, `python3` or `python`
 

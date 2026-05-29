@@ -97,7 +97,7 @@ For every high-risk or non-obvious workbook behavior decision, record evidence b
 
 High-risk decisions include ordering precedence, grouping and truncation order, source-to-target mapping, sign-to-column mapping, blank-versus-zero policy, text casing or whitespace preservation, header or section-boundary handling, formula-versus-static-value strategy, and any behavior where the instruction can reasonably be read in more than one way.
 
-- Do not write `Unknowns: none` when a decision depends on domain intuition, ambiguous wording, partial preview data, or an unverified sample/reference pattern.
+- Do not write `Unknowns: none` when a decision depends on domain intuition, ambiguous wording, partial preview data, or an unchecked sample/reference pattern.
 - If multiple interpretations are plausible, list the rejected interpretations and why they lost.
 - If the chosen rule is based on workbook-visible evidence, name the source range or cells.
 - If the chosen rule is based only on instruction wording, quote the deciding phrase in the plan.
