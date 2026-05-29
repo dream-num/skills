@@ -16,7 +16,14 @@ negative constraints.
 NO MIGRATION PACK IMPLEMENTATION WITHOUT A PLAN-DERIVED FAILING ASSERTION FIRST.
 
 If you wrote migration source before the assertion failed for the intended workbook-visible reason,
-stop and restart from the plan-derived assertion gate.
+Delete or revert the migration source change and restart from the plan-derived assertion gate.
+
+No exceptions:
+
+- Do not keep it as reference.
+- Do not adapt it while writing assertions.
+- Do not leave it commented out.
+- Implement fresh from the plan-derived failing assertion.
 </EXTREMELY-IMPORTANT>
 
 ## Operating Contract
@@ -28,6 +35,24 @@ stop and restart from the plan-derived assertion gate.
   evidence.
 - Do not claim completion from `univer sac apply` success.
 - Do not claim completion from a zero-assertion, all-skipped, or unchecked changed pack verify run.
+
+## The Iron Laws
+
+```
+1. NEVER test migration echo.
+2. NEVER add test-only migration or facade methods.
+3. NEVER mock workbook or runtime structures without understanding their side effects.
+```
+
+Testing migration echo means asserting the values, formulas, formats, or ranges only because the
+migration wrote them. Assertions must prove workbook behavior promised by the plan.
+
+Test-only migration or facade methods are production surface area. If cleanup, probing, or setup is
+needed only for tests, keep it in assertion helpers or readonly probes, not in Migration Packs.
+
+Workbook and runtime mocks are risky because formula calculation, formatting, validation,
+protection, and sheet state have side effects. If a mock hides behavior the assertion depends on, use
+a lower-level test double or a real workbook probe instead.
 
 ## Red-Green-Repair
 
@@ -167,6 +192,37 @@ Avoid:
 
 Before adding a helper or mock, ask whether it preserves the real workbook behavior under test. If it
 does not, use a lower-level test double or a real workbook probe instead.
+
+Additional workbook testing failures:
+
+- partial workbook fixtures that omit sheets, metadata, formats, validation, protection, or formula
+  dependencies the behavior could consume
+- high-level mocks that bypass formula recalculation, used-range updates, or workbook runtime state
+- test-only migration hooks that would be unsafe or meaningless in production workbook authoring
+
+## Common Rationalizations
+
+| Excuse | Reality |
+| --- | --- |
+| "I'll write assertions after the migration works." | Tests-after mirror the implementation. Start over from a failing assertion. |
+| "This is only formatting." | Formatting is workbook-visible behavior and needs an assertion gate. |
+| "SaC apply passed." | Apply success is not behavior proof. Verify assertions and read the report. |
+| "The answer range already proves it." | Answer ranges are evidence windows, not complete contracts. |
+| "A broad snapshot is enough." | Snapshots hide which workbook rule failed. Use representative assertions. |
+| "Mocking the runtime is faster." | Mocks that hide workbook side effects test the mock, not spreadsheet behavior. |
+
+## Red Flags - STOP and Start Over
+
+- Migration source before a failing assertion
+- Assertion passes immediately for new behavior
+- Failure reason is setup, typo, stale apply state, or invalid assertion
+- Assertion copied from migration output
+- Verify run has zero assertions, all skipped packs, or unchecked changed packs
+- Helper or mock exists only to make the assertion convenient
+- You cannot explain which plan decision the assertion proves
+
+When any red flag appears, return to the plan, delete or revert premature migration source if needed,
+write the smallest assertion that should fail, and re-run `univer sac verify <workspace> --json`.
 
 ## Passing Gate
 

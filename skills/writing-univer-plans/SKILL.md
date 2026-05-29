@@ -62,6 +62,30 @@ A plan is complete only when it can drive assertion-first implementation.
 - Do not hand off to execution while any changed pack lacks an assertion gate.
 - Do not hand off until the plan identifies workbook behavior contract choices for complex behavior.
 
+## Scope Check
+
+Before writing pack tasks, check whether the request is one coherent workbook behavior or several
+independent workbook deliverables.
+
+Split into separate plans when the task contains independent sheets, source models, report families,
+or workflows that can be verified and delivered separately. Keep one plan only when the packs share
+one workbook-visible goal and one coherent verify command.
+
+If scope is too broad, stop and ask which workbook deliverable should be planned first. Do not create
+a giant plan that hides independent assertion gates.
+
+## Source File Map
+
+Before defining pack tasks, map the files the plan expects execution to touch:
+
+- Plan: `<workspace>/plans/<topic>.md`
+- Assertions: `<workspace>/assertions.ts`
+- Migration Packs: `<workspace>/migrations/<pack>.ts`
+- Fixtures or readonly probes: exact workbook paths, sheets, ranges, or commands used as evidence
+
+For each file, state its responsibility. This locks the boundary between workbook intent,
+assertions, migration source, and evidence before execution starts.
+
 ## Output Location
 
 Write or update a plan file under the SaC workspace:
@@ -107,6 +131,13 @@ Every plan MUST start with this header:
 - Readonly probes:
 - Unknowns:
 
+## Source File Map
+
+- Plan:
+- Assertions:
+- Migration Packs:
+- Fixtures/probes:
+
 ## Range Roles
 
 - Source data:
@@ -149,6 +180,21 @@ Every plan MUST start with this header:
 - Assertions to write or update first:
 - Allowed bootstrap/probe:
 - Completion verify command:
+
+## Pack Tasks
+
+### Task 1: `<pack-id>`
+
+**Files:**
+- Plan: `<workspace>/plans/<topic>.md`
+- Test: `<workspace>/assertions.ts`
+- Migration: `<workspace>/migrations/<pack>.ts`
+
+- [ ] **Step 1: Write the failing assertion**
+- [ ] **Step 2: Run verify and confirm expected failure**
+- [ ] **Step 3: Implement the minimal Migration Pack change**
+- [ ] **Step 4: Run verify and confirm pass**
+- [ ] **Step 5: Commit or prepare handoff**
 ```
 
 ## Range Role Rules
@@ -241,6 +287,45 @@ Do not split by individual cells, individual Facade calls, or incidental impleme
 is well-sized when it has one clear workbook intent, a reasonable rollback boundary, and its own
 assertion gate.
 
+## Pack Task Structure
+
+Each non-trivial Migration Pack must have a checkbox task that an executor can follow without
+guessing. Use exact file paths, exact commands, and expected outcomes.
+
+````md
+### Task N: <pack-id> - <workbook intent>
+
+**Files:**
+- Plan: `<workspace>/plans/<topic>.md`
+- Test: `<workspace>/assertions.ts`
+- Migration: `<workspace>/migrations/<pack>.ts`
+
+- [ ] **Step 1: Write the failing assertion**
+
+Add or update the assertion that proves the current pack's workbook-visible behavior.
+
+- [ ] **Step 2: Run verify and confirm expected failure**
+
+Run: `univer sac verify <workspace> --json`
+Expected: FAIL for the intended workbook-visible reason, not setup or typo failure.
+
+- [ ] **Step 3: Implement the minimal Migration Pack change**
+
+Edit only `migrations/<pack>.ts` and any pack-local helper required by the current assertion.
+
+- [ ] **Step 4: Run verify and confirm pass**
+
+Run: `univer sac verify <workspace> --json`
+Expected: PASS with this pack's assertion checked in `verify-report.json`.
+
+- [ ] **Step 5: Commit or prepare handoff**
+
+Record the plan path, assertion evidence, migration file, verify command, and report path.
+````
+
+Do not write "similar to Task N"; repeat the details because pack tasks may be executed out of
+order by different agents.
+
 ## No Placeholders
 
 These are plan failures:
@@ -251,6 +336,7 @@ These are plan failures:
 - "same as above" for another pack
 - a Migration Pack with no reads, writes, preservation boundary, or assertion gate
 - a decision row that names no evidence strength
+- a pack task without checkbox steps, exact files, verify command, and expected failure/pass outcome
 
 ## Plan Self-Review
 
@@ -262,7 +348,9 @@ Before handoff, review the plan inline:
 3. **Decision coverage:** Every high-risk Excel-domain decision has evidence strength and a
    discriminating assertion or probe.
 4. **Execution coverage:** Every non-trivial changed pack has a plan-derived assertion gate.
-5. **Placeholder scan:** Remove placeholders, vague assertions, and unspecified preservation claims.
+5. **Pack task coverage:** Every non-trivial pack has executable checkbox steps with exact files,
+   commands, and expected results.
+6. **Placeholder scan:** Remove placeholders, vague assertions, and unspecified preservation claims.
 
 ## Red Flags
 

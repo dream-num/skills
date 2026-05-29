@@ -8,6 +8,8 @@ description: "Use when executing a written Univer SaC workbook plan, implementin
 Execute a written Univer workbook plan pack-by-pack. This skill turns the plan into SaC source work
 without losing the workbook-domain contract.
 
+Announce at start: "I'm using the executing-univer-plans skill to execute this Univer plan."
+
 <EXTREMELY-IMPORTANT>
 Do not execute a complex SaC workbook task without a plan written by `writing-univer-plans`.
 
@@ -48,6 +50,33 @@ digraph executing_univer_plans {
 }
 ```
 
+## The Process
+
+### Step 1: Load and Review Plan
+
+1. Read the plan file.
+2. Review it critically against the workbook contract, range roles, decision evidence, pack sequence,
+   assertion gates, and verify command.
+3. If there are concerns, stop and repair the plan before starting execution.
+4. If there are no concerns, Create or update a task list with one task per Migration Pack.
+
+### Step 2: Execute Tasks
+
+For each pack task:
+
+1. Mark the pack task as `in_progress`.
+2. Follow each checkbox step exactly from the plan.
+3. Load `test-driven-univer-spreadsheet-development` when the plan reaches assertion or migration
+   work.
+4. Run the verifications specified by the plan and TDD skill.
+5. Mark the pack task as `completed` only after meaningful passed assertion evidence exists.
+
+### Step 3: Complete Development
+
+After all pack tasks are complete, use `superpowers:verification-before-completion` or the local
+repository completion gate before claiming done. For Univer SaC work, completion still needs the
+final `univer sac verify <workspace> --json` status and `verify-report.json` evidence.
+
 ## Load and Review the Plan
 
 Before editing `assertions.ts` or `migrations/`, read the plan critically.
@@ -85,15 +114,18 @@ continuing.
 For each pack:
 
 1. Mark the pack as the current execution unit.
-2. Load `test-driven-univer-spreadsheet-development`.
-3. Write or update the plan-derived assertion gate first.
-4. Run `univer sac verify <workspace> --json` and confirm the assertion fails for the intended
+2. Mark the pack task as `in_progress`.
+3. Follow each checkbox step exactly from the plan.
+4. Load `test-driven-univer-spreadsheet-development`.
+5. Write or update the plan-derived assertion gate first.
+6. Run `univer sac verify <workspace> --json` and confirm the assertion fails for the intended
    workbook-visible reason.
-5. Implement the minimal Migration Pack change that should satisfy the assertion.
-6. Run apply/verify as required by the TDD skill.
-7. Read `.sac/runs/<run-id>/verify-report.json` and repair from evidence.
-8. Update the plan if execution reveals a behavior contract change.
-9. Move to the next pack only after the current pack has meaningful passed assertion evidence.
+7. Implement the minimal Migration Pack change that should satisfy the assertion.
+8. Run apply/verify as required by the TDD skill.
+9. Read `.sac/runs/<run-id>/verify-report.json` and repair from evidence.
+10. Update the plan if execution reveals a behavior contract change.
+11. Mark the pack task as `completed`.
+12. Move to the next pack only after the current pack has meaningful passed assertion evidence.
 
 Do not edit Migration Packs while the plan has missing assertion gates.
 Do not batch multiple packs into one unchecked implementation step.
