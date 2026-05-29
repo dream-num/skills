@@ -213,6 +213,10 @@ For non-trivial SaC TDD handoff:
 
 ## Final Handoff
 
+When an external benchmark harness supplies an export stop gate, follow that harness after the
+latest relevant verify passes. Do not keep collecting auxiliary evidence after the required handoff
+file is created.
+
 The final handoff must include:
 
 - plan outcome and pack sequence

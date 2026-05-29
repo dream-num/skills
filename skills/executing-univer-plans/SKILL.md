@@ -196,6 +196,9 @@ These thoughts mean STOP:
 
 ## Final Handoff
 
+When an external benchmark harness supplies an export stop gate, follow that harness after the
+required output file is created. Do not keep collecting auxiliary evidence after handoff.
+
 The handoff must include:
 
 - plan path
