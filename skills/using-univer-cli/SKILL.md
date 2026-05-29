@@ -108,6 +108,7 @@ These thoughts mean STOP and route through Univer CLI:
 
 | Task shape | Load |
 | --- | --- |
+| Explicit SpreadsheetBench or benchmark solver task inside `/task` with prepared SaC workspaces, `answer_position`, or required `output.xlsx` deliverables | `benchmarking-univer-cli` first |
 | Ordinary workbook-visible inspection, search, import, export, pipe, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli` |
 | SaC source authoring, Facade Migration Pack work, `assertions.ts`, `univer sac`, or complex workbook behavior development | `writing-univer-plans`, `executing-univer-plans`, then `test-driven-univer-spreadsheet-development` |
 | Existing or legacy workbook with no SaC source, where the user wants behavior converted into SaC source | `univer-cli` for readonly baseline probes, then `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-spreadsheet-development` |

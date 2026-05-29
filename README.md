@@ -1,7 +1,7 @@
 # Official Univer Skills for Spreadsheet Automation
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Skills](https://img.shields.io/badge/skills-5-0a7ea4.svg)
+![Skills](https://img.shields.io/badge/skills-6-0a7ea4.svg)
 ![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
@@ -16,6 +16,7 @@ This repository exposes canonical Univer product skills:
 - [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md): SaC workbook behavior plans under `plans/`
 - [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md): plan review and pack-by-pack execution
 - [`test-driven-univer-spreadsheet-development`](./skills/test-driven-univer-spreadsheet-development/SKILL.md): assertion-backed SaC TDD and verify repair loops
+- [`benchmarking-univer-cli`](./skills/benchmarking-univer-cli/SKILL.md): SpreadsheetBench solver protocol for prepared SaC workspaces
 
 ## Highlights
 
@@ -43,10 +44,12 @@ The skills cover complementary workbook workflows:
 - `writing-univer-plans` is for complex SaC workbook behavior planning, range roles, Migration Pack boundaries, and assertion gates written under `plans/`
 - `executing-univer-plans` is for reviewing written plans and executing one Migration Pack at a time
 - `test-driven-univer-spreadsheet-development` is for assertion-backed SaC TDD, `univer sac verify <workspace> --json`, and report-driven repair
+- `benchmarking-univer-cli` is for non-interactive SpreadsheetBench solver agents inside `/task`, with prepared SaC workspaces, `answer_position`, and required `output.xlsx` deliverables
 
 Use `univer-cli` for workbook inspection, bounded edits, formula review, shell-native roundtrips, and handoff verification.
 Use `using-univer-cli` first when the task could be either ordinary workbook automation or SaC source authoring.
 Use `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-spreadsheet-development` when workbook behavior should be built as SaC source and verified through `assertions.ts`.
+Use `benchmarking-univer-cli` directly from benchmark solver prompts, then let it route into the Univer skill stack.
 
 ## Quick Install
 
@@ -75,6 +78,7 @@ cp -R skills/univer-cli ~/.claude/skills/
 cp -R skills/writing-univer-plans ~/.claude/skills/
 cp -R skills/executing-univer-plans ~/.claude/skills/
 cp -R skills/test-driven-univer-spreadsheet-development ~/.claude/skills/
+cp -R skills/benchmarking-univer-cli ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
@@ -83,6 +87,7 @@ cp -R skills/univer-cli ~/.codex/skills/
 cp -R skills/writing-univer-plans ~/.codex/skills/
 cp -R skills/executing-univer-plans ~/.codex/skills/
 cp -R skills/test-driven-univer-spreadsheet-development ~/.codex/skills/
+cp -R skills/benchmarking-univer-cli ~/.codex/skills/
 
 # Cursor
 mkdir -p ~/.cursor/skills
@@ -91,6 +96,7 @@ cp -R skills/univer-cli ~/.cursor/skills/
 cp -R skills/writing-univer-plans ~/.cursor/skills/
 cp -R skills/executing-univer-plans ~/.cursor/skills/
 cp -R skills/test-driven-univer-spreadsheet-development ~/.cursor/skills/
+cp -R skills/benchmarking-univer-cli ~/.cursor/skills/
 ```
 
 ## Available Skills
@@ -102,6 +108,7 @@ cp -R skills/test-driven-univer-spreadsheet-development ~/.cursor/skills/
 | [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Workspace-local SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | complex workbook behavior decomposition before editing migration source | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | implementing written Univer plans without skipping assertion gates | canonical |
 | [`test-driven-univer-spreadsheet-development`](./skills/test-driven-univer-spreadsheet-development/SKILL.md) | SaC adapted TDD with assertion coverage, apply/verify, `verify-report.json` repair, and handoff gates | implementing Facade Migration Packs with strong workbook-visible proof | canonical |
+| [`benchmarking-univer-cli`](./skills/benchmarking-univer-cli/SKILL.md) | SpreadsheetBench solver protocol for `/task`, prepared SaC workspaces, evaluator windows, and `output.xlsx` handoff | benchmark solver agents that must stay on SaC and avoid hidden-answer leakage | canonical |
 
 ## Example Prompts
 
@@ -117,11 +124,16 @@ Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded 
 Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-spreadsheet-development, write the plan under plans/, add assertions.ts coverage, and complete only after univer sac verify <workspace> --json passes.
 ```
 
+```text
+Use benchmarking-univer-cli to solve this benchmark task inside /task, using the prepared SaC workspaces and producing each required output.xlsx.
+```
+
 ## Requirements
 
 - OS: Linux or macOS
 - `univer-cli` skill: requires `univer`
 - SaC workflow skills: require `univer` with experimental SaC enabled for `univer sac` workflows
+- `benchmarking-univer-cli` skill: requires a benchmark runner-provided `/task` workspace with prepared SaC case directories
 - common companion tools for shell roundtrips: `awk`, `sed`, `python3` or `python`
 
 ## Contributing
