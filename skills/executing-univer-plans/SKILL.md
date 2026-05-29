@@ -118,8 +118,10 @@ For each pack:
 3. Follow each checkbox step exactly from the plan.
 4. Load `test-driven-univer-spreadsheet-development`.
 5. Write or update the plan-derived assertion gate first.
-6. Run `univer sac verify <workspace> --json` and confirm the assertion fails for the intended
-   workbook-visible reason.
+6. For an already-applied pack, run `univer sac verify <workspace> --json` and confirm the assertion
+   fails for the intended workbook-visible reason. For a brand-new pending pack, do not use an
+   empty/no-op pack to manufacture RED; instead confirm the missing behavior from baseline evidence,
+   then write a minimal real migration source file.
 7. Implement the minimal Migration Pack change that should satisfy the assertion.
 8. Run apply/verify as required by the TDD skill.
 9. Read `.sac/runs/<run-id>/verify-report.json` and repair from evidence.
@@ -139,6 +141,8 @@ After each pack, check:
 - Are preservation and negative constraints covered?
 - Did execution discover a plan change that must be recorded?
 - Did any pack get skipped, or does any changed pack still have zero assertions?
+- Did any RED/GREEN evidence rely on `SAC_EMPTY_MIGRATION_PACK`, `SAC_PACK_FILE_INVALID`,
+  `checkedPacks: 0`, or an all-skipped verify run? If yes, it is not meaningful evidence.
 
 ## When to Stop and Ask for Help
 

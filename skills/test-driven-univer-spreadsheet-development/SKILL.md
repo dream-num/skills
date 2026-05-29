@@ -47,6 +47,7 @@ Exceptions require explicit user agreement and must be recorded in the handoff.
   evidence.
 - Do not claim completion from `univer sac apply` success.
 - Do not claim completion from a zero-assertion, all-skipped, or unchecked changed pack verify run.
+- Do not create empty or no-op Migration Packs just to satisfy pack structure or simulate a RED gate.
 
 ## Testing Anti-Patterns Reference
 
@@ -129,24 +130,39 @@ Keep assertions small and deterministic. Prefer representative ranges over broad
 
 ### Verify RED - Watch It Fail
 
-Run:
+`univer sac verify <workspace> --json` verifies applied packs. It does not apply pending source just
+to test assertions. For a brand-new pending pack, the RED gate is established by writing the
+plan-derived assertion before implementation and confirming that the missing behavior is still absent
+from workbook-visible baseline evidence.
 
-```bash
-univer sac verify <workspace> --json
-```
+Only run verify for RED when the target pack is already applied or when you are repairing an applied
+pack and expect its assertion to fail. When you run verify, confirm:
 
-Confirm:
-
+- the changed pack is actually checked in the JSON summary or `verify-report.json`
 - the assertion fails
 - the failure is about the intended workbook-visible behavior
-- the failure is not a typo, missing fixture, setup error, stale apply state, or invalid assertion
+- the failure is not a typo, missing fixture, setup error, stale apply state, skipped pack, or invalid assertion
 
-If the assertion passes immediately, it is not a useful gate for new behavior. Strengthen it or
-choose the next missing behavior from the plan.
+These are not valid RED gates:
+
+- `SAC_EMPTY_MIGRATION_PACK`
+- `SAC_PACK_FILE_INVALID`
+- `checkedPacks: 0`, `checkedPackCount: 0`, or an all-skipped run
+- a no-op sheet migration whose pack is skipped because it has not been applied
+- a verify pass that does not check the changed pack's assertions
+
+If verify cannot check the changed pack yet, do not add an empty/no-op pack just to make verify run.
+The next GREEN step may create the minimal real migration source only after the assertion file exists
+and baseline evidence confirms the behavior is missing.
+
+If an assertion passes immediately for a changed pack that verify actually checked, it is not a useful
+gate for new behavior. Strengthen it or choose the next missing behavior from the plan.
 
 ### GREEN - Implement the Minimal Pack Change
 
-Edit the Migration Pack only after the assertion gate fails correctly.
+Edit the Migration Pack only after the applicable RED gate exists: for an already-applied pack, the
+assertion fails for the intended reason; for a brand-new pending pack, the plan-derived assertion
+exists and baseline evidence confirms the behavior is missing.
 
 Implement only what the current pack and assertion require. Do not add unrelated sheets, helper
 ranges, broad formatting, or future behavior.
@@ -162,12 +178,19 @@ univer sac verify <workspace> --json
 
 Read the JSON summary and `.sac/runs/<run-id>/verify-report.json`.
 
+Confirm that the changed pack is checked and has at least one passed assertion. A zero-assertion,
+all-skipped, or unchecked changed-pack run is not GREEN.
+
 If status is `failed`, inspect pack id, assertion kind, target, expected value, actual value, and
 first difference when present. Decide whether the migration source or assertion expectation is wrong
 before changing either.
 
 If status is `error`, fix setup, config, missing target, source validation, bundling, or runtime setup
 before judging workbook behavior.
+
+If a pack has already been applied and later needs behavior changes, do not keep editing that applied
+pack into a hash mismatch loop. Prefer a new follow-up Migration Pack that repairs the behavior and
+has its own assertions.
 
 ### REPAIR - Keep the Contract Honest
 
