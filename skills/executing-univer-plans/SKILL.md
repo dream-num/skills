@@ -140,15 +140,47 @@ After each pack, check:
 - Did execution discover a plan change that must be recorded?
 - Did any pack get skipped, or does any changed pack still have zero assertions?
 
-## When to Stop and Ask
+## When to Stop and Ask for Help
 
-Stop rather than guessing when:
+STOP executing immediately when:
 
+- hit a blocker such as a missing workbook artifact, dependency, or command
+- plan instructions are unclear or contradictory
+- verification fails repeatedly
 - underdetermined assumptions affect user-visible workbook behavior
 - the plan and workbook evidence disagree
-- verify repeatedly fails but the report does not identify a clear source/assertion split
-- required workbook artifacts are missing
+- the verify report does not identify a clear source/assertion split
 - a non-Univer spreadsheet-library fallback appears necessary
+
+Ask for clarification rather than guessing when the decision affects workbook-visible behavior.
+
+## When to Revisit Earlier Steps
+
+Return to Load and Review Plan when:
+
+- the user updates scope, requirements, or workbook artifacts
+- execution reveals a missing range role, decision, or assertion gate
+- verify evidence changes the expected behavior
+- the plan needs a different pack sequence or split
+
+Do not force through blockers. Repair the plan first, then continue pack execution.
+
+## Remember
+
+- Review the plan critically first.
+- Follow each checkbox step exactly.
+- Do not skip verification commands.
+- Reference `test-driven-univer-spreadsheet-development` when a step writes assertions or migration source.
+- Stop when blocked; do not guess workbook semantics.
+- Never treat `univer sac apply` as completion evidence.
+
+## Integration
+
+Required workflow skills:
+
+- `writing-univer-plans`: creates the workbook-domain plan this skill executes.
+- `test-driven-univer-spreadsheet-development`: implements each pack assertion-first.
+- `superpowers:verification-before-completion`: verifies the final state before claiming completion.
 
 ## Red Flags
 
