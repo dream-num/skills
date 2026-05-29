@@ -27,10 +27,12 @@ digraph using_univer_cli {
     "Load univer-cli" [shape=box];
     "Use workbook-visible verification" [shape=box];
     "SaC source or complex behavior?" [shape=diamond];
-    "Load univer-plan" [shape=box];
+    "Load writing-univer-plans" [shape=box];
     "Plan first" [shape=box];
-    "Load univer-tdd" [shape=box];
-    "TDD from the plan" [shape=box];
+    "Load executing-univer-plans" [shape=box];
+    "Execute the plan" [shape=box];
+    "Load test-driven-univer-spreadsheet-development" [shape=box];
+    "TDD each pack from the plan" [shape=box];
     "Implement only after the assertion gate exists" [shape=box];
     "Verify and repair" [shape=box];
 
@@ -38,24 +40,29 @@ digraph using_univer_cli {
     "Ordinary workbook-visible work?" -> "Load univer-cli" [label="yes"];
     "Load univer-cli" -> "Use workbook-visible verification";
     "Ordinary workbook-visible work?" -> "SaC source or complex behavior?" [label="no"];
-    "SaC source or complex behavior?" -> "Load univer-plan" [label="yes"];
-    "Load univer-plan" -> "Plan first";
-    "Plan first" -> "Load univer-tdd";
-    "Load univer-tdd" -> "TDD from the plan";
-    "TDD from the plan" -> "Implement only after the assertion gate exists";
+    "SaC source or complex behavior?" -> "Load writing-univer-plans" [label="yes"];
+    "Load writing-univer-plans" -> "Plan first";
+    "Plan first" -> "Load executing-univer-plans";
+    "Load executing-univer-plans" -> "Execute the plan";
+    "Execute the plan" -> "Load test-driven-univer-spreadsheet-development";
+    "Load test-driven-univer-spreadsheet-development" -> "TDD each pack from the plan";
+    "TDD each pack from the plan" -> "Implement only after the assertion gate exists";
     "Implement only after the assertion gate exists" -> "Verify and repair";
 }
 ```
 
 SaC source authoring MUST follow this order:
 
-1. **Plan first**: load `univer-plan`, inspect enough workbook-visible evidence, and write or
-   update `<workspace>/plans/<topic>.md`.
-2. **TDD from the plan**: load `univer-tdd`, derive `assertions.ts` coverage from the plan, and run
-   the relevant verify gate.
-3. **Implement only after the assertion gate exists**: edit Migration Packs only after the plan and
+1. **Plan first**: load `writing-univer-plans`, inspect enough workbook-visible evidence, and write
+   or update `<workspace>/plans/<topic>.md`.
+2. **Execute the plan**: load `executing-univer-plans`, review the plan critically, and execute one
+   Migration Pack at a time.
+3. **TDD each pack from the plan**: load `test-driven-univer-spreadsheet-development`, derive
+   `assertions.ts` coverage from the plan, and watch the assertion fail for the intended
+   workbook-visible reason.
+4. **Implement only after the assertion gate exists**: edit Migration Packs only after the plan and
    plan-derived assertions exist.
-4. **Verify and repair**: use `univer sac verify <workspace> --json` and the verify report to drive
+5. **Verify and repair**: use `univer sac verify <workspace> --json` and the verify report to drive
    repairs before claiming completion.
 
 Do not write `assertions.ts` before the plan.
@@ -88,7 +95,7 @@ These thoughts mean STOP and route through Univer CLI:
 | "I only need to inspect a few cells." | Use `univer inspect`, `search`, `pipe out`, or readonly `run`. |
 | "I'll unzip or patch the workbook package directly." | Package internals are not the editing surface. |
 | "I'll verify with package metadata or command success." | Verify workbook-visible state. |
-| "SaC apply passed, so the behavior is done." | SaC completion needs `univer-tdd` assertion evidence. |
+| "SaC apply passed, so the behavior is done." | SaC completion needs test-driven spreadsheet assertion evidence. |
 
 ## First Moves
 
@@ -102,8 +109,8 @@ These thoughts mean STOP and route through Univer CLI:
 | Task shape | Load |
 | --- | --- |
 | Ordinary workbook-visible inspection, search, import, export, pipe, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli` |
-| SaC source authoring, Facade Migration Pack work, `assertions.ts`, `univer sac`, or complex workbook behavior development | `univer-plan`, then `univer-tdd` |
-| Existing or legacy workbook with no SaC source, where the user wants behavior converted into SaC source | `univer-cli` for readonly baseline probes, then `univer-plan` and `univer-tdd` |
+| SaC source authoring, Facade Migration Pack work, `assertions.ts`, `univer sac`, or complex workbook behavior development | `writing-univer-plans`, `executing-univer-plans`, then `test-driven-univer-spreadsheet-development` |
+| Existing or legacy workbook with no SaC source, where the user wants behavior converted into SaC source | `univer-cli` for readonly baseline probes, then `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-spreadsheet-development` |
 
 Ordinary workbook-visible work should not enter the SaC TDD workflow unless the user asks to author SaC source or durable workbook behavior.
 
@@ -113,26 +120,32 @@ For ordinary workbook-visible tasks, load `univer-cli` and stay with workbook-vi
 
 For SaC source authoring or complex workbook behavior:
 
-1. Load `univer-plan` before editing migration source.
+1. Load `writing-univer-plans` before editing migration source.
 2. Write or update the workspace plan under `plans/`.
-3. Load `univer-tdd` for assertion coverage, apply/verify, repair, and handoff gates.
+3. Load `executing-univer-plans` to review and execute the plan pack-by-pack.
+4. Load `test-driven-univer-spreadsheet-development` for assertion coverage, apply/verify, repair,
+   and handoff gates.
 
-In short: load `univer-plan` to plan the workbook behavior, then load `univer-tdd` to implement and verify it.
+In short: load `writing-univer-plans` to plan workbook behavior, `executing-univer-plans` to
+execute the plan, and `test-driven-univer-spreadsheet-development` to implement and verify each pack.
 
-Do not skip `univer-plan` for complex SaC behavior. The plan is the place where range roles, pack boundaries, and assertion gates become explicit.
+Do not skip `writing-univer-plans` for complex SaC behavior. The plan is the place where range
+roles, pack boundaries, and assertion gates become explicit.
 
 ## Legacy Workbook Bootstrap
 
 When a user provides a legacy workbook without SaC source, use `univer-cli` for readonly baseline probes such as inspect, search, pipe out, or readonly run scripts. Capture useful facts into the SaC plan, migration source, or assertions before continuing.
 
-Readonly baseline probes are not completion evidence. SaC TDD completion evidence comes from `univer-tdd`: changed packs need assertion coverage and a relevant passed `univer sac verify <workspace> --json` run.
+Readonly baseline probes are not completion evidence. SaC TDD completion evidence comes from
+`test-driven-univer-spreadsheet-development`: changed packs need assertion coverage and a relevant
+passed `univer sac verify <workspace> --json` run.
 
 ## Completion Evidence
 
 - Ordinary workbook work needs workbook-visible verification through `univer-cli`, such as
   `inspect`, `search`, `pipe out`, bounded `run`, preview, comments, or export/import checks.
-- SaC TDD work needs `univer-tdd` evidence: assertion coverage plus a relevant passed
-  `univer sac verify <workspace> --json` run.
+- SaC TDD work needs `test-driven-univer-spreadsheet-development` evidence: assertion coverage plus
+  a relevant passed `univer sac verify <workspace> --json` run.
 - Do not treat command summaries, package metadata, `univer sac apply` success, or readonly probes as
   final SaC TDD proof.
 - If the task type is unclear, ask whether the user wants an ordinary workbook edit or durable SaC
