@@ -50,11 +50,12 @@ Exceptions require explicit user agreement and must be recorded in the handoff.
 
 ## Testing Anti-Patterns Reference
 
-Load this reference when writing or changing assertions, adding mocks, creating workbook fixtures, or
-tempted to add test-only migration or facade methods: `testing-anti-patterns.md`.
+Load this reference when writing or changing assertions, creating workbook fixtures, using readonly
+probes as proof, or tempted to add test-only migration or facade methods:
+`testing-anti-patterns.md`.
 
-The reference covers migration echo, workbook/runtime mocks, partial workbook fixtures, test-only
-production surface, rationalizations, and STOP conditions.
+The reference covers migration echo, readonly probe completion claims, partial workbook fixtures,
+test-only production surface, rationalizations, and STOP conditions.
 
 ## Good Assertions
 
