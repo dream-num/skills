@@ -219,6 +219,11 @@ Examples:
 A passed assertion that only mirrors the migration output is not enough when the underlying semantic
 decision was ambiguous.
 
+For exact-value decisions, assertions should prove the workbook-visible contract rather than the
+implementation's preferred normalization. Cover exact casing, whitespace, punctuation, identifiers,
+stored value type, dates, booleans, blanks, zeroes, and error placeholders when those details are
+visible or were part of a high-risk decision.
+
 Assertions cannot turn an underdetermined assumption into workbook-proven truth. When the plan marks
 a decision as `underdetermined assumption`, assertions should verify that the implementation
 consistently applies the declared assumption, and the final handoff should preserve that uncertainty

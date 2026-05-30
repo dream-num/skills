@@ -234,6 +234,12 @@ mapping, sign-to-column mapping, blank-versus-zero policy, text casing or whites
 header or section-boundary handling, formula-versus-static-value strategy, and any behavior where the
 instruction can reasonably be read in more than one way.
 
+Exact workbook-visible value preservation is itself a behavior decision. When text, spaces,
+punctuation, identifiers, date values, boolean values, number/text typing, blanks, zeroes, or error
+placeholders are visible, the plan must say whether they are preserved exactly or intentionally
+transformed. Do not normalize values just because the normalized form looks cleaner or more
+conventional.
+
 - Do not write `Unknowns: none` when a decision depends on domain intuition, ambiguous wording,
   partial preview data, or an unchecked sample/reference pattern.
 - If multiple interpretations are plausible, list the rejected interpretations and why they lost.
