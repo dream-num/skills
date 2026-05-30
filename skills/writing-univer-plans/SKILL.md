@@ -162,7 +162,7 @@ Every plan MUST start with this header:
 
 ## Contract Decision Evidence
 
-| Decision | Candidate interpretations | Evidence read | Evidence strength | Chosen rule | Assertions/probes |
+| Decision | Chosen rule | Plausible wrong rule | Discriminating evidence | Evidence strength | Assertions/probes |
 | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |
 
@@ -230,9 +230,10 @@ For every high-risk or non-obvious workbook behavior decision, record evidence b
 migration source.
 
 High-risk decisions include ordering precedence, grouping and truncation order, source-to-target
-mapping, sign-to-column mapping, blank-versus-zero policy, text casing or whitespace preservation,
-header or section-boundary handling, formula-versus-static-value strategy, and any behavior where the
-instruction can reasonably be read in more than one way.
+mapping, sign-to-column mapping, singular/plural label wording, blank-versus-zero-versus-error
+policy, date-window inclusive boundaries, malformed color handling, text casing or whitespace
+preservation, header or section-boundary handling, formula-versus-static-value strategy, and any
+behavior where the instruction can reasonably be read in more than one way.
 
 Exact workbook-visible value preservation is itself a behavior decision. When text, spaces,
 punctuation, identifiers, date values, boolean values, number/text typing, blanks, zeroes, or error
@@ -249,6 +250,26 @@ conventional.
   satisfies the final target/output wording.
 - Each high-risk decision must have at least one assertion or readonly probe that would fail if the
   opposite interpretation were used.
+- Do not infer debit/credit, in/out, positive/negative, or similar semantic labels from source-side
+  signs or business convention alone; connect the mapping to target labels, examples, instruction
+  wording, or a declared assumption.
+- Preserve workbook-visible label text when writing headers, categories, statuses, departments, and
+  names. Normalize labels for matching only unless the instruction explicitly asks to rename,
+  singularize, pluralize, clean, or reformat the written label.
+- Existing target or answer-range values are evidence, not authority. When the task asks to compute,
+  fill, repair, replace, reshape, transpose, consolidate, or enter formulas into that range, treat
+  existing values as possible examples, stale state, or partial output until the instruction and
+  workbook evidence prove they are intended final values.
+- If existing target values conflict with the instruction-derived rule, record both interpretations
+  in Contract Decision Evidence and choose using discriminating instruction wording plus inspected
+  source/target evidence.
+- Treat blank, zero, `#N/A`, `n/a`, spaces, and NBSP as different outputs. The plan must say which
+  one is intended and cite evidence for at least one blank/error/zero edge case when relevant.
+- For date-window or period logic, record whether the boundary is inclusive or exclusive and probe
+  the first computed row, the row before and after the boundary, one middle row, and the last row.
+- For workbook styles, normalize malformed or shorthand colors to valid `#RRGGBB` or safe
+  `rgb(r, g, b)` before applying them. Do not pass malformed hex or named colors directly to style
+  APIs unless the API explicitly documents support for that form.
 
 ## Evidence Sufficiency Rules
 

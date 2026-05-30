@@ -115,11 +115,14 @@ Assertions should cover:
 - workbook-visible final state: sheets, used ranges, headers, representative values, formulas, and
   computed values
 - Excel domain semantics: signs, categories, period boundaries, text casing, blank-versus-zero,
-  stored value type, display-critical values, and formula behavior
+  blank-versus-error placeholders, singular/plural label preservation, stored value type,
+  display-critical values, and formula behavior
 - range role preservation: source data, helper/control input, lookup/reference, example/demo,
   existing output, and preserve-only ranges
 - boundary and negative constraints: no extra headings, no helper sheets, cleared tails, no
   unintended overwrite, no unwanted formatting changes
+- style/export safety: valid `#RRGGBB` or documented color strings, expected number formats, and
+  export-compatible evaluator-facing values when styles or formulas are involved
 - workbook-behavior contract decisions: output shape, sorting, grouping, mapping,
   value/formula semantics, formatting/presentation, interaction/validation/protection,
   preservation, and negative constraints
@@ -212,12 +215,26 @@ Examples:
   output capacity is limited
 - mapping decisions: verify representative source-to-target coordinates, including one row for each
   side of a category, sign, blank/zero, or boundary mapping when relevant
-- text decisions: verify exact casing, whitespace, abbreviations, and stored value type
+- text decisions: verify exact casing, whitespace, abbreviations, singular/plural wording, and stored
+  value type
 - structural decisions: verify section headers, segment boundaries, and first/last row after the
   final layout is determined
+- blank/error decisions: verify at least one no-match or missing-data row that would distinguish a
+  real blank from `#N/A`, `n/a`, spaces, NBSP, or zero
+- date-window decisions: verify the first computed row, the row before and after the boundary, one
+  middle row, and the last row
+- stale/example target decisions: when existing target values could be stale examples or partial
+  output, verify at least one counterexample that would fail if those values were incorrectly
+  preserved
+- style decisions: verify normalized color strings and exported workbook compatibility when an
+  invalid or ambiguous color token appears in the request
 
 A passed assertion that only mirrors the migration output is not enough when the underlying semantic
-decision was ambiguous.
+decision was ambiguous. If the same assertion would pass for the plausible wrong rule, strengthen it
+or add a readonly probe before treating the pack as GREEN.
+
+Do not treat a passing assertion as GREEN if it only confirms copied existing target values without
+proving they match the instruction-derived workbook behavior.
 
 For exact-value decisions, assertions should prove the workbook-visible contract rather than the
 implementation's preferred normalization. Cover exact casing, whitespace, punctuation, identifiers,
