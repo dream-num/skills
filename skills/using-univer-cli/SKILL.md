@@ -54,7 +54,7 @@ digraph using_univer_cli {
 SaC source authoring MUST follow this order:
 
 1. **Plan first**: load `writing-univer-plans`, inspect enough workbook-visible evidence, and write
-   or update `<workspace>/plans/<topic>.md`.
+   or update `<package.univer>/project/plans/<topic>.md`.
 2. **Execute the plan**: load `executing-univer-plans`, review the plan critically, and execute one
    Migration Pack at a time.
 3. **TDD each pack from the plan**: load `test-driven-univer-spreadsheet-development`, derive
@@ -62,7 +62,7 @@ SaC source authoring MUST follow this order:
    workbook-visible reason.
 4. **Implement only after the assertion gate exists**: edit Migration Packs only after the plan and
    plan-derived assertions exist.
-5. **Verify and repair**: use `univer sac verify <workspace> --json` and the verify report to drive
+5. **Verify and repair**: use `univer sac verify <package.univer> --json` and the verify report to drive
    repairs before claiming completion.
 
 Do not write `assertions.ts` before the plan.
@@ -139,14 +139,14 @@ When a user provides a legacy workbook without SaC source, use `univer-cli` for 
 
 Readonly baseline probes are not completion evidence. SaC TDD completion evidence comes from
 `test-driven-univer-spreadsheet-development`: changed packs need assertion coverage and a relevant
-passed `univer sac verify <workspace> --json` run.
+passed `univer sac verify <package.univer> --json` run.
 
 ## Completion Evidence
 
 - Ordinary workbook work needs workbook-visible verification through `univer-cli`, such as
   `inspect`, `search`, `pipe out`, bounded `run`, preview, comments, or export/import checks.
 - SaC TDD work needs `test-driven-univer-spreadsheet-development` evidence: assertion coverage plus
-  a relevant passed `univer sac verify <workspace> --json` run.
+  a relevant passed `univer sac verify <package.univer> --json` run.
 - Do not treat command summaries, package metadata, `univer sac apply` success, or readonly probes as
   final SaC TDD proof.
 - If the task type is unclear, ask whether the user wants an ordinary workbook edit or durable SaC

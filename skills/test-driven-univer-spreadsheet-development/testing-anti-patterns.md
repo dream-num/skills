@@ -120,14 +120,14 @@ Why this is wrong:
   pack.
 - It does not prove skipped packs, unchecked changed packs, formula recomputation, preservation, or
   negative constraints.
-- It does not leave assertion evidence in `.sac/runs/<run-id>/verify-report.json`.
+- It does not leave assertion evidence in `internal/sac/runs/<run-id>/verify-report.json`.
 
 The fix:
 
 1. Use readonly probes only for baseline discovery or debugging.
 2. Convert useful probe findings into the plan, assertion source, or Migration Pack source.
-3. Run `univer sac verify <workspace> --json`.
-4. Read `.sac/runs/<run-id>/verify-report.json`.
+3. Run `univer sac verify <package.univer> --json`.
+4. Read `internal/sac/runs/<run-id>/verify-report.json`.
 5. Mention probes in the handoff only as auxiliary evidence, not completion evidence.
 
 ## Anti-Pattern 4: Partial Workbook Fixtures
@@ -173,7 +173,7 @@ The fix:
 
 ```text
 1. Write plan-derived assertion.
-2. Run `univer sac verify <workspace> --json`.
+2. Run `univer sac verify <package.univer> --json`.
 3. Confirm expected FAIL.
 4. Implement minimal Migration Pack change.
 5. Verify PASS and read `verify-report.json`.
@@ -206,7 +206,7 @@ The fix:
 - You cannot explain which plan decision the assertion proves
 
 When any red flag appears, return to the plan, delete or revert premature migration source if needed,
-write the smallest assertion that should fail, and re-run `univer sac verify <workspace> --json`.
+write the smallest assertion that should fail, and re-run `univer sac verify <package.univer> --json`.
 
 ## When Probes Or Fixtures Become Too Comfortable
 

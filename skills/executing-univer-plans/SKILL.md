@@ -75,7 +75,7 @@ For each pack task:
 
 After all pack tasks are complete, use `superpowers:verification-before-completion` or the local
 repository completion gate before claiming done. For Univer SaC work, completion still needs the
-final `univer sac verify <workspace> --json` status and `verify-report.json` evidence.
+final `univer sac verify <package.univer> --json` status and `verify-report.json` evidence.
 
 ## Load and Review the Plan
 
@@ -118,13 +118,13 @@ For each pack:
 3. Follow each checkbox step exactly from the plan.
 4. Load `test-driven-univer-spreadsheet-development`.
 5. Write or update the plan-derived assertion gate first.
-6. For an already-applied pack, run `univer sac verify <workspace> --json` and confirm the assertion
+6. For an already-applied pack, run `univer sac verify <package.univer> --json` and confirm the assertion
    fails for the intended workbook-visible reason. For a brand-new pending pack, do not use an
    empty/no-op pack to manufacture RED; instead confirm the missing behavior from baseline evidence,
    then write a minimal real migration source file.
 7. Implement the minimal Migration Pack change that should satisfy the assertion.
 8. Run apply/verify as required by the TDD skill.
-9. Read `.sac/runs/<run-id>/verify-report.json` and repair from evidence.
+9. Read `internal/sac/runs/<run-id>/verify-report.json` and repair from evidence.
 10. Update the plan if execution reveals a behavior contract change.
 11. Mark the pack task as `completed`.
 12. Move to the next pack only after the current pack has meaningful passed assertion evidence.

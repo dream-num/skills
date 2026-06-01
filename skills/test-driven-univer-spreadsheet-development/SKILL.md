@@ -77,7 +77,7 @@ assertion fail proves the gate catches missing behavior. Passing later proves th
 satisfied that workbook contract.
 
 Manual preview, `univer sac apply`, and readonly probes are useful evidence, but they are not a
-repeatable completion gate. The repeatable gate is `univer sac verify <workspace> --json` plus the
+repeatable completion gate. The repeatable gate is `univer sac verify <package.univer> --json` plus the
 corresponding `verify-report.json`.
 
 ## Red-Green-Repair
@@ -133,7 +133,7 @@ Keep assertions small and deterministic. Prefer representative ranges over broad
 
 ### Verify RED - Watch It Fail
 
-`univer sac verify <workspace> --json` verifies applied packs. It does not apply pending source just
+`univer sac verify <package.univer> --json` verifies applied packs. It does not apply pending source just
 to test assertions. For a brand-new pending pack, the RED gate is established by writing the
 plan-derived assertion before implementation and confirming that the missing behavior is still absent
 from workbook-visible baseline evidence.
@@ -175,11 +175,11 @@ ranges, broad formatting, or future behavior.
 Run apply when the relevant migration is not yet applied, then verify:
 
 ```bash
-univer sac apply <workspace>
-univer sac verify <workspace> --json
+univer sac apply <package.univer>
+univer sac verify <package.univer> --json
 ```
 
-Read the JSON summary and `.sac/runs/<run-id>/verify-report.json`.
+Read the JSON summary and `internal/sac/runs/<run-id>/verify-report.json`.
 
 Confirm that the changed pack is checked and has at least one passed assertion. A zero-assertion,
 all-skipped, or unchecked changed-pack run is not GREEN.
@@ -250,7 +250,7 @@ instead of presenting it as decisive workbook evidence.
 
 For non-trivial SaC TDD handoff:
 
-- the latest relevant `univer sac verify <workspace> --json` status must be `passed`
+- the latest relevant `univer sac verify <package.univer> --json` status must be `passed`
 - every pack created or modified for the task must be checked unless explicitly assertion-free
 - each changed pack must have at least one passed assertion
 - skipped packs must be mentioned when relevant

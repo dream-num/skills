@@ -78,9 +78,9 @@ a giant plan that hides independent assertion gates.
 
 Before defining pack tasks, map the files the plan expects execution to touch:
 
-- Plan: `<workspace>/plans/<topic>.md`
-- Assertions: `<workspace>/assertions.ts`
-- Migration Packs: `<workspace>/migrations/<pack>.ts`
+- Plan: `<package.univer>/project/plans/<topic>.md`
+- Assertions: `<package.univer>/project/migrations/<pack>/assertions.ts`
+- Migration Packs: `<package.univer>/project/migrations/<pack>/`
 - Fixtures or readonly probes: exact workbook paths, sheets, ranges, or commands used as evidence
 
 For each file, state its responsibility. This locks the boundary between workbook intent,
@@ -91,7 +91,7 @@ assertions, migration source, and evidence before execution starts.
 Write or update a plan file under the SaC workspace:
 
 ```text
-<workspace>/plans/<topic>.md
+<package.univer>/project/plans/<topic>.md
 ```
 
 Use an existing project naming convention if one exists. Keep the plan close to `migrations/` and
@@ -186,9 +186,9 @@ Every plan MUST start with this header:
 ### Task 1: `<pack-id>`
 
 **Files:**
-- Plan: `<workspace>/plans/<topic>.md`
-- Test: `<workspace>/assertions.ts`
-- Migration: `<workspace>/migrations/<pack>.ts`
+- Plan: `<package.univer>/project/plans/<topic>.md`
+- Test: `<package.univer>/project/migrations/<pack>/assertions.ts`
+- Migration: `<package.univer>/project/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 - [ ] **Step 2: Run verify and confirm expected failure**
@@ -323,9 +323,9 @@ guessing. Use exact file paths, exact commands, and expected outcomes.
 ### Task N: <pack-id> - <workbook intent>
 
 **Files:**
-- Plan: `<workspace>/plans/<topic>.md`
-- Test: `<workspace>/assertions.ts`
-- Migration: `<workspace>/migrations/<pack>.ts`
+- Plan: `<package.univer>/project/plans/<topic>.md`
+- Test: `<package.univer>/project/migrations/<pack>/assertions.ts`
+- Migration: `<package.univer>/project/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 
@@ -333,7 +333,7 @@ Add or update the assertion that proves the current pack's workbook-visible beha
 
 - [ ] **Step 2: Run verify and confirm expected failure**
 
-Run: `univer sac verify <workspace> --json`
+Run: `univer sac verify <package.univer> --json`
 Expected: FAIL for the intended workbook-visible reason, not setup or typo failure.
 
 - [ ] **Step 3: Implement the minimal Migration Pack change**
@@ -342,7 +342,7 @@ Edit only `migrations/<pack>.ts` and any pack-local helper required by the curre
 
 - [ ] **Step 4: Run verify and confirm pass**
 
-Run: `univer sac verify <workspace> --json`
+Run: `univer sac verify <package.univer> --json`
 Expected: PASS with this pack's assertion checked in `verify-report.json`.
 
 - [ ] **Step 5: Commit or prepare handoff**

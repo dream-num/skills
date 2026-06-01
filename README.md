@@ -42,7 +42,7 @@ The skills cover complementary workbook workflows:
 - `univer-cli` is for workbook-visible work: `new`, `import`, `export`, `inspect`, `search`, `fill`, `run`, and `pipe`
 - `writing-univer-plans` is for complex SaC workbook behavior planning, range roles, Migration Pack boundaries, and assertion gates written under `plans/`
 - `executing-univer-plans` is for reviewing written plans and executing one Migration Pack at a time
-- `test-driven-univer-spreadsheet-development` is for assertion-backed SaC TDD, `univer sac verify <workspace> --json`, and report-driven repair
+- `test-driven-univer-spreadsheet-development` is for assertion-backed SaC TDD, `univer sac verify <package.univer> --json`, and report-driven repair
 
 Use `univer-cli` for workbook inspection, bounded edits, formula review, shell-native roundtrips, and handoff verification.
 Use `using-univer-cli` first when the task could be either ordinary workbook automation or SaC source authoring.
@@ -115,7 +115,7 @@ Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded 
 ```
 
 ```text
-Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-spreadsheet-development, write the plan under plans/, add assertions.ts coverage, and complete only after univer sac verify <workspace> --json passes.
+Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-spreadsheet-development, write the plan under plans/, add assertions.ts coverage, and complete only after univer sac verify <package.univer> --json passes.
 ```
 
 
