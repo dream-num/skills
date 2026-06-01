@@ -123,7 +123,7 @@ Assertions should cover:
 - boundary and negative constraints: no extra headings, no helper sheets, cleared tails, no
   unintended overwrite, no unwanted formatting changes
 - style/export safety: valid `#RRGGBB` or documented color strings, expected number formats, and
-  export-compatible evaluator-facing values when styles or formulas are involved
+  export-compatible workbook-visible values when styles or formulas are involved
 - workbook-behavior contract decisions: output shape, sorting, grouping, mapping,
   value/formula semantics, formatting/presentation, interaction/validation/protection,
   preservation, and negative constraints
@@ -259,9 +259,9 @@ For non-trivial SaC TDD handoff:
 
 ## Final Handoff
 
-When an external benchmark harness supplies an export stop gate, follow that harness after the
-latest relevant verify passes. Do not keep collecting auxiliary evidence after the required handoff
-file is created.
+When an external harness supplies a delivery or stop gate, follow that harness after the latest
+relevant verify passes. Do not keep collecting auxiliary evidence after the required handoff artifact
+is created.
 
 The final handoff must include:
 

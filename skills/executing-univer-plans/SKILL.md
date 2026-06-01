@@ -100,7 +100,7 @@ Repair the plan before execution when:
 
 - a range role is unclear
 - a high-risk decision lacks evidence strength
-- an assumption is hidden or presented as proof
+- an assumption is implicit or presented as proof
 - a pack has no durable workbook intent
 - a pack has no assertion gate
 - the verify command is missing
@@ -200,8 +200,8 @@ These thoughts mean STOP:
 
 ## Final Handoff
 
-When an external benchmark harness supplies an export stop gate, follow that harness after the
-required output file is created. Do not keep collecting auxiliary evidence after handoff.
+When an external harness supplies a delivery or stop gate, follow that harness after the required
+handoff artifact is created. Do not keep collecting auxiliary evidence after handoff.
 
 The handoff must include:
 

@@ -75,7 +75,7 @@ TDD loop from that plan.
 Do not treat workbook work as a generic file parsing job. Use the Univer skill stack and `univer`
 CLI as the workbook engine.
 
-- Do not import or install spreadsheet libraries such as `exceljs`, `xlsx`, `openpyxl`, pandas, or
+- Do not import or install spreadsheet libraries such as `exceljs`, `xlsx`, pandas, or
   LibreOffice automation as a substitute for Univer CLI.
 - Do not read or patch `.univer` package internals.
 - Do not parse `.xlsx` files directly when the task can be handled through `univer import`,
@@ -108,7 +108,7 @@ These thoughts mean STOP and route through Univer CLI:
 
 | Task shape | Load |
 | --- | --- |
-| Benchmark solver task inside `/task` with prepared SaC workspaces, `answer_position`, or required `output.xlsx` deliverables | Follow the task-local `/task/AGENTS.md` benchmark contract, then use `univer-cli` plus the SaC plan/execution/TDD route below |
+| Harness-provided workbook task with its own local contract, prepared package, or required handoff artifact | Follow the task-local harness contract first, then use `univer-cli` plus the appropriate workbook or SaC route below |
 | Ordinary workbook-visible inspection, search, import, export, pipe, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli` |
 | SaC source authoring, Facade Migration Pack work, `assertions.ts`, `univer sac`, or complex workbook behavior development | `writing-univer-plans`, `executing-univer-plans`, then `test-driven-univer-development` |
 | Existing or legacy workbook with no SaC source, where the user wants behavior converted into SaC source | `univer-cli` for readonly baseline probes, then `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-development` |
