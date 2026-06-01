@@ -18,8 +18,8 @@ IF THE PLAN IS INCOMPLETE, STOP AND REPAIR THE PLAN BEFORE WRITING ASSERTIONS OR
 
 ## The Rule
 
-Review the workbook plan before touching execution files, then use test-driven spreadsheet
-development for each pack.
+Review the workbook plan before touching execution files, then use test-driven Univer development
+for each pack.
 
 ```dot
 digraph executing_univer_plans {
@@ -28,7 +28,7 @@ digraph executing_univer_plans {
     "Plan complete?" [shape=diamond];
     "Stop and repair the plan" [shape=box];
     "Pick next Migration Pack" [shape=box];
-    "Load test-driven-univer-spreadsheet-development" [shape=box];
+    "Load test-driven-univer-development" [shape=box];
     "Write plan-derived failing assertion" [shape=box];
     "Implement pack minimally" [shape=box];
     "Verify and repair from report" [shape=box];
@@ -40,8 +40,8 @@ digraph executing_univer_plans {
     "Plan complete?" -> "Stop and repair the plan" [label="no"];
     "Stop and repair the plan" -> "Load and review the plan";
     "Plan complete?" -> "Pick next Migration Pack" [label="yes"];
-    "Pick next Migration Pack" -> "Load test-driven-univer-spreadsheet-development";
-    "Load test-driven-univer-spreadsheet-development" -> "Write plan-derived failing assertion";
+    "Pick next Migration Pack" -> "Load test-driven-univer-development";
+    "Load test-driven-univer-development" -> "Write plan-derived failing assertion";
     "Write plan-derived failing assertion" -> "Implement pack minimally";
     "Implement pack minimally" -> "Verify and repair from report";
     "Verify and repair from report" -> "More packs?";
@@ -66,7 +66,7 @@ For each pack task:
 
 1. Mark the pack task as `in_progress`.
 2. Follow each checkbox step exactly from the plan.
-3. Load `test-driven-univer-spreadsheet-development` when the plan reaches assertion or migration
+3. Load `test-driven-univer-development` when the plan reaches assertion or migration
    work.
 4. Run the verifications specified by the plan and TDD skill.
 5. Mark the pack task as `completed` only after meaningful passed assertion evidence exists.
@@ -116,7 +116,7 @@ For each pack:
 1. Mark the pack as the current execution unit.
 2. Mark the pack task as `in_progress`.
 3. Follow each checkbox step exactly from the plan.
-4. Load `test-driven-univer-spreadsheet-development`.
+4. Load `test-driven-univer-development`.
 5. Write or update the plan-derived assertion gate first.
 6. For an already-applied pack, run `univer sac verify <package.univer> --json` and confirm the assertion
    fails for the intended workbook-visible reason. For a brand-new pending pack, do not use an
@@ -174,7 +174,7 @@ Do not force through blockers. Repair the plan first, then continue pack executi
 - Review the plan critically first.
 - Follow each checkbox step exactly.
 - Do not skip verification commands.
-- Reference `test-driven-univer-spreadsheet-development` when a step writes assertions or migration source.
+- Reference `test-driven-univer-development` when a step writes assertions or migration source.
 - Stop when blocked; do not guess workbook semantics.
 - Never treat `univer sac apply` as completion evidence.
 
@@ -183,7 +183,7 @@ Do not force through blockers. Repair the plan first, then continue pack executi
 Required workflow skills:
 
 - `writing-univer-plans`: creates the workbook-domain plan this skill executes.
-- `test-driven-univer-spreadsheet-development`: implements each pack assertion-first.
+- `test-driven-univer-development`: implements each pack assertion-first.
 - `superpowers:verification-before-completion`: verifies the final state before claiming completion.
 
 ## Red Flags

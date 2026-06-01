@@ -14,7 +14,7 @@ Do not treat readonly probes as completion evidence. Verify workbook behavior th
 
 **Core principle:** Test what the workbook does, not what the migration happened to write.
 
-Following strict Test-Driven Univer Spreadsheet Development prevents these anti-patterns.
+Following strict Test-Driven Univer Development prevents these anti-patterns.
 
 ## The Iron Laws
 

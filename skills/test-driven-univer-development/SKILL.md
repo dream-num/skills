@@ -1,16 +1,17 @@
 ---
-name: test-driven-univer-spreadsheet-development
-description: "Use when implementing or repairing Univer SaC spreadsheet behavior with assertions.ts, Facade Migration Packs, univer sac apply, univer sac verify, or verify-report loops."
+name: test-driven-univer-development
+description: "Use when implementing or repairing Univer package-local project behavior with assertions.ts, Facade Migration Packs, univer sac apply, univer sac verify, or verify-report loops."
 ---
 
-# Test-Driven Univer Spreadsheet Development
+# Test-Driven Univer Development
 
-Test-Driven Univer Spreadsheet Development is SaC adapted TDD: workbook behavior is complete only
-when assertion contracts prove the changed packs through `univer sac verify`.
+Test-Driven Univer Development is package-local project TDD for Univer workbooks. Behavior is
+complete only when assertion contracts prove the changed packs through `univer sac verify`.
 
-This is not generic code TDD. The goal is correct spreadsheet behavior: Excel domain semantics,
-range roles, formulas, computed values, formatting, validation, protection, preservation, and
-negative constraints.
+This is not generic code TDD. The goal is correct Univer package behavior through source, runtime,
+and assertion evidence. For spreadsheet projects, that includes Excel domain semantics, range roles,
+formulas, computed values, formatting, validation, protection, preservation, and negative
+constraints.
 
 <EXTREMELY-IMPORTANT>
 NO MIGRATION PACK IMPLEMENTATION WITHOUT A PLAN-DERIVED FAILING ASSERTION FIRST.
@@ -33,7 +34,7 @@ Use this skill for:
 - new or changed Facade Migration Packs
 - `assertions.ts` coverage
 - `univer sac apply` or `univer sac verify` repair loops
-- workbook-visible behavior changes in SaC source
+- workbook-visible behavior changes in package-local SaC source
 - refactoring SaC source while preserving workbook behavior
 
 Exceptions require explicit user agreement and must be recorded in the handoff.
@@ -83,7 +84,7 @@ corresponding `verify-report.json`.
 ## Red-Green-Repair
 
 ```dot
-digraph test_driven_univer_spreadsheet_development {
+digraph test_driven_univer_development {
     rankdir=LR;
     red [label="RED\nPlan-derived assertion", shape=box, style=filled, fillcolor="#ffcccc"];
     verify_red [label="Verify fails\nfor right workbook reason", shape=diamond];

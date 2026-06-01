@@ -1,4 +1,4 @@
-# Official Univer Skills for Spreadsheet Automation
+# Official Univer Skills for Workbook Automation
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Skills](https://img.shields.io/badge/skills-5-0a7ea4.svg)
@@ -13,9 +13,9 @@
 
 - [`using-univer-cli`](./skills/using-univer-cli/SKILL.md): workbook 任务的强制入口 skill
 - [`univer-cli`](./skills/univer-cli/SKILL.md): 通过 `univer` 进行 path-first workbook work
-- [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md): 写入 `plans/` 的 SaC workbook behavior plan
+- [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md): 写入 `<package.univer>/project/plans/` 的 SaC workbook behavior plan
 - [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md): plan review 和 pack-by-pack execution
-- [`test-driven-univer-spreadsheet-development`](./skills/test-driven-univer-spreadsheet-development/SKILL.md): assertion-backed SaC TDD 和 verify repair loop
+- [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md): assertion-backed SaC TDD 和 verify repair loop
 
 ## 亮点
 
@@ -40,13 +40,13 @@
 
 - `using-univer-cli` 是 workbook 任务的强制入口，先把 agent 锁定在 Univer CLI 路径上，避免临时改用 spreadsheet libraries，再判断普通 workbook work 还是 SaC plan/execution/TDD workflow
 - `univer-cli` 负责 workbook-visible work：`new`、`import`、`export`、`inspect`、`search`、`fill`、`run` 和 `pipe`
-- `writing-univer-plans` 负责复杂 SaC workbook behavior planning，把 range roles、Migration Pack boundaries 和 assertion gates 写入 `plans/`
+- `writing-univer-plans` 负责复杂 SaC workbook behavior planning，把 range roles、Migration Pack boundaries 和 assertion gates 写入 `<package.univer>/project/plans/`
 - `executing-univer-plans` 负责 review 已写好的 plan，并一次执行一个 Migration Pack
-- `test-driven-univer-spreadsheet-development` 负责 assertion-backed SaC TDD、`univer sac verify <package.univer> --json` 和 report-driven repair
+- `test-driven-univer-development` 负责 assertion-backed SaC TDD、`univer sac verify <package.univer> --json` 和 report-driven repair
 
 用 `univer-cli` 做 workbook inspection、bounded edits、formula review、shell-native roundtrips 和 handoff verification。
 当任务可能是普通 workbook automation，也可能是 SaC source authoring 时，先使用 `using-univer-cli`。
-当 workbook behavior 应该作为 SaC source 构建，并通过 `assertions.ts` 验证时，使用 `writing-univer-plans`、`executing-univer-plans` 和 `test-driven-univer-spreadsheet-development`。
+当 workbook behavior 应该作为 SaC source 构建，并通过 `assertions.ts` 验证时，使用 `writing-univer-plans`、`executing-univer-plans` 和 `test-driven-univer-development`。
 Benchmark solver tasks 应该由 harness 提供 task-local `AGENTS.md` 约束，然后进入 `using-univer-cli` 和 SaC plan/execution/TDD skills。
 
 ## 快速安装
@@ -75,7 +75,7 @@ cp -R skills/using-univer-cli ~/.claude/skills/
 cp -R skills/univer-cli ~/.claude/skills/
 cp -R skills/writing-univer-plans ~/.claude/skills/
 cp -R skills/executing-univer-plans ~/.claude/skills/
-cp -R skills/test-driven-univer-spreadsheet-development ~/.claude/skills/
+cp -R skills/test-driven-univer-development ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
@@ -83,7 +83,7 @@ cp -R skills/using-univer-cli ~/.codex/skills/
 cp -R skills/univer-cli ~/.codex/skills/
 cp -R skills/writing-univer-plans ~/.codex/skills/
 cp -R skills/executing-univer-plans ~/.codex/skills/
-cp -R skills/test-driven-univer-spreadsheet-development ~/.codex/skills/
+cp -R skills/test-driven-univer-development ~/.codex/skills/
 
 # Cursor
 mkdir -p ~/.cursor/skills
@@ -91,7 +91,7 @@ cp -R skills/using-univer-cli ~/.cursor/skills/
 cp -R skills/univer-cli ~/.cursor/skills/
 cp -R skills/writing-univer-plans ~/.cursor/skills/
 cp -R skills/executing-univer-plans ~/.cursor/skills/
-cp -R skills/test-driven-univer-spreadsheet-development ~/.cursor/skills/
+cp -R skills/test-driven-univer-development ~/.cursor/skills/
 ```
 
 ## Available Skills
@@ -100,9 +100,9 @@ cp -R skills/test-driven-univer-spreadsheet-development ~/.cursor/skills/
 |---|---|---|---|
 | [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | workbook 任务的强制入口，把 workbook engine 固定为 Univer CLI，并在需要时 handoff 到 SaC TDD | 行动前选择正确 Univer 路径 | canonical |
 | [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
-| [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Workspace-local SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
+| [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Package-local SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | 不跳过 assertion gates 地执行已写好的 Univer plans | canonical |
-| [`test-driven-univer-spreadsheet-development`](./skills/test-driven-univer-spreadsheet-development/SKILL.md) | SaC adapted TDD with assertion coverage, apply/verify, `verify-report.json` repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |
+| [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Package-local Univer project TDD with assertion coverage, apply/verify, `verify-report.json` repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |
 
 ## 示例 Prompts
 
@@ -115,7 +115,7 @@ Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded 
 ```
 
 ```text
-Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-spreadsheet-development, write the plan under plans/, add assertions.ts coverage, and complete only after univer sac verify <package.univer> --json passes.
+Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-development, write the plan under <package.univer>/project/plans/, add assertions.ts coverage, and complete only after univer sac verify <package.univer> --json passes.
 ```
 
 
