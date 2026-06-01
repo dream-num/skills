@@ -28,7 +28,7 @@ digraph using_univer_cli {
     "Use workbook-visible verification" [shape=box];
     "SaC source or complex behavior?" [shape=diamond];
     "Load writing-univer-plans" [shape=box];
-    "Plan first" [shape=box];
+    "Success criteria then plan" [shape=box];
     "Load executing-univer-plans" [shape=box];
     "Execute the plan" [shape=box];
     "Load test-driven-univer-development" [shape=box];
@@ -41,8 +41,8 @@ digraph using_univer_cli {
     "Load univer-cli" -> "Use workbook-visible verification";
     "Ordinary workbook-visible work?" -> "SaC source or complex behavior?" [label="no"];
     "SaC source or complex behavior?" -> "Load writing-univer-plans" [label="yes"];
-    "Load writing-univer-plans" -> "Plan first";
-    "Plan first" -> "Load executing-univer-plans";
+    "Load writing-univer-plans" -> "Success criteria then plan";
+    "Success criteria then plan" -> "Load executing-univer-plans";
     "Load executing-univer-plans" -> "Execute the plan";
     "Execute the plan" -> "Load test-driven-univer-development";
     "Load test-driven-univer-development" -> "TDD each pack from the plan";
@@ -53,8 +53,9 @@ digraph using_univer_cli {
 
 SaC source authoring MUST follow this order:
 
-1. **Plan first**: load `writing-univer-plans`, inspect enough workbook-visible evidence, and write
-   or update `<package.univer>/project/plans/<topic>.md`.
+1. **Success criteria then plan**: load `writing-univer-plans`, write or update
+   `<package.univer>/project/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
+   and write or update `<package.univer>/project/plans/<topic>.md`.
 2. **Execute the plan**: load `executing-univer-plans`, review the plan critically, and execute one
    Migration Pack at a time.
 3. **TDD each pack from the plan**: load `test-driven-univer-development`, derive
@@ -65,10 +66,11 @@ SaC source authoring MUST follow this order:
 5. **Verify and repair**: use `univer sac verify <package.univer> --json` and the verify report to drive
    repairs before claiming completion.
 
+Do not write the plan before the success criteria checklist.
 Do not write `assertions.ts` before the plan.
 Do not edit Migration Packs before plan-derived assertions.
-If you already did either out of order, stop, write the plan from current evidence, then restart the
-TDD loop from that plan.
+If you already did any step out of order, stop, write the missing success criteria and plan from
+current evidence, then restart the TDD loop from that plan.
 
 ## Hard Gate
 
@@ -122,13 +124,15 @@ For ordinary workbook-visible tasks, load `univer-cli` and stay with workbook-vi
 For SaC source authoring or complex workbook behavior:
 
 1. Load `writing-univer-plans` before editing migration source.
-2. Write or update the package-local plan under `<package.univer>/project/plans/`.
+2. Write or update package-local success criteria under `<package.univer>/project/success-criteria/`,
+   then the plan under `<package.univer>/project/plans/`.
 3. Load `executing-univer-plans` to review and execute the plan pack-by-pack.
 4. Load `test-driven-univer-development` for assertion coverage, apply/verify, repair,
    and handoff gates.
 
-In short: load `writing-univer-plans` to plan workbook behavior, `executing-univer-plans` to
-execute the plan, and `test-driven-univer-development` to implement and verify each pack.
+In short: load `writing-univer-plans` to define success criteria and plan workbook behavior,
+`executing-univer-plans` to execute the plan, and `test-driven-univer-development` to implement and
+verify each pack.
 
 Do not skip `writing-univer-plans` for complex SaC behavior. The plan is the place where range
 roles, pack boundaries, and assertion gates become explicit.

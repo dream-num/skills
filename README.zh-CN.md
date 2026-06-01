@@ -100,7 +100,7 @@ cp -R skills/test-driven-univer-development ~/.cursor/skills/
 |---|---|---|---|
 | [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | workbook 任务的强制入口，把 workbook engine 固定为 Univer CLI，并在需要时 handoff 到 SaC TDD | 行动前选择正确 Univer 路径 | canonical |
 | [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
-| [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Package-local SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
+| [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Package-local success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | 不跳过 assertion gates 地执行已写好的 Univer plans | canonical |
 | [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Package-local Univer project TDD with assertion coverage, apply/verify, `verify-report.json` repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |
 
@@ -115,7 +115,7 @@ Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded 
 ```
 
 ```text
-Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-development, write the plan under <package.univer>/project/plans/, add assertions.ts coverage, and complete only after univer sac verify <package.univer> --json passes.
+Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-development, write success criteria under <package.univer>/project/success-criteria/ and the plan under <package.univer>/project/plans/, add assertions.ts coverage, and complete only after univer sac verify <package.univer> --json passes.
 ```
 
 
