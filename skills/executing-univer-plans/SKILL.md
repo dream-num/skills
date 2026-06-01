@@ -18,13 +18,13 @@ IF THE PLAN IS INCOMPLETE, STOP AND REPAIR THE PLAN BEFORE WRITING ASSERTIONS OR
 
 ## The Rule
 
-Review the workbook plan before touching execution files, then use test-driven Univer development
-for each pack.
+Review the workbook success criteria and plan before touching execution files, then use test-driven
+Univer development for each pack.
 
 ```dot
 digraph executing_univer_plans {
     "Written Univer plan" [shape=doublecircle];
-    "Load and review the plan" [shape=box];
+    "Load success criteria and plan" [shape=box];
     "Plan complete?" [shape=diamond];
     "Stop and repair the plan" [shape=box];
     "Pick next Migration Pack" [shape=box];
@@ -35,10 +35,10 @@ digraph executing_univer_plans {
     "More packs?" [shape=diamond];
     "Final handoff" [shape=doublecircle];
 
-    "Written Univer plan" -> "Load and review the plan";
-    "Load and review the plan" -> "Plan complete?";
+    "Written Univer plan" -> "Load success criteria and plan";
+    "Load success criteria and plan" -> "Plan complete?";
     "Plan complete?" -> "Stop and repair the plan" [label="no"];
-    "Stop and repair the plan" -> "Load and review the plan";
+    "Stop and repair the plan" -> "Load success criteria and plan";
     "Plan complete?" -> "Pick next Migration Pack" [label="yes"];
     "Pick next Migration Pack" -> "Load test-driven-univer-development";
     "Load test-driven-univer-development" -> "Write plan-derived failing assertion";
@@ -52,13 +52,14 @@ digraph executing_univer_plans {
 
 ## The Process
 
-### Step 1: Load and Review Plan
+### Step 1: Load Success Criteria and Review Plan
 
-1. Read the plan file.
-2. Review it critically against the workbook contract, range roles, decision evidence, pack sequence,
+1. Read the success criteria file referenced by the plan.
+2. Read the plan file.
+3. Review it critically against the success criteria, workbook contract, range roles, decision evidence, pack sequence,
    assertion gates, and verify command.
-3. If there are concerns, stop and repair the plan before starting execution.
-4. If there are no concerns, Create or update a task list with one task per Migration Pack.
+4. If there are concerns, stop and repair the success criteria or plan before starting execution.
+5. If there are no concerns, Create or update a task list with one task per Migration Pack.
 
 ### Step 2: Execute Tasks
 
@@ -77,12 +78,13 @@ After all pack tasks are complete, use `superpowers:verification-before-completi
 repository completion gate before claiming done. For Univer SaC work, completion still needs the
 final `univer sac verify <package.univer> --json` status and `verify-report.json` evidence.
 
-## Load and Review the Plan
+## Load Success Criteria and Review the Plan
 
-Before editing `assertions.ts` or `migrations/`, read the plan critically.
+Before editing `assertions.ts` or `migrations/`, read the success criteria and plan critically.
 
 Confirm it includes:
 
+- a referenced `success-criteria/<topic>.md` file with a checklist, explicit non-goals, and plan-time ambiguities
 - workbook-visible goal and explicit non-goals
 - baseline evidence and readonly probes already used
 - range roles with read/write/preserve rules
@@ -98,6 +100,8 @@ If any item is missing, Stop and repair the plan. Do not proceed from memory.
 
 Repair the plan before execution when:
 
+- the plan does not reference success criteria
+- a success checklist item is missing from the plan or contradicted by it
 - a range role is unclear
 - a high-risk decision lacks evidence strength
 - an assumption is implicit or presented as proof
@@ -107,7 +111,7 @@ Repair the plan before execution when:
 - the plan conflicts with observed workbook evidence
 
 Plan repair may require readonly `univer` probes. Capture useful findings back into the plan before
-continuing.
+continuing. If the target outcome changed, update the success criteria before repairing plan details.
 
 ## Execute one Migration Pack at a time
 
@@ -206,6 +210,7 @@ handoff artifact is created. Do not keep collecting auxiliary evidence after han
 The handoff must include:
 
 - plan path
+- success criteria path
 - executed Migration Pack sequence
 - verification command
 - final status

@@ -5,8 +5,9 @@ description: "Use when planning complex SaC spreadsheet or workbook behavior, Fa
 
 # Writing Univer Plans
 
-Write the workbook-domain plan before any SaC assertion or migration source work. The plan is a
-source-first authoring artifact, not chat-only notes.
+Write the workbook-domain success criteria and plan before any SaC assertion or migration source
+work. The success criteria locks the target outcome as a checklist. The plan is a source-first
+authoring artifact, not chat-only notes.
 
 This is not generic software planning. The plan exists to make spreadsheet behavior explicit:
 Excel-domain meaning, range roles, formulas, formatting, validation, preservation boundaries, and
@@ -16,7 +17,7 @@ assertion gates.
 If complex SaC workbook behavior is involved, you MUST write or update the workspace plan before
 writing `assertions.ts` or editing Migration Packs.
 
-IF THIS SKILL APPLIES, PLAN FIRST. ASSERTIONS SECOND. MIGRATION SOURCE THIRD.
+IF THIS SKILL APPLIES, SUCCESS CRITERIA FIRST. PLAN SECOND. ASSERTIONS THIRD. MIGRATION SOURCE FOURTH.
 </EXTREMELY-IMPORTANT>
 
 ## The Rule
@@ -26,6 +27,7 @@ Decide workbook behavior in source before executing it.
 ```dot
 digraph writing_univer_plans {
     "SaC workbook task received" [shape=doublecircle];
+    "Write success criteria checklist" [shape=box];
     "Read workbook evidence" [shape=box];
     "Classify range roles" [shape=box];
     "Resolve workbook behavior decisions" [shape=box];
@@ -35,7 +37,8 @@ digraph writing_univer_plans {
     "Plan self-review" [shape=box];
     "Ready for executing-univer-plans" [shape=doublecircle];
 
-    "SaC workbook task received" -> "Read workbook evidence";
+    "SaC workbook task received" -> "Write success criteria checklist";
+    "Write success criteria checklist" -> "Read workbook evidence";
     "Read workbook evidence" -> "Classify range roles";
     "Classify range roles" -> "Resolve workbook behavior decisions";
     "Resolve workbook behavior decisions" -> "Decompose Migration Packs";
@@ -46,10 +49,56 @@ digraph writing_univer_plans {
 }
 ```
 
+Do not write the plan before writing or updating the success criteria.
 Do not write `assertions.ts` before the plan.
 Do not edit Migration Packs before plan-derived assertions.
-If you already did either out of order, stop, write the plan from current workbook evidence, then
-restart execution from the plan.
+If you already did any step out of order, stop, write the missing success criteria and plan from
+current workbook evidence, then restart execution from the plan.
+
+## Success Criteria First
+
+Before writing the workspace plan, create or update:
+
+```text
+<package.univer>/project/success-criteria/<topic>.md
+```
+
+This file is a short checklist, not a plan. It translates the user task into pass conditions before
+heavy workbook reasoning starts.
+
+Use this shape:
+
+```md
+# <Feature Name> Success Criteria
+
+**Task:** <one-sentence restatement of the user task>
+**Source:** <workbook/package, user prompt, files, or commands that define the task>
+
+## Success Checklist
+
+- [ ] <user-visible outcome>
+- [ ] <preservation or negative constraint>
+- [ ] <required deliverable or output>
+- [ ] <validation signal>
+
+## Explicit Non-Goals
+
+- [ ] <out-of-scope behavior>
+
+## Ambiguities To Resolve In Plan
+
+- <question the plan must resolve with evidence, probes, or an explicit assumption>
+```
+
+Success criteria may name visible outcomes, preservation constraints, required deliverables,
+validation signals, explicit non-goals, and ambiguities.
+
+- Do not include Migration Packs.
+- Do not include assertions.ts design.
+- Do not include TDD steps.
+- Do not include apply/verify repair strategy.
+- Do not include formula/range mapping decisions that require workbook evidence; list those as
+  ambiguities for the plan instead.
 
 ## Hard Gate
 
@@ -78,6 +127,7 @@ a giant plan that hides independent assertion gates.
 
 Before defining pack tasks, map the files the plan expects execution to touch:
 
+- Success Criteria: `<package.univer>/project/success-criteria/<topic>.md`
 - Plan: `<package.univer>/project/plans/<topic>.md`
 - Assertions: `<package.univer>/project/migrations/<pack>/assertions.ts`
 - Migration Packs: `<package.univer>/project/migrations/<pack>/`
@@ -88,14 +138,15 @@ assertions, migration source, and evidence before execution starts.
 
 ## Output Location
 
-Write or update a plan file under the SaC workspace:
+Write or update the success criteria and plan files under the SaC workspace:
 
 ```text
+<package.univer>/project/success-criteria/<topic>.md
 <package.univer>/project/plans/<topic>.md
 ```
 
-Use an existing project naming convention if one exists. Keep the plan close to `migrations/` and
-`assertions.ts` so future agents can understand the workbook behavior from source.
+Use an existing project naming convention if one exists. Keep the success criteria close to the plan
+so future agents can distinguish the target checklist from the reasoning and execution design.
 
 ## Plan Document Header
 
@@ -109,6 +160,8 @@ Every plan MUST start with this header:
 > plan-derived assertions before implementation.
 
 **Goal:** <one sentence describing the workbook-visible outcome>
+
+Success Criteria: <package.univer>/project/success-criteria/<topic>.md
 
 **Workbook Contract:** <2-3 sentences describing the spreadsheet behavior, not code structure>
 
@@ -133,6 +186,7 @@ Every plan MUST start with this header:
 
 ## Source File Map
 
+- Success Criteria:
 - Plan:
 - Assertions:
 - Migration Packs:
