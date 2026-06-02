@@ -76,7 +76,7 @@ For each pack task:
 
 After all pack tasks are complete, use `superpowers:verification-before-completion` or the local
 repository completion gate before claiming done. For Univer SaC work, completion still needs the
-final `univer sac verify <package.univer> --json` status and `verify-report.json` evidence.
+final `univer sac verify <package.univer> --json` status and returned assertion evidence.
 
 ## Load Success Criteria and Review the Plan
 
@@ -128,7 +128,7 @@ For each pack:
    then write a minimal real migration source file.
 7. Implement the minimal Migration Pack change that should satisfy the assertion.
 8. Run apply/verify as required by the TDD skill.
-9. Read `internal/sac/runs/<run-id>/verify-report.json` and repair from evidence.
+9. Read the `univer sac verify <package.univer> --json` assertion evidence and repair from evidence.
 10. Update the plan if execution reveals a behavior contract change.
 11. Mark the pack task as `completed`.
 12. Move to the next pack only after the current pack has meaningful passed assertion evidence.
@@ -214,7 +214,6 @@ The handoff must include:
 - executed Migration Pack sequence
 - verification command
 - final status
-- `verify-report.json` path
 - assertion evidence for each changed pack
 - skipped packs, if relevant
 - assumptions that remain underdetermined

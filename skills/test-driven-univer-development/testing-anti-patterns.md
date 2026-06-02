@@ -10,7 +10,7 @@ Assertions must verify workbook behavior, not migration output, readonly probe f
 incomplete fixture shape.
 
 Do not treat readonly probes as completion evidence. Verify workbook behavior through
-`univer sac verify` and its `verify-report.json`.
+`univer sac verify <package.univer> --json` and its returned assertion evidence.
 
 **Core principle:** Test what the workbook does, not what the migration happened to write.
 
@@ -69,7 +69,7 @@ The assertion was changed from "North" to "West" without updating the plan evide
 
 Why this is wrong:
 
-- It turns `verify-report.json` actual output into the new requirement.
+- It turns returned assertion evidence into the new requirement.
 - It erases the signal that the Migration Pack disagreed with the plan.
 - It lets implementation order decide workbook semantics.
 
@@ -120,14 +120,14 @@ Why this is wrong:
   pack.
 - It does not prove skipped packs, unchecked changed packs, formula recomputation, preservation, or
   negative constraints.
-- It does not leave assertion evidence in `internal/sac/runs/<run-id>/verify-report.json`.
+- It does not leave assertion evidence in the `univer sac verify <package.univer> --json` result.
 
 The fix:
 
 1. Use readonly probes only for baseline discovery or debugging.
 2. Convert useful probe findings into the plan, assertion source, or Migration Pack source.
 3. Run `univer sac verify <package.univer> --json`.
-4. Read `internal/sac/runs/<run-id>/verify-report.json`.
+4. Read the returned assertion evidence.
 5. Mention probes in the handoff only as auxiliary evidence, not completion evidence.
 
 ## Anti-Pattern 4: Partial Workbook Fixtures
@@ -167,7 +167,7 @@ Why this is wrong:
 
 - Testing is part of implementation, not a handoff chore.
 - Without RED, the assertion may not catch missing behavior.
-- Without `verify-report.json`, there is no pack-level completion evidence.
+- Without returned assertion evidence, there is no pack-level completion evidence.
 
 The fix:
 
@@ -176,7 +176,7 @@ The fix:
 2. Run `univer sac verify <package.univer> --json`.
 3. Confirm expected FAIL.
 4. Implement minimal Migration Pack change.
-5. Verify PASS and read `verify-report.json`.
+5. Verify PASS and read the returned assertion evidence.
 ```
 
 ## Common Rationalizations

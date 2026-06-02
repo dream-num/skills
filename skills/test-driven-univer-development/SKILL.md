@@ -1,11 +1,11 @@
 ---
 name: test-driven-univer-development
-description: "Use when implementing or repairing Univer package-local project behavior with assertions.ts, Facade Migration Packs, univer sac apply, univer sac verify, or verify-report loops."
+description: "Use when implementing or repairing Univer package-local SaC behavior with assertions.ts, Facade Migration Packs, univer sac apply, univer sac verify, or verify evidence loops."
 ---
 
 # Test-Driven Univer Development
 
-Test-Driven Univer Development is package-local project TDD for Univer workbooks. Behavior is
+Test-Driven Univer Development is package-local SaC TDD for Univer workbooks. Behavior is
 complete only when assertion contracts prove the changed packs through `univer sac verify`.
 
 This is not generic code TDD. The goal is correct Univer package behavior through source, runtime,
@@ -80,8 +80,8 @@ assertion fail proves the gate catches missing behavior. Passing later proves th
 satisfied that workbook contract.
 
 Manual preview, `univer sac apply`, and readonly probes are useful evidence, but they are not a
-repeatable completion gate. The repeatable gate is `univer sac verify <package.univer> --json` plus the
-corresponding `verify-report.json`.
+repeatable completion gate. The repeatable gate is `univer sac verify <package.univer> --json` plus
+the returned assertion evidence.
 
 ## Red-Green-Repair
 
@@ -144,7 +144,7 @@ from workbook-visible baseline evidence.
 Only run verify for RED when the target pack is already applied or when you are repairing an applied
 pack and expect its assertion to fail. When you run verify, confirm:
 
-- the changed pack is actually checked in the JSON summary or `verify-report.json`
+- the changed pack is actually checked in the JSON summary
 - the assertion fails
 - the failure is about the intended workbook-visible behavior
 - the failure is not a typo, missing fixture, setup error, stale apply state, skipped pack, or invalid assertion
@@ -182,7 +182,7 @@ univer sac apply <package.univer>
 univer sac verify <package.univer> --json
 ```
 
-Read the JSON summary and `internal/sac/runs/<run-id>/verify-report.json`.
+Read the JSON summary and returned assertion evidence.
 
 Confirm that the changed pack is checked and has at least one passed assertion. A zero-assertion,
 all-skipped, or unchecked changed-pack run is not GREEN.
@@ -270,7 +270,6 @@ The final handoff must include:
 - plan outcome and pack sequence
 - verification command
 - final status
-- `verify-report.json` path
 - changed pack assertion evidence
 - skipped packs, if relevant
 - auxiliary probes used, if any, and why they were not completion evidence

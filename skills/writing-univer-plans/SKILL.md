@@ -60,7 +60,7 @@ current workbook evidence, then restart execution from the plan.
 Before writing the workspace plan, create or update:
 
 ```text
-<package.univer>/project/success-criteria/<topic>.md
+<package.univer>/success-criteria/<topic>.md
 ```
 
 This file is a short checklist, not a plan. It translates the user task into pass conditions before
@@ -127,10 +127,10 @@ a giant plan that hides independent assertion gates.
 
 Before defining pack tasks, map the files the plan expects execution to touch:
 
-- Success Criteria: `<package.univer>/project/success-criteria/<topic>.md`
-- Plan: `<package.univer>/project/plans/<topic>.md`
-- Assertions: `<package.univer>/project/migrations/<pack>/assertions.ts`
-- Migration Packs: `<package.univer>/project/migrations/<pack>/`
+- Success Criteria: `<package.univer>/success-criteria/<topic>.md`
+- Plan: `<package.univer>/plans/<topic>.md`
+- Assertions: `<package.univer>/migrations/<pack>/assertions.ts`
+- Migration Packs: `<package.univer>/migrations/<pack>/`
 - Fixtures or readonly probes: exact workbook paths, sheets, ranges, or commands used as evidence
 
 For each file, state its responsibility. This locks the boundary between workbook intent,
@@ -141,8 +141,8 @@ assertions, migration source, and evidence before execution starts.
 Write or update the success criteria and plan files under the SaC workspace:
 
 ```text
-<package.univer>/project/success-criteria/<topic>.md
-<package.univer>/project/plans/<topic>.md
+<package.univer>/success-criteria/<topic>.md
+<package.univer>/plans/<topic>.md
 ```
 
 Use an existing project naming convention if one exists. Keep the success criteria close to the plan
@@ -161,7 +161,7 @@ Every plan MUST start with this header:
 
 **Goal:** <one sentence describing the workbook-visible outcome>
 
-Success Criteria: <package.univer>/project/success-criteria/<topic>.md
+Success Criteria: <package.univer>/success-criteria/<topic>.md
 
 **Workbook Contract:** <2-3 sentences describing the spreadsheet behavior, not code structure>
 
@@ -240,9 +240,9 @@ Success Criteria: <package.univer>/project/success-criteria/<topic>.md
 ### Task 1: `<pack-id>`
 
 **Files:**
-- Plan: `<package.univer>/project/plans/<topic>.md`
-- Test: `<package.univer>/project/migrations/<pack>/assertions.ts`
-- Migration: `<package.univer>/project/migrations/<pack>/`
+- Plan: `<package.univer>/plans/<topic>.md`
+- Test: `<package.univer>/migrations/<pack>/assertions.ts`
+- Migration: `<package.univer>/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 - [ ] **Step 2: Run verify and confirm expected failure**
@@ -377,9 +377,9 @@ guessing. Use exact file paths, exact commands, and expected outcomes.
 ### Task N: <pack-id> - <workbook intent>
 
 **Files:**
-- Plan: `<package.univer>/project/plans/<topic>.md`
-- Test: `<package.univer>/project/migrations/<pack>/assertions.ts`
-- Migration: `<package.univer>/project/migrations/<pack>/`
+- Plan: `<package.univer>/plans/<topic>.md`
+- Test: `<package.univer>/migrations/<pack>/assertions.ts`
+- Migration: `<package.univer>/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 
@@ -397,11 +397,11 @@ Edit only `migrations/<pack>.ts` and any pack-local helper required by the curre
 - [ ] **Step 4: Run verify and confirm pass**
 
 Run: `univer sac verify <package.univer> --json`
-Expected: PASS with this pack's assertion checked in `verify-report.json`.
+Expected: PASS with this pack's assertion checked in returned assertion evidence.
 
 - [ ] **Step 5: Commit or prepare handoff**
 
-Record the plan path, assertion evidence, migration file, verify command, and report path.
+Record the plan path, assertion evidence, migration file, and verify command.
 ````
 
 Do not write "similar to Task N"; repeat the details because pack tasks may be executed out of
