@@ -1,13 +1,13 @@
 ---
 name: univer-cli
-description: "Use when solving spreadsheet workbook problems with the `univer` or `unv` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` or `.unv` packages, workbook inspection, range search, formulas, formatting, charts, shapes, floating images, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
+description: "Use when solving spreadsheet workbook problems with the `univer` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` packages, workbook inspection, range search, formulas, formatting, charts, shapes, floating images, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
 ---
 
 # univer-cli
 
 `univer` is a spreadsheet engine in the terminal. Use it when an agent needs real workbook semantics: sheets, ranges, formulas, formatting, layout, previews, imports, exports, or versioned workbook state.
 
-Install the CLI with `npm i -g univer-cli`. Update the CLI with `univer update`. The executable is `univer`; `unv` may be available as a short alias.
+Install the CLI with `npm i -g univer-cli`. Update the CLI with `univer update`. The executable is `univer`.
 
 ## Core Mental Model
 
@@ -15,7 +15,7 @@ Treat workbook-visible state as the source of truth. A successful command summar
 
 The workbook path is the local identity. Pick one explicit path such as `./budget.univer` and use that path as the CLI target. Do not target workbooks by `unitId`, `sessionId`, manifest ids, or runtime ids.
 
-`.univer` and `.unv` files are CLI operation targets, not agent-editable data stores. Read and write workbook data through public CLI surfaces such as `inspect`, `search`, `pipe`, `run`, `export`, `status`, and `commit`.
+`.univer` files are CLI operation targets, not agent-editable data stores. Read and write workbook data through public CLI surfaces such as `inspect`, `search`, `pipe`, `run`, `export`, `status`, and `commit`.
 
 Use `univer help` and `univer help <command...>` for exact syntax. For `run` scripts, use `univer help run` and `univer help run <topic>` before relying on unfamiliar APIs.
 
@@ -23,7 +23,7 @@ Use `univer help` and `univer help <command...>` for exact syntax. For `run` scr
 
 Use this skill when the task involves spreadsheet or workbook work, especially:
 
-- creating, importing, exporting, or handing off `.xlsx`, `.csv`, `.univer`, or `.unv` files
+- creating, importing, exporting, or handing off `.xlsx`, `.csv`, or `.univer` files
 - inspecting workbook shape, sheets, ranges, formulas, formatting, or visible cell state
 - locating content-defined rows, columns, headers, or cells before editing
 - making bounded edits to cells, formulas, formatting, charts, shapes, floating images, layout, or sheet structure
@@ -37,7 +37,7 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 ## Default Operating Loop
 
 1. Pick one explicit workbook path, for example `./budget.univer`.
-2. Create or import a workbook first if no `.univer` or `.unv` target exists.
+2. Create or import a workbook first if no `.univer` target exists.
 3. Inspect workbook-visible state before deciding where to write.
 4. Locate targets from visible headers, values, formulas, or inspected ranges.
 5. Choose the smallest public CLI surface that fits the task.
@@ -49,7 +49,7 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 
 ## Hard Rules
 
-- Do not read `.univer` or `.unv` internals to infer workbook contents.
+- Do not read `.univer` internals to infer workbook contents.
 - Do not write, patch, unzip, rezip, rename internal files, or manipulate workbook package contents.
 - Do not inspect `manifest.json`, snapshots, mutation logs, or package fragments as a substitute for workbook-visible reads.
 - Do not guess sheet names, row numbers, formulas, ranges, or changed cells from memory or file metadata.
@@ -389,7 +389,7 @@ Use shell tools to reduce large ranges before bringing data back to the agent. `
 - Make `pipe in` the usual final pipeline stage.
 - Verify with `inspect range` or `pipe out` after every writeback.
 
-Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can print logs to stdout and corrupt streamed data. Use the installed `univer`/`unv` executable or another entrypoint you have proven emits clean stdout.
+Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can print logs to stdout and corrupt streamed data. Use the installed `univer` executable or another entrypoint you have proven emits clean stdout.
 
 ## Gotchas
 
