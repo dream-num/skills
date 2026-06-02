@@ -54,8 +54,8 @@ digraph using_univer_cli {
 SaC source authoring MUST follow this order:
 
 1. **Success criteria then plan**: load `writing-univer-plans`, write or update
-   `<package.univer>/project/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
-   and write or update `<package.univer>/project/plans/<topic>.md`.
+   `<package.univer>/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
+   and write or update `<package.univer>/plans/<topic>.md`.
 2. **Execute the plan**: load `executing-univer-plans`, review the plan critically, and execute one
    Migration Pack at a time.
 3. **TDD each pack from the plan**: load `test-driven-univer-development`, derive
@@ -63,8 +63,8 @@ SaC source authoring MUST follow this order:
    workbook-visible reason.
 4. **Implement only after the assertion gate exists**: edit Migration Packs only after the plan and
    plan-derived assertions exist.
-5. **Verify and repair**: use `univer sac verify <package.univer> --json` and the verify report to drive
-   repairs before claiming completion.
+5. **Verify and repair**: use `univer sac verify <package.univer> --json` and the returned assertion
+   evidence to drive repairs before claiming completion.
 
 Do not write the plan before the success criteria checklist.
 Do not write `assertions.ts` before the plan.
@@ -124,8 +124,8 @@ For ordinary workbook-visible tasks, load `univer-cli` and stay with workbook-vi
 For SaC source authoring or complex workbook behavior:
 
 1. Load `writing-univer-plans` before editing migration source.
-2. Write or update package-local success criteria under `<package.univer>/project/success-criteria/`,
-   then the plan under `<package.univer>/project/plans/`.
+2. Write or update package-local success criteria under `<package.univer>/success-criteria/`,
+   then the plan under `<package.univer>/plans/`.
 3. Load `executing-univer-plans` to review and execute the plan pack-by-pack.
 4. Load `test-driven-univer-development` for assertion coverage, apply/verify, repair,
    and handoff gates.
