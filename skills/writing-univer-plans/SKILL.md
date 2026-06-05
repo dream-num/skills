@@ -14,7 +14,7 @@ Excel-domain meaning, range roles, formulas, formatting, validation, preservatio
 assertion gates.
 
 <EXTREMELY-IMPORTANT>
-If complex SaC workbook behavior is involved, you MUST write or update the workspace plan before
+If complex SaC workbook behavior is involved, you MUST write or update the sidecar plan before
 writing `assertions.ts` or editing Migration Packs.
 
 IF THIS SKILL APPLIES, SUCCESS CRITERIA FIRST. PLAN SECOND. ASSERTIONS THIRD. MIGRATION SOURCE FOURTH.
@@ -57,10 +57,10 @@ current workbook evidence, then restart execution from the plan.
 
 ## Success Criteria First
 
-Before writing the workspace plan, create or update:
+Before writing the sidecar plan, create or update:
 
 ```text
-<package.univer>/success-criteria/<topic>.md
+<univerfile>.sac/success-criteria/<topic>.md
 ```
 
 This file is a short checklist, not a plan. It translates the user task into pass conditions before
@@ -127,10 +127,10 @@ a giant plan that hides independent assertion gates.
 
 Before defining pack tasks, map the files the plan expects execution to touch:
 
-- Success Criteria: `<package.univer>/success-criteria/<topic>.md`
-- Plan: `<package.univer>/plans/<topic>.md`
-- Assertions: `<package.univer>/migrations/<pack>/assertions.ts`
-- Migration Packs: `<package.univer>/migrations/<pack>/`
+- Success Criteria: `<univerfile>.sac/success-criteria/<topic>.md`
+- Plan: `<univerfile>.sac/plans/<topic>.md`
+- Assertions: `<univerfile>.sac/migrations/<pack>/assertions.ts`
+- Migration Packs: `<univerfile>.sac/migrations/<pack>/`
 - Fixtures or readonly probes: exact workbook paths, sheets, ranges, or commands used as evidence
 
 For each file, state its responsibility. This locks the boundary between workbook intent,
@@ -138,11 +138,11 @@ assertions, migration source, and evidence before execution starts.
 
 ## Output Location
 
-Write or update the success criteria and plan files under the SaC workspace:
+Write or update the success criteria and plan files under the SaC sidecar:
 
 ```text
-<package.univer>/success-criteria/<topic>.md
-<package.univer>/plans/<topic>.md
+<univerfile>.sac/success-criteria/<topic>.md
+<univerfile>.sac/plans/<topic>.md
 ```
 
 Use an existing project naming convention if one exists. Keep the success criteria close to the plan
@@ -161,7 +161,7 @@ Every plan MUST start with this header:
 
 **Goal:** <one sentence describing the workbook-visible outcome>
 
-Success Criteria: <package.univer>/success-criteria/<topic>.md
+Success Criteria: <univerfile>.sac/success-criteria/<topic>.md
 
 **Workbook Contract:** <2-3 sentences describing the spreadsheet behavior, not code structure>
 
@@ -240,9 +240,9 @@ Success Criteria: <package.univer>/success-criteria/<topic>.md
 ### Task 1: `<pack-id>`
 
 **Files:**
-- Plan: `<package.univer>/plans/<topic>.md`
-- Test: `<package.univer>/migrations/<pack>/assertions.ts`
-- Migration: `<package.univer>/migrations/<pack>/`
+- Plan: `<univerfile>.sac/plans/<topic>.md`
+- Test: `<univerfile>.sac/migrations/<pack>/assertions.ts`
+- Migration: `<univerfile>.sac/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 - [ ] **Step 2: Run verify and confirm expected failure**
@@ -377,9 +377,9 @@ guessing. Use exact file paths, exact commands, and expected outcomes.
 ### Task N: <pack-id> - <workbook intent>
 
 **Files:**
-- Plan: `<package.univer>/plans/<topic>.md`
-- Test: `<package.univer>/migrations/<pack>/assertions.ts`
-- Migration: `<package.univer>/migrations/<pack>/`
+- Plan: `<univerfile>.sac/plans/<topic>.md`
+- Test: `<univerfile>.sac/migrations/<pack>/assertions.ts`
+- Migration: `<univerfile>.sac/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 
@@ -387,7 +387,7 @@ Add or update the assertion that proves the current pack's workbook-visible beha
 
 - [ ] **Step 2: Run verify and confirm expected failure**
 
-Run: `univer sac verify <package.univer> --json`
+Run: `univer sac verify <univerfile> --json`
 Expected: FAIL for the intended workbook-visible reason, not setup or typo failure.
 
 - [ ] **Step 3: Implement the minimal Migration Pack change**
@@ -396,7 +396,7 @@ Edit only `migrations/<pack>.ts` and any pack-local helper required by the curre
 
 - [ ] **Step 4: Run verify and confirm pass**
 
-Run: `univer sac verify <package.univer> --json`
+Run: `univer sac verify <univerfile> --json`
 Expected: PASS with this pack's assertion checked in returned assertion evidence.
 
 - [ ] **Step 5: Commit or prepare handoff**

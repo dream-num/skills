@@ -10,7 +10,7 @@ Assertions must verify workbook behavior, not migration output, readonly probe f
 incomplete fixture shape.
 
 Do not treat readonly probes as completion evidence. Verify workbook behavior through
-`univer sac verify <package.univer> --json` and its returned assertion evidence.
+`univer sac verify <univerfile> --json` and its returned assertion evidence.
 
 **Core principle:** Test what the workbook does, not what the migration happened to write.
 
@@ -120,13 +120,13 @@ Why this is wrong:
   pack.
 - It does not prove skipped packs, unchecked changed packs, formula recomputation, preservation, or
   negative constraints.
-- It does not leave assertion evidence in the `univer sac verify <package.univer> --json` result.
+- It does not leave assertion evidence in the `univer sac verify <univerfile> --json` result.
 
 The fix:
 
 1. Use readonly probes only for baseline discovery or debugging.
 2. Convert useful probe findings into the plan, assertion source, or Migration Pack source.
-3. Run `univer sac verify <package.univer> --json`.
+3. Run `univer sac verify <univerfile> --json`.
 4. Read the returned assertion evidence.
 5. Mention probes in the handoff only as auxiliary evidence, not completion evidence.
 
@@ -173,7 +173,7 @@ The fix:
 
 ```text
 1. Write plan-derived assertion.
-2. Run `univer sac verify <package.univer> --json`.
+2. Run `univer sac verify <univerfile> --json`.
 3. Confirm expected FAIL.
 4. Implement minimal Migration Pack change.
 5. Verify PASS and read the returned assertion evidence.
@@ -206,7 +206,7 @@ The fix:
 - You cannot explain which plan decision the assertion proves
 
 When any red flag appears, return to the plan, delete or revert premature migration source if needed,
-write the smallest assertion that should fail, and re-run `univer sac verify <package.univer> --json`.
+write the smallest assertion that should fail, and re-run `univer sac verify <univerfile> --json`.
 
 ## When Probes Or Fixtures Become Too Comfortable
 

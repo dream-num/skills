@@ -1,11 +1,11 @@
 ---
 name: test-driven-univer-development
-description: "Use when implementing or repairing Univer package-local SaC behavior with assertions.ts, Facade Migration Packs, univer sac apply, univer sac verify, or verify evidence loops."
+description: "Use when implementing or repairing Univer univerfile sidecar SaC behavior with assertions.ts, Facade Migration Packs, univer sac apply, univer sac verify, or verify evidence loops."
 ---
 
 # Test-Driven Univer Development
 
-Test-Driven Univer Development is package-local SaC TDD for Univer workbooks. Behavior is
+Test-Driven Univer Development is univerfile sidecar SaC TDD for Univer workbooks. Behavior is
 complete only when assertion contracts prove the changed packs through `univer sac verify`.
 
 This is not generic code TDD. The goal is correct Univer package behavior through source, runtime,
@@ -34,7 +34,7 @@ Use this skill for:
 - new or changed Facade Migration Packs
 - `assertions.ts` coverage
 - `univer sac apply` or `univer sac verify` repair loops
-- workbook-visible behavior changes in package-local SaC source
+- workbook-visible behavior changes in univerfile sidecar SaC source
 - refactoring SaC source while preserving workbook behavior
 
 Exceptions require explicit user agreement and must be recorded in the handoff.
@@ -80,7 +80,7 @@ assertion fail proves the gate catches missing behavior. Passing later proves th
 satisfied that workbook contract.
 
 Manual preview, `univer sac apply`, and readonly probes are useful evidence, but they are not a
-repeatable completion gate. The repeatable gate is `univer sac verify <package.univer> --json` plus
+repeatable completion gate. The repeatable gate is `univer sac verify <univerfile> --json` plus
 the returned assertion evidence.
 
 ## Red-Green-Repair
@@ -136,7 +136,7 @@ Keep assertions small and deterministic. Prefer representative ranges over broad
 
 ### Verify RED - Watch It Fail
 
-`univer sac verify <package.univer> --json` verifies applied packs. It does not apply pending source just
+`univer sac verify <univerfile> --json` verifies applied packs. It does not apply pending source just
 to test assertions. For a brand-new pending pack, the RED gate is established by writing the
 plan-derived assertion before implementation and confirming that the missing behavior is still absent
 from workbook-visible baseline evidence.
@@ -178,8 +178,8 @@ ranges, broad formatting, or future behavior.
 Run apply when the relevant migration is not yet applied, then verify:
 
 ```bash
-univer sac apply <package.univer>
-univer sac verify <package.univer> --json
+univer sac apply <univerfile>
+univer sac verify <univerfile> --json
 ```
 
 Read the JSON summary and returned assertion evidence.
@@ -253,7 +253,7 @@ instead of presenting it as decisive workbook evidence.
 
 For non-trivial SaC TDD handoff:
 
-- the latest relevant `univer sac verify <package.univer> --json` status must be `passed`
+- the latest relevant `univer sac verify <univerfile> --json` status must be `passed`
 - every pack created or modified for the task must be checked unless explicitly assertion-free
 - each changed pack must have at least one passed assertion
 - skipped packs must be mentioned when relevant

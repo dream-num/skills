@@ -54,8 +54,8 @@ digraph using_univer_cli {
 SaC source authoring MUST follow this order:
 
 1. **Success criteria then plan**: load `writing-univer-plans`, write or update
-   `<package.univer>/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
-   and write or update `<package.univer>/plans/<topic>.md`.
+   `<univerfile>.sac/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
+   and write or update `<univerfile>.sac/plans/<topic>.md`.
 2. **Execute the plan**: load `executing-univer-plans`, review the plan critically, and execute one
    Migration Pack at a time.
 3. **TDD each pack from the plan**: load `test-driven-univer-development`, derive
@@ -63,7 +63,7 @@ SaC source authoring MUST follow this order:
    workbook-visible reason.
 4. **Implement only after the assertion gate exists**: edit Migration Packs only after the plan and
    plan-derived assertions exist.
-5. **Verify and repair**: use `univer sac verify <package.univer> --json` and the returned assertion
+5. **Verify and repair**: use `univer sac verify <univerfile> --json` and the returned assertion
    evidence to drive repairs before claiming completion.
 
 Do not write the plan before the success criteria checklist.
@@ -124,8 +124,8 @@ For ordinary workbook-visible tasks, load `univer-cli` and stay with workbook-vi
 For SaC source authoring or complex workbook behavior:
 
 1. Load `writing-univer-plans` before editing migration source.
-2. Write or update package-local success criteria under `<package.univer>/success-criteria/`,
-   then the plan under `<package.univer>/plans/`.
+2. Write or update univerfile sidecar success criteria under `<univerfile>.sac/success-criteria/`,
+   then the plan under `<univerfile>.sac/plans/`.
 3. Load `executing-univer-plans` to review and execute the plan pack-by-pack.
 4. Load `test-driven-univer-development` for assertion coverage, apply/verify, repair,
    and handoff gates.
@@ -143,14 +143,14 @@ When a user provides a legacy workbook without SaC source, use `univer-cli` for 
 
 Readonly baseline probes are not completion evidence. SaC TDD completion evidence comes from
 `test-driven-univer-development`: changed packs need assertion coverage and a relevant
-passed `univer sac verify <package.univer> --json` run.
+passed `univer sac verify <univerfile> --json` run.
 
 ## Completion Evidence
 
 - Ordinary workbook work needs workbook-visible verification through `univer-cli`, such as
   `inspect`, `search`, `pipe out`, bounded `run`, preview, comments, or export/import checks.
 - SaC TDD work needs `test-driven-univer-development` evidence: assertion coverage plus
-  a relevant passed `univer sac verify <package.univer> --json` run.
+  a relevant passed `univer sac verify <univerfile> --json` run.
 - Do not treat command summaries, package metadata, `univer sac apply` success, or readonly probes as
   final SaC TDD proof.
 - If the task type is unclear, ask whether the user wants an ordinary workbook edit or durable SaC

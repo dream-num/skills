@@ -13,7 +13,7 @@
 
 - [`using-univer-cli`](./skills/using-univer-cli/SKILL.md): workbook 任务的强制入口 skill
 - [`univer-cli`](./skills/univer-cli/SKILL.md): 通过 `univer` 进行 path-first workbook work
-- [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md): 写入 `<package.univer>/plans/` 的 SaC workbook behavior plan
+- [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md): 写入 `<univerfile>.sac/plans/` 的 SaC workbook behavior plan
 - [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md): plan review 和 pack-by-pack execution
 - [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md): assertion-backed SaC TDD 和 verify repair loop
 
@@ -40,9 +40,9 @@
 
 - `using-univer-cli` 是 workbook 任务的强制入口，先把 agent 锁定在 Univer CLI 路径上，避免临时改用 spreadsheet libraries，再判断普通 workbook work 还是 SaC plan/execution/TDD workflow
 - `univer-cli` 负责 workbook-visible work：`new`、`import`、`export`、`inspect`、`search`、`fill`、`run` 和 `pipe`
-- `writing-univer-plans` 负责复杂 SaC workbook behavior planning，把 range roles、Migration Pack boundaries 和 assertion gates 写入 `<package.univer>/plans/`
+- `writing-univer-plans` 负责复杂 SaC workbook behavior planning，把 range roles、Migration Pack boundaries 和 assertion gates 写入 `<univerfile>.sac/plans/`
 - `executing-univer-plans` 负责 review 已写好的 plan，并一次执行一个 Migration Pack
-- `test-driven-univer-development` 负责 assertion-backed SaC TDD、`univer sac verify <package.univer> --json` 和 evidence-driven repair
+- `test-driven-univer-development` 负责 assertion-backed SaC TDD、`univer sac verify <univerfile> --json` 和 evidence-driven repair
 
 用 `univer-cli` 做 workbook inspection、bounded edits、formula review、shell-native roundtrips 和 handoff verification。
 当任务可能是普通 workbook automation，也可能是 SaC source authoring 时，先使用 `using-univer-cli`。
@@ -115,7 +115,7 @@ Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded 
 ```
 
 ```text
-Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-development, write success criteria under <package.univer>/success-criteria/ and the plan under <package.univer>/plans/, add assertions.ts coverage, and complete only after univer sac verify <package.univer> --json passes with returned assertion evidence.
+Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-development, write success criteria under <univerfile>.sac/success-criteria/ and the plan under <univerfile>.sac/plans/, add assertions.ts coverage, and complete only after univer sac verify <univerfile> --json passes with returned assertion evidence.
 ```
 
 
