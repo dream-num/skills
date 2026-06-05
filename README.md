@@ -111,7 +111,7 @@ Use using-univer-cli to inspect this workbook, list all sheets, and summarize th
 ```
 
 ```text
-Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded review table, then verify the header row and anchor cells.
+Use using-univer-cli to import --file ./input.xlsx into ./Budget.univer, add a bounded review table, then verify the header row and anchor cells.
 ```
 
 ```text

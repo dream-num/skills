@@ -63,7 +63,7 @@ Direct storage access can corrupt workbooks or teach the agent false state. If t
 | Need | Prefer |
 | --- | --- |
 | Discover exact command syntax | `univer help`, `univer help <command...>` |
-| Start a local univerfile | `univer new` or `univer import` |
+| Start a local univerfile from a blank file or spreadsheet source | `univer new` or `univer import --file <input.xlsx|csv|url> <file.univer>` |
 | Hand back Excel-compatible output | `univer export` |
 | Understand workbook shape before editing | readonly `univer run` using documented Facade APIs, or `univer view` for visual review |
 | Locate content-defined cells | readonly `univer run` that scans bounded sheets/ranges with Facade APIs |
@@ -79,7 +79,8 @@ Direct storage access can corrupt workbooks or teach the agent false state. If t
 | Create a local changeset from local mutations | `univer commit --message <message>` |
 | Discard uncommitted local mutations | `univer restore` |
 | Reset local unsynced commits | `univer reset --soft HEAD~N` or `univer reset --hard HEAD~N` |
-| Initialize a local univerfile from an existing remote unit | `univer clone --unit-id <unitID>` |
+| Append an existing remote unit to a local `.univer` file | `univer import --remote-unit-id <unitIdOrUrl> <file.univer>` |
+| Initialize an empty local file from an existing remote unit | `univer clone <file.univer> --unit-id <unitID>` |
 | Pull remote-only changes for a bound local unit | `univer pull` |
 | Sync local and remote versioning state | `univer sync` |
 | Materialize a SaC sidecar baseline | `univer sac materialize <univerfile>` |
@@ -114,7 +115,7 @@ These are verified command shapes. Replace paths, sheet names, and ranges with i
 
 ```bash
 WB=./orders.univer
-univer import ./orders.csv "$WB" --json
+univer import --file ./orders.csv "$WB" --json
 univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getSheets().map((sheet) => sheet.getName())"
 univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getActiveSheet().getRange('A1:D4').getDisplayValues()"
 ```
@@ -347,7 +348,16 @@ univer status "$WB"
 
 ### Clone, Pull, And Sync
 
-Use `clone` when a remote workbook unit already exists and you need a new local univerfile path. The target `.univer` path must be nonexistent or empty.
+Use `import --remote-unit-id` when a remote workbook unit already exists and should be appended to a local `.univer` file. The target file is created when missing; if it already exists, the remote-bound unit is added without replacing existing units. The command accepts a raw remote unit id or a Univer sheet URL with a `unit` query parameter; `subunit` does not limit import scope.
+
+```bash
+WB=./budget.univer
+univer import --remote-unit-id unit-remote "$WB" --json
+univer status "$WB"
+univer inspect workbook "$WB"
+```
+
+Use `clone` for the narrower case where a remote workbook unit should initialize an empty local file. The target `.univer` path must be nonexistent or empty.
 
 ```bash
 WB=./budget.univer
@@ -395,7 +405,7 @@ Export after workbook-visible verification proves the workbook state. Then prove
 univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getSheets().map((sheet) => sheet.getName())"
 univer export "$WB" ./handoff.xlsx --json
 test -s ./handoff.xlsx
-univer import ./handoff.xlsx ./handoff.univer --json
+univer import --file ./handoff.xlsx ./handoff.univer --json
 univer run ./handoff.univer --code "async () => univerAPI.getActiveWorkbook().getSheets().map((sheet) => sheet.getName())"
 ```
 
@@ -431,7 +441,7 @@ Avoid `pnpm dev -- ...` in clean machine-readable examples. The pnpm/tsx wrapper
 - `reset` is local-only and limited to `HEAD~N` over unsynced local commits. Do not use it as a remote revert or force-push workflow.
 - `sync` does not push uncommitted local mutations. Commit verified workbook changes first.
 - If `sync` reports an invalid remote binding, stop and diagnose the local unit or remote setup.
-- `pull` requires a local unit already bound to a remote unit. Use `sync` for first remote creation or `clone --unit-id` for an existing remote unit.
+- `pull` requires a local unit already bound to a remote unit. Use `sync` for first remote creation, `import --remote-unit-id` to append an existing remote unit to a `.univer` file, or `clone --unit-id` to initialize an empty local file from an existing remote unit.
 - `clone` replaced older remote binding wording. Do not use or invent a `bind` command.
 - If runtime-backed commands fail to start, inspect `univer daemon status` before retrying blindly.
 - If workbook-visible reads disagree with internal metadata, trust workbook-visible reads first.
