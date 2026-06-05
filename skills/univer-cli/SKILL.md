@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when solving spreadsheet workbook problems with the `univer` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` univerfiles, workbook inspection, range search, formulas, formatting, charts, shapes, floating images, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
+description: "Use when solving spreadsheet workbook problems with the `univer` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` univerfiles, workbook inspection through bounded `run` scripts, formulas, formatting, charts, shapes, floating images, rich spreadsheet edits, live preview and viewer review comments, versioning, SaC workflows, or export/import handoffs."
 ---
 
 # univer-cli
@@ -15,7 +15,7 @@ Treat workbook-visible state as the source of truth. A successful command summar
 
 The workbook path is the local identity. Pick one explicit path such as `./budget.univer` and use that path as the CLI target. Do not target workbooks by `sessionId`, internal storage ids, or runtime ids. When a multi-unit command asks for a local unit scope, pass the explicit `--local-unit-id` for that command without treating it as the file identity.
 
-`.univer` files are CLI operation targets, not agent-editable data stores. Read and write workbook data through public CLI surfaces such as `inspect`, `search`, `pipe`, `run`, `export`, `status`, and `commit`.
+`.univer` files are CLI operation targets, not agent-editable data stores. Read and write workbook data through public CLI surfaces such as `run`, `view`, `export`, `import`, `status`, `commit`, and `sac`.
 
 Use `univer help` and `univer help <command...>` for exact syntax. For `run` scripts, use `univer help run` and `univer help run <topic>` before relying on unfamiliar APIs.
 
@@ -42,7 +42,7 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 4. Locate targets from visible headers, values, formulas, or inspected ranges.
 5. Choose the smallest public CLI surface that fits the task.
 6. Mutate through the CLI, not by editing univerfile internals.
-7. Verify changed workbook-visible state with `inspect`, `pipe out`, or another public read.
+7. Verify changed workbook-visible state with readonly `run`, `view`, `export/import`, or SaC assertions.
 8. Export only after verification when the user needs a handoff file.
 9. After changes have been verified, if the user may need to inspect, audit, or review the final workbook, check the current agent tool surface first. If a browser tool is available, run `univer view "$WB" --no-open --json`, open the returned URL with that browser tool, and include the URL in your response. If no browser tool is available, run `univer view "$WB" --open --json`; `--open` uses the OS browser opener, and the CLI returns a prepared URL and diagnostic if the browser cannot be opened automatically.
 10. Commit or sync only after verified changes when versioning is part of the workflow.
@@ -65,10 +65,10 @@ Direct storage access can corrupt workbooks or teach the agent false state. If t
 | Discover exact command syntax | `univer help`, `univer help <command...>` |
 | Start a local univerfile | `univer new` or `univer import` |
 | Hand back Excel-compatible output | `univer export` |
-| Understand workbook shape before editing | `univer inspect workbook`, then `univer inspect range` |
-| Locate content-defined cells | `univer search`, scoped with `--sheet` and/or `--range` when possible |
-| Stream rectangular data through shell tools | `univer pipe out` |
-| Write a known rectangular matrix back | `univer pipe in` |
+| Understand workbook shape before editing | readonly `univer run` using documented Facade APIs, or `univer view` for visual review |
+| Locate content-defined cells | readonly `univer run` that scans bounded sheets/ranges with Facade APIs |
+| Read rectangular data | readonly `univer run` returning `getValues()`, `getDisplayValues()`, or `getFormulas()` |
+| Write a known rectangular matrix back | `univer run --file` with explicit sheet and A1 range boundaries |
 | Apply bounded workbook-local logic | `univer run --file` |
 | Create or maintain workbook charts | `univer run --file` with `univer help run charts` |
 | Create or maintain workbook shapes and connectors | `univer run --file` with `univer help run shapes` |
@@ -88,35 +88,35 @@ Direct storage access can corrupt workbooks or teach the agent false state. If t
 | Diagnose runtime problems | `univer doctor`, `univer daemon status` |
 | Prepare a bug report or Univer team support artifact after user authorization | `univer doctor collect` |
 
-Use canonical command help such as `univer help inspect range` and `univer help pipe out`. Top-level help group headings are visual sections only; do not run group-prefixed topics such as `univer help read inspect range`.
+Use canonical command help such as `univer help run`, `univer help view`, and `univer help status`. Top-level help group headings are visual sections only; do not run group-prefixed topics such as `univer help read run`.
 
 ## Execution Results
 
 Treat non-zero exit as failure even when stdout is partially present. Read stderr before changing approach; it usually contains the stable diagnostic code, usage, and retry examples.
 
-Keep data stdout clean in shell pipelines. If diagnostics are needed, capture stderr separately so downstream tools receive only workbook data.
+Keep command stdout machine-readable when a script consumes it. If diagnostics are needed, capture stderr separately so downstream tools receive only the intended JSON or file path.
 
 ```bash
-univer inspect range "$WB" --range 'Sheet1!A1:D20' > ./range.md 2> ./range.err
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getActiveSheet().getRange('A1:D20').getDisplayValues()" > ./range.json 2> ./range.err
 status=$?
 if [ "$status" -ne 0 ]; then
   sed -n '1,80p' ./range.err
   exit "$status"
 fi
-sed -n '1,40p' ./range.md
+sed -n '1,40p' ./range.json
 ```
 
 ## Workflow Recipes
 
 These are verified command shapes. Replace paths, sheet names, and ranges with inspected workbook facts.
 
-### Create Or Import, Then Inspect
+### Create Or Import, Then Read
 
 ```bash
 WB=./orders.univer
 univer import ./orders.csv "$WB" --json
-univer inspect workbook "$WB"
-univer inspect range "$WB" --range 'Sheet1!A1:D4'
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getSheets().map((sheet) => sheet.getName())"
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getActiveSheet().getRange('A1:D4').getDisplayValues()"
 ```
 
 Use `new` when the task starts from a blank workbook:
@@ -124,76 +124,79 @@ Use `new` when the task starts from a blank workbook:
 ```bash
 WB=./workbook.univer
 univer new "$WB" --name "Workbook"
-univer inspect workbook "$WB"
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getSheets().map((sheet) => sheet.getName())"
 ```
 
 ### Locate Before Editing
 
-Use `search` before editing when the target is defined by visible workbook content:
+Use readonly `run` before editing when the target is defined by visible workbook content:
 
 ```bash
-univer search "$WB" West
+univer run "$WB" --code "async () => {
+  const workbook = univerAPI.getActiveWorkbook();
+  const sheet = workbook.getSheetByName('Orders') ?? workbook.getActiveSheet();
+  const values = sheet.getRange('A1:Z200').getDisplayValues();
+  const matches = [];
+  for (let row = 0; row < values.length; row += 1) {
+    for (let col = 0; col < values[row].length; col += 1) {
+      if (String(values[row][col]).includes('West')) matches.push({ row: row + 1, col: col + 1, value: values[row][col] });
+    }
+  }
+  return matches;
+}"
 ```
 
-Plain text output is one A1 reference per matched cell, which keeps shell pipelines clean. With no
-matches, stdout is empty and the command still succeeds. Use `--json` when you need match metadata,
-the matched cell data preview, truncation flags, counts, or the searched scope:
+Return match metadata that is useful for the edit: sheet name, row, column, header context, and a
+bounded value preview. Keep the scan bounded to the task's known sheets or likely used ranges.
+
+If the target is not content-defined, read a bounded range and derive the edit boundary from visible
+headers and sample rows:
 
 ```bash
-univer search "$WB" West --sheet Orders --range 'A1:Z200' --json
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getActiveSheet().getRange('A1:D20').getDisplayValues()"
 ```
 
-By default, search checks `displayValue`, so formatted values such as dates are searchable by the
-same strings a user sees in the sheet. Use `--type rawValue` for underlying numeric/string values
-such as spreadsheet date serials, and `--type formula` for formulas:
+### Read Range Data
+
+Use readonly `run` when the agent needs rectangular workbook data. Return display values for human-facing checks, raw values for numeric comparisons, and formulas when formula structure matters.
 
 ```bash
-univer search "$WB" 2024-01-01
-univer search "$WB" 45292 --type rawValue
-univer search "$WB" SUM --type formula --json
+univer run "$WB" --code "async () => {
+  const sheet = univerAPI.getActiveWorkbook().getSheetByName('Sheet1');
+  if (!sheet) throw new Error('Sheet1 not found');
+  return {
+    displayValues: sheet.getRange('A1:D4').getDisplayValues(),
+    formulas: sheet.getRange('A1:D4').getFormulas()
+  };
+}"
 ```
 
-Useful narrowing options:
+### Write Generated Table Data
 
-- `--sheet <name>` may be repeated.
-- `--range <A1>` may be repeated; unqualified ranges require a `--sheet`.
-- `--case-sensitive` and `--whole-cell` tighten matching.
-- `--max-results` limits returned matches; truncation is reported on stderr for text output and in JSON fields for `--json`.
-- `--max-cell-value-length` bounds previewed cell data in JSON.
-
-If `search` fails, read stderr for the diagnostic message before changing approach. If the target is
-not content-defined, inspect a bounded range and derive the edit boundary from visible headers and
-sample rows:
+Write only a known matrix into an explicit sheet and range through `run --file`.
 
 ```bash
-univer inspect range "$WB" --range 'Sheet1!A1:D20'
-```
-
-### Pipe Out Through Shell Tools
-
-Use `pipe out` when the shell can reduce or reshape rectangular data before the agent reads it. Prefer TSV for `awk`, JSON for `jq`, and `--type rawValue` when formatted display text is not safe enough for comparisons.
-
-```bash
-univer pipe out "$WB" --range 'Sheet1!A1:D4' --format tsv > ./orders.tsv
-awk -F '\t' 'BEGIN{OFS="\t"} NR==1 || $2=="West" {print $1,$3}' ./orders.tsv > ./west.tsv
-sed -n '1,5p' ./west.tsv
-```
-
-### Pipe In Generated Table Data
-
-Write only a known matrix into an explicit, sheet-qualified range. Make `pipe in` the terminal stage of a pipeline unless you intentionally want its success summary downstream.
-
-```bash
-univer pipe in "$WB" --range 'Sheet1!F1:G3' --input-format tsv --data-file ./west.tsv
-univer inspect range "$WB" --range 'Sheet1!F1:G3'
-univer pipe out "$WB" --range 'Sheet1!F1:G3' --format tsv
+cat > ./write-west.js <<'JS'
+() => {
+  const sheet = univerAPI.getActiveWorkbook().getSheetByName("Sheet1");
+  if (!sheet) return { success: false, error: "Sheet1 not found" };
+  sheet.getRange("F1:G3").setValues([
+    ["region", "orders"],
+    ["West", 2],
+    ["East", 1],
+  ]);
+  return { success: true, changedRange: "Sheet1!F1:G3" };
+}
+JS
+univer run "$WB" --file ./write-west.js
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getSheetByName('Sheet1').getRange('F1:G3').getDisplayValues()"
 ```
 
 Verify headers, sample rows, and key columns. Row count alone is weak evidence because shifted columns can still preserve row count.
 
 ### Run A Bounded Workbook Script
 
-Use `run --file` for workbook-native logic that does not fit `inspect`, `search`, `pipe`, or `export`. Check `univer help run` and the relevant `univer help run <topic>` manual before using unfamiliar APIs.
+Use `run --file` for workbook-native read, search, and write logic. Check `univer help run` and the relevant `univer help run <topic>` manual before using unfamiliar APIs.
 
 ```bash
 cat > ./review.js <<'JS'
@@ -213,7 +216,7 @@ cat > ./review.js <<'JS'
 JS
 
 univer run "$WB" --file ./review.js
-univer inspect range "$WB" --range 'Sheet1!I1:J3'
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getActiveSheet().getRange('I1:J3').getDisplayValues()"
 ```
 
 `run` scripts should:
@@ -350,7 +353,7 @@ Use `clone` when a remote workbook unit already exists and you need a new local 
 WB=./budget.univer
 univer clone "$WB" --unit-id unit-remote --json
 univer status "$WB"
-univer inspect workbook "$WB"
+univer view "$WB" --no-open --json
 ```
 
 Use `pull` when you only need missing remote changesets for a local unit already bound to a remote unit. Use `sync` to sync local and remote versioning state.
@@ -386,30 +389,29 @@ or stale `univer sac rebuild` workflows. For non-trivial SaC source work, route 
 
 ### Export Handoff
 
-Export after inspection proves the workbook state. Then prove the handoff file exists and, when useful, can be read back.
+Export after workbook-visible verification proves the workbook state. Then prove the handoff file exists and, when useful, can be read back.
 
 ```bash
-univer inspect workbook "$WB"
+univer run "$WB" --code "async () => univerAPI.getActiveWorkbook().getSheets().map((sheet) => sheet.getName())"
 univer export "$WB" ./handoff.xlsx --json
 test -s ./handoff.xlsx
 univer import ./handoff.xlsx ./handoff.univer --json
-univer inspect workbook ./handoff.univer
+univer run ./handoff.univer --code "async () => univerAPI.getActiveWorkbook().getSheets().map((sheet) => sheet.getName())"
 ```
 
 Use `.xlsx` for Excel handoff when workbook interoperability matters. Use CSV only when plain rectangular data is enough for the handoff.
 
-## Shell-Native Rules
+## Script And Handoff Rules
 
-Use shell tools to reduce large ranges before bringing data back to the agent. `pipe out` should produce clean data; diagnostics and help belong outside the data stream.
+Use small `run` scripts or exported handoff files to reduce large ranges before bringing data back to the agent. Diagnostics and help belong outside the data stream a script consumes.
 
 - Keep ranges explicit and sheet-qualified.
 - Quote the full A1 range string, especially for non-English or shell-sensitive sheet names.
-- Prefer TSV for `awk` and JSON for `jq`.
 - Stage intermediate files when you need a stable preview or assertion.
-- Make `pipe in` the usual final pipeline stage.
-- Verify with `inspect range` or `pipe out` after every writeback.
+- Prefer `--file` for non-trivial scripts so quoting cannot corrupt JavaScript.
+- Verify with readonly `run`, `view`, export/import roundtrip, or SaC assertions after every writeback.
 
-Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can print logs to stdout and corrupt streamed data. Use the installed `univer` executable or another entrypoint you have proven emits clean stdout.
+Avoid `pnpm dev -- ...` in clean machine-readable examples. The pnpm/tsx wrapper can print logs to stdout and corrupt streamed data. Use the installed `univer` executable or another entrypoint you have proven emits clean stdout.
 
 ## Gotchas
 
@@ -418,10 +420,8 @@ Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can pri
 - Local file identity is the workbook path, such as `./budget.univer`, not `unitId`, `sessionId`, or internal ids.
 - Command success is not enough after import, mutation, export, or handoff. Verify workbook-visible state.
 - A non-zero exit means the operation failed. Read stderr for the diagnostic, usage, and retry guidance.
-- `search` may be unavailable or limited in some installed versions. Fall back to bounded `inspect range`.
 - Quote the full range: `--range 'Sheet1!A1:J20'`, not just the sheet name fragment.
 - Shell row counts can pass while headers, columns, or keys shift. Check headers, samples, and key columns together.
-- `pipe in` writes parsed matrix data and reports a summary; it does not echo input.
 - `view` is readonly preview. Do not treat it as mutation verification unless the task is visual review.
 - Charts are maintained through `univer run` and the Pro Charts facade. Do not edit chart resource internals or expect `run` to export chart images.
 - Shapes are maintained through `univer run` and the Pro Shapes facade. Do not inspect private drawing resource storage or expect `run` to export shape images.

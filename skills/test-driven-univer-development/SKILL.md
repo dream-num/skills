@@ -206,7 +206,7 @@ has its own assertions.
 
 ### REPAIR - Keep the Contract Honest
 
-Readonly probes such as inspect, pipe out, or readonly runtime commands may help debug failures.
+Readonly probes such as `univer run`, `univer view`, or assertion readback evidence may help debug failures.
 Convert useful probe findings back into the plan, migration source, or assertions, then return to
 `univer sac verify`.
 

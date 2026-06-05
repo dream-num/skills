@@ -85,9 +85,9 @@ CLI as the workbook engine.
   LibreOffice automation as a substitute for Univer CLI.
 - Do not read or patch `.univer` storage internals.
 - Do not parse `.xlsx` files directly when the task can be handled through `univer import`,
-  `univer inspect`, `univer pipe`, `univer run`, `univer export`, or SaC workflows.
-- Shell tools are fine for text or JSON streams produced by `univer`, such as `pipe out` output or
-  command JSON. They are not a replacement workbook engine.
+  `univer run`, `univer view`, `univer export`, `univer import`, or SaC workflows.
+- Shell tools are fine for text or JSON streams produced by `univer`, such as command JSON or
+  exported handoff files. They are not a replacement workbook engine.
 - Only consider a non-Univer fallback after the relevant Univer skill has been loaded, the CLI path
   is proven insufficient, and the user agrees to the fallback.
 
@@ -98,7 +98,7 @@ These thoughts mean STOP and route through Univer CLI:
 | Thought | Reality |
 | --- | --- |
 | "This is just an Excel file; I'll use `exceljs`." | Workbook files are Univer CLI tasks first. |
-| "I only need to inspect a few cells." | Use `univer inspect`, `search`, `pipe out`, or readonly `run`. |
+| "I only need to inspect a few cells." | Use readonly `univer run` or `univer view`. |
 | "I'll inspect or patch the univerfile internals directly." | Univerfile internals are not the editing surface. |
 | "I'll verify with local metadata or command success." | Verify workbook-visible state. |
 | "SaC apply passed, so the behavior is done." | SaC completion needs test-driven Univer assertion evidence. |
@@ -115,7 +115,7 @@ These thoughts mean STOP and route through Univer CLI:
 | Task shape | Load |
 | --- | --- |
 | Harness-provided workbook task with its own local contract, prepared workbook, or required handoff artifact | Follow the task-local harness contract first, then use `univer-cli` plus the appropriate workbook or SaC route below |
-| Ordinary workbook-visible inspection, search, import, export, pipe, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli` |
+| Ordinary workbook-visible inspection, import, export, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli` |
 | SaC source authoring, Facade Migration Pack work, `assertions.ts`, `univer sac`, or complex workbook behavior development | `writing-univer-plans`, `executing-univer-plans`, then `test-driven-univer-development` |
 | Existing or legacy workbook with no SaC source, where the user wants behavior converted into SaC source | `univer-cli` for readonly baseline probes, then `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-development` |
 
@@ -145,7 +145,7 @@ roles, pack boundaries, and assertion gates become explicit.
 
 ## Legacy Workbook Bootstrap
 
-When a user provides a legacy workbook without SaC source, use `univer-cli` for readonly baseline probes such as inspect, search, pipe out, or readonly run scripts. Capture useful facts into the SaC plan, migration source, or assertions before continuing.
+When a user provides a legacy workbook without SaC source, use `univer-cli` for readonly baseline probes such as readonly run scripts, view, or export/import checks. Capture useful facts into the SaC plan, migration source, or assertions before continuing.
 
 Readonly baseline probes are not completion evidence. SaC TDD completion evidence comes from
 `test-driven-univer-development`: changed packs need assertion coverage and a relevant
@@ -154,7 +154,7 @@ passed `univer sac verify <univerfile> --json` run.
 ## Completion Evidence
 
 - Ordinary workbook work needs workbook-visible verification through `univer-cli`, such as
-  `inspect`, `search`, `pipe out`, bounded `run`, preview, comments, or export/import checks.
+  bounded `run`, preview, comments, or export/import checks.
 - SaC TDD work needs `test-driven-univer-development` evidence: assertion coverage plus
   a relevant passed `univer sac verify <univerfile> --json` run.
 - Do not treat command summaries, local metadata, `univer sac apply` success, or readonly probes as

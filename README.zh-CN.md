@@ -28,8 +28,8 @@
 - **☁️ 云端 workbook multiplayer**  
   基于 Univer 的 OT 协同层 clone、pull、sync 共享 workbook state，让跨机器、跨地域的 agents 可以协作处理同一份工作簿。
 
-- **🔁 对 cells 做 pipeline，而不是拆文件**  
-  通过 `pipe out` / `pipe in` 流式处理 sheet ranges，接入 shell 工具链，再把有边界的矩阵写回 workbook，不需要打开 univerfile 内部结构。
+- **🔁 通过脚本处理 workbook-visible cells，而不是拆文件**  
+  通过 `univer run` Facade API 读写有边界的 sheet ranges，不需要打开 univerfile 内部结构。
 
 - **📊 Excel 兼容交付**  
   支持 `.xlsx` import/export；agent 内部处理的是结构化 Univer workbook state。
@@ -39,12 +39,12 @@
 这些 skills 覆盖互补的 workbook workflow：
 
 - `using-univer-cli` 是 workbook 任务的强制入口，先把 agent 锁定在 Univer CLI 路径上，避免临时改用 spreadsheet libraries，再判断普通 workbook work 还是 SaC plan/execution/TDD workflow
-- `univer-cli` 负责 workbook-visible work：`new`、`import`、`export`、`inspect`、`search`、`fill`、`run` 和 `pipe`
+- `univer-cli` 负责 workbook-visible work：`new`、`import`、`export`、`run`、`view`、`status`、`commit` 和 `sac`
 - `writing-univer-plans` 负责复杂 SaC workbook behavior planning，把 range roles、Migration Pack boundaries 和 assertion gates 写入 `<univerfile>.sac/plans/`
 - `executing-univer-plans` 负责 review 已写好的 plan，并一次执行一个 Migration Pack
 - `test-driven-univer-development` 负责 assertion-backed SaC TDD、`univer sac verify <univerfile> --json` 和 evidence-driven repair
 
-用 `univer-cli` 做 workbook inspection、bounded edits、formula review、shell-native roundtrips 和 handoff verification。
+用 `univer-cli` 做基于 bounded scripts 的 workbook inspection、bounded edits、formula review、live preview 和 handoff verification。
 当任务可能是普通 workbook automation，也可能是 SaC source authoring 时，先使用 `using-univer-cli`。
 当 workbook behavior 应该作为 SaC source 构建，并通过 `assertions.ts` 验证时，使用 `writing-univer-plans`、`executing-univer-plans` 和 `test-driven-univer-development`。
 Benchmark solver tasks 应该由 harness 提供 task-local `AGENTS.md` 约束，然后进入 `using-univer-cli` 和 SaC plan/execution/TDD skills。
@@ -99,7 +99,7 @@ cp -R skills/test-driven-univer-development ~/.cursor/skills/
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
 | [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | workbook 任务的强制入口，把 workbook engine 固定为 Univer CLI，并在需要时 handoff 到 SaC TDD | 行动前选择正确 Univer 路径 | canonical |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, bounded run scripts, view, import/export, and versioning | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 | [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Univerfile sidecar success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | 不跳过 assertion gates 地执行已写好的 Univer plans | canonical |
 | [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Univerfile sidecar SaC TDD with assertion coverage, apply/verify, returned assertion evidence repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |

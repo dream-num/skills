@@ -28,8 +28,8 @@ This repository exposes canonical Univer product skills:
 - **☁️ Cloud-backed workbook multiplayer**  
   Clone, pull, and sync shared workbook state through Univer’s OT-based collaboration layer, so agents can work across machines and regions.
 
-- **🔁 Pipelines over cells, not files**  
-  Stream sheet ranges through `pipe out` / `pipe in`, route them through shell tools, and write back bounded matrices without opening univerfile internals.
+- **🔁 Scripts over cells, not files**  
+  Read and write bounded sheet ranges through `univer run` Facade APIs without opening univerfile internals.
 
 - **📊 Excel-compatible handoff**  
   Import and export `.xlsx` files while agents work against structured Univer workbook state internally.
@@ -39,12 +39,12 @@ This repository exposes canonical Univer product skills:
 The skills cover complementary workbook workflows:
 
 - `using-univer-cli` is the required entry skill for workbook tasks; it keeps agents on Univer CLI instead of ad hoc spreadsheet libraries, then routes ordinary work to `univer-cli` and complex SaC behavior to the plan, execution, and TDD skills
-- `univer-cli` is for workbook-visible work: `new`, `import`, `export`, `inspect`, `search`, `fill`, `run`, and `pipe`
+- `univer-cli` is for workbook-visible work: `new`, `import`, `export`, `run`, `view`, `status`, `commit`, and `sac`
 - `writing-univer-plans` is for complex SaC workbook behavior planning, range roles, Migration Pack boundaries, and assertion gates written under `<univerfile>.sac/plans/`
 - `executing-univer-plans` is for reviewing written plans and executing one Migration Pack at a time
 - `test-driven-univer-development` is for assertion-backed SaC TDD, `univer sac verify <univerfile> --json`, and evidence-driven repair
 
-Use `univer-cli` for workbook inspection, bounded edits, formula review, shell-native roundtrips, and handoff verification.
+Use `univer-cli` for workbook inspection through bounded scripts, bounded edits, formula review, live preview, and handoff verification.
 Use `using-univer-cli` first when the task could be either ordinary workbook automation or SaC source authoring.
 Use `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-development` when workbook behavior should be built as SaC source and verified through `assertions.ts`.
 Benchmark solver tasks should receive task-local `AGENTS.md` constraints from the harness, then route through `using-univer-cli` and the SaC plan/execution/TDD skills.
@@ -99,7 +99,7 @@ cp -R skills/test-driven-univer-development ~/.cursor/skills/
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
 | [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | Required entry skill for workbook tasks, with Univer CLI as the workbook engine and SaC TDD handoff when needed | choosing the right Univer path before acting | canonical |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, bounded run scripts, view, import/export, and versioning | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 | [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Univerfile sidecar success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | complex workbook behavior decomposition before editing migration source | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | implementing written Univer plans without skipping assertion gates | canonical |
 | [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Univerfile sidecar SaC TDD with assertion coverage, apply/verify, returned assertion evidence repair, and handoff gates | implementing Facade Migration Packs with strong workbook-visible proof | canonical |
