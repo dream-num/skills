@@ -79,7 +79,7 @@ Direct storage access can corrupt workbooks or teach the agent false state. If t
 | Create a local changeset from local mutations | `univer commit --message <message>` |
 | Discard uncommitted local mutations | `univer restore` |
 | Reset local unsynced commits | `univer reset --soft HEAD~N` or `univer reset --hard HEAD~N` |
-| Append an existing remote unit to a local `.univer` file | `univer import --remote-unit-id <unitIdOrUrl> <file.univer>` |
+| Append an existing remote unit to a local `.univer` file | `univer import --remote-unit-id <unitId> <file.univer>` |
 | Initialize an empty local file from an existing remote unit | `univer clone <file.univer> --unit-id <unitID>` |
 | Pull remote-only changes for a bound local unit | `univer pull` |
 | Sync local and remote versioning state | `univer sync` |
@@ -348,7 +348,7 @@ univer status "$WB"
 
 ### Clone, Pull, And Sync
 
-Use `import --remote-unit-id` when a remote workbook unit already exists and should be appended to a local `.univer` file. The target file is created when missing; if it already exists, the remote-bound unit is added without replacing existing units. The command accepts a raw remote unit id or a Univer sheet URL with a `unit` query parameter; `subunit` does not limit import scope.
+Use `import --remote-unit-id` when a remote workbook unit already exists and should be appended to a local `.univer` file. The target file is created when missing; if it already exists, the remote-bound unit is added without replacing existing units. The command accepts the raw remote unit id; URLs are not accepted.
 
 ```bash
 WB=./budget.univer
