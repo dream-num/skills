@@ -354,7 +354,7 @@ Use `import --remote-unit-id` when a remote workbook unit already exists and sho
 WB=./budget.univer
 univer import --remote-unit-id unit-remote "$WB" --json
 univer status "$WB"
-univer inspect workbook "$WB"
+univer view "$WB" --no-open --json
 ```
 
 Use `clone` for the narrower case where a remote workbook unit should initialize an empty local file. The target `.univer` path must be nonexistent or empty.
