@@ -29,7 +29,7 @@
   基于 Univer 的 OT 协同层 clone、pull、sync 共享 workbook state，让跨机器、跨地域的 agents 可以协作处理同一份工作簿。
 
 - **🔁 对 cells 做 pipeline，而不是拆文件**  
-  通过 `pipe out` / `pipe in` 流式处理 sheet ranges，接入 shell 工具链，再把有边界的矩阵写回 workbook，不需要打开 workbook 包内部结构。
+  通过 `pipe out` / `pipe in` 流式处理 sheet ranges，接入 shell 工具链，再把有边界的矩阵写回 workbook，不需要打开 univerfile 内部结构。
 
 - **📊 Excel 兼容交付**  
   支持 `.xlsx` import/export；agent 内部处理的是结构化 Univer workbook state。
@@ -100,9 +100,9 @@ cp -R skills/test-driven-univer-development ~/.cursor/skills/
 |---|---|---|---|
 | [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | workbook 任务的强制入口，把 workbook engine 固定为 Univer CLI，并在需要时 handoff 到 SaC TDD | 行动前选择正确 Univer 路径 | canonical |
 | [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
-| [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Package-local success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
+| [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Univerfile sidecar success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | 不跳过 assertion gates 地执行已写好的 Univer plans | canonical |
-| [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Package-local SaC TDD with assertion coverage, apply/verify, returned assertion evidence repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |
+| [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Univerfile sidecar SaC TDD with assertion coverage, apply/verify, returned assertion evidence repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |
 
 ## 示例 Prompts
 

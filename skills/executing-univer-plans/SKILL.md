@@ -80,17 +80,20 @@ final `univer sac verify <univerfile> --json` status and returned assertion evid
 
 ## Load Success Criteria and Review the Plan
 
-Before editing `assertions.ts` or `migrations/`, read the success criteria and plan critically.
+Before editing `assertions.ts` or `<univerfile>.sac/migrations/`, read the success criteria and plan
+critically.
 
 Confirm it includes:
 
-- a referenced `success-criteria/<topic>.md` file with a checklist, explicit non-goals, and plan-time ambiguities
+- a referenced `<univerfile>.sac/success-criteria/<topic>.md` file with a checklist, explicit non-goals, and plan-time ambiguities
 - workbook-visible goal and explicit non-goals
 - baseline evidence and readonly probes already used
 - range roles with read/write/preserve rules
 - workbook behavior contract fields relevant to the task
 - Contract Decision Evidence for high-risk decisions
 - Migration Pack sequence
+- materialize/baseline state for the target sidecar
+- source contract expectations such as pack-level `description` and `apply({ univerAPI })`
 - assertion gate for every non-trivial changed pack
 - completion verify command
 
@@ -107,6 +110,8 @@ Repair the plan before execution when:
 - an assumption is implicit or presented as proof
 - a pack has no durable workbook intent
 - a pack has no assertion gate
+- the plan would use stale `univer workspace`, `univer sac rebuild`, unit migration `title`,
+  `getActiveWorkbook()`, or an `apply` context other than `{ univerAPI }`
 - the verify command is missing
 - the plan conflicts with observed workbook evidence
 

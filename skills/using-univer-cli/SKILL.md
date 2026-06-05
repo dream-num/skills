@@ -1,6 +1,6 @@
 ---
 name: using-univer-cli
-description: "Use when any task involves spreadsheets, workbook files, Excel-compatible files, .xlsx/.csv/.univer packages, sheets, cells, ranges, formulas, charts, formatting, workbook previews, or SaC workbook behavior."
+description: "Use when any task involves spreadsheets, workbook files, Excel-compatible files, .xlsx/.csv/.univer files, sheets, cells, ranges, formulas, charts, formatting, workbook previews, or SaC workbook behavior."
 ---
 
 # Using Univer CLI
@@ -66,6 +66,10 @@ SaC source authoring MUST follow this order:
 5. **Verify and repair**: use `univer sac verify <univerfile> --json` and the returned assertion
    evidence to drive repairs before claiming completion.
 
+When a target has no SaC sidecar baseline yet, bootstrap it with
+`univer sac materialize <univerfile>` before creating migration packs. Do not use `univer workspace`
+or stale `univer sac rebuild` workflows.
+
 Do not write the plan before the success criteria checklist.
 Do not write `assertions.ts` before the plan.
 Do not edit Migration Packs before plan-derived assertions.
@@ -79,7 +83,7 @@ CLI as the workbook engine.
 
 - Do not import or install spreadsheet libraries such as `exceljs`, `xlsx`, pandas, or
   LibreOffice automation as a substitute for Univer CLI.
-- Do not read or patch `.univer` package internals.
+- Do not read or patch `.univer` storage internals.
 - Do not parse `.xlsx` files directly when the task can be handled through `univer import`,
   `univer inspect`, `univer pipe`, `univer run`, `univer export`, or SaC workflows.
 - Shell tools are fine for text or JSON streams produced by `univer`, such as `pipe out` output or
@@ -95,22 +99,22 @@ These thoughts mean STOP and route through Univer CLI:
 | --- | --- |
 | "This is just an Excel file; I'll use `exceljs`." | Workbook files are Univer CLI tasks first. |
 | "I only need to inspect a few cells." | Use `univer inspect`, `search`, `pipe out`, or readonly `run`. |
-| "I'll unzip or patch the workbook package directly." | Package internals are not the editing surface. |
-| "I'll verify with package metadata or command success." | Verify workbook-visible state. |
+| "I'll inspect or patch the univerfile internals directly." | Univerfile internals are not the editing surface. |
+| "I'll verify with local metadata or command success." | Verify workbook-visible state. |
 | "SaC apply passed, so the behavior is done." | SaC completion needs test-driven Univer assertion evidence. |
 
 ## First Moves
 
 1. Identify the workbook artifact and target outcome.
 2. Route to the owning Univer skill before touching workbook content.
-3. Use path-first `univer` commands or SaC source workflows; avoid workbook package internals.
+3. Use path-first `univer` commands or SaC source workflows; avoid univerfile internals.
 4. Verify with workbook-visible evidence before claiming completion.
 
 ## Route Details
 
 | Task shape | Load |
 | --- | --- |
-| Harness-provided workbook task with its own local contract, prepared package, or required handoff artifact | Follow the task-local harness contract first, then use `univer-cli` plus the appropriate workbook or SaC route below |
+| Harness-provided workbook task with its own local contract, prepared workbook, or required handoff artifact | Follow the task-local harness contract first, then use `univer-cli` plus the appropriate workbook or SaC route below |
 | Ordinary workbook-visible inspection, search, import, export, pipe, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli` |
 | SaC source authoring, Facade Migration Pack work, `assertions.ts`, `univer sac`, or complex workbook behavior development | `writing-univer-plans`, `executing-univer-plans`, then `test-driven-univer-development` |
 | Existing or legacy workbook with no SaC source, where the user wants behavior converted into SaC source | `univer-cli` for readonly baseline probes, then `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-development` |
@@ -126,8 +130,10 @@ For SaC source authoring or complex workbook behavior:
 1. Load `writing-univer-plans` before editing migration source.
 2. Write or update univerfile sidecar success criteria under `<univerfile>.sac/success-criteria/`,
    then the plan under `<univerfile>.sac/plans/`.
-3. Load `executing-univer-plans` to review and execute the plan pack-by-pack.
-4. Load `test-driven-univer-development` for assertion coverage, apply/verify, repair,
+3. If the target has no materialized sidecar baseline, run `univer sac materialize <univerfile>`
+   before creating migration packs.
+4. Load `executing-univer-plans` to review and execute the plan pack-by-pack.
+5. Load `test-driven-univer-development` for assertion coverage, apply/verify, repair,
    and handoff gates.
 
 In short: load `writing-univer-plans` to define success criteria and plan workbook behavior,
@@ -151,7 +157,7 @@ passed `univer sac verify <univerfile> --json` run.
   `inspect`, `search`, `pipe out`, bounded `run`, preview, comments, or export/import checks.
 - SaC TDD work needs `test-driven-univer-development` evidence: assertion coverage plus
   a relevant passed `univer sac verify <univerfile> --json` run.
-- Do not treat command summaries, package metadata, `univer sac apply` success, or readonly probes as
+- Do not treat command summaries, local metadata, `univer sac apply` success, or readonly probes as
   final SaC TDD proof.
 - If the task type is unclear, ask whether the user wants an ordinary workbook edit or durable SaC
   source behavior.

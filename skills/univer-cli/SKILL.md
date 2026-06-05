@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when solving spreadsheet workbook problems with the `univer` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` packages, workbook inspection, range search, formulas, formatting, charts, shapes, floating images, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
+description: "Use when solving spreadsheet workbook problems with the `univer` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` univerfiles, workbook inspection, range search, formulas, formatting, charts, shapes, floating images, rich spreadsheet edits, live preview and viewer review comments, versioning, shell-native `pipe out`/`pipe in` roundtrips, or bounded `run` scripts."
 ---
 
 # univer-cli
@@ -11,9 +11,9 @@ Install the CLI with `npm i -g univer-cli`. Update the CLI with `univer update`.
 
 ## Core Mental Model
 
-Treat workbook-visible state as the source of truth. A successful command summary, package metadata, or an internal manifest does not prove that sheet names, cell values, formulas, formatting, or exported handoff files are correct.
+Treat workbook-visible state as the source of truth. A successful command summary, local metadata, or internal storage state does not prove that sheet names, cell values, formulas, formatting, or exported handoff files are correct.
 
-The workbook path is the local identity. Pick one explicit path such as `./budget.univer` and use that path as the CLI target. Do not target workbooks by `unitId`, `sessionId`, manifest ids, or runtime ids.
+The workbook path is the local identity. Pick one explicit path such as `./budget.univer` and use that path as the CLI target. Do not target workbooks by `sessionId`, internal storage ids, or runtime ids. When a multi-unit command asks for a local unit scope, pass the explicit `--local-unit-id` for that command without treating it as the file identity.
 
 `.univer` files are CLI operation targets, not agent-editable data stores. Read and write workbook data through public CLI surfaces such as `inspect`, `search`, `pipe`, `run`, `export`, `status`, and `commit`.
 
@@ -41,7 +41,7 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 3. Inspect workbook-visible state before deciding where to write.
 4. Locate targets from visible headers, values, formulas, or inspected ranges.
 5. Choose the smallest public CLI surface that fits the task.
-6. Mutate through the CLI, not by editing package internals.
+6. Mutate through the CLI, not by editing univerfile internals.
 7. Verify changed workbook-visible state with `inspect`, `pipe out`, or another public read.
 8. Export only after verification when the user needs a handoff file.
 9. After changes have been verified, if the user may need to inspect, audit, or review the final workbook, check the current agent tool surface first. If a browser tool is available, run `univer view "$WB" --no-open --json`, open the returned URL with that browser tool, and include the URL in your response. If no browser tool is available, run `univer view "$WB" --open --json`; `--open` uses the OS browser opener, and the CLI returns a prepared URL and diagnostic if the browser cannot be opened automatically.
@@ -50,20 +50,20 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 ## Hard Rules
 
 - Do not read `.univer` internals to infer workbook contents.
-- Do not write, patch, unzip, rezip, rename internal files, or manipulate workbook package contents.
-- Do not inspect `manifest.json`, snapshots, mutation logs, or package fragments as a substitute for workbook-visible reads.
+- Do not write, patch, rewrite, rename, or manipulate internal univerfile storage contents.
+- Do not inspect internal metadata, snapshots, mutation logs, or storage fragments as a substitute for workbook-visible reads.
 - Do not guess sheet names, row numbers, formulas, ranges, or changed cells from memory or file metadata.
 - Do not treat stdout summaries as proof of workbook state. Verify with a workbook-visible read.
 - Do not invent commands or `run` APIs. Check `univer help` and documented run topics.
 
-Direct package access can corrupt workbooks or teach the agent false state. If the CLI cannot read what you need, diagnose the CLI/runtime path instead of bypassing it.
+Direct storage access can corrupt workbooks or teach the agent false state. If the CLI cannot read what you need, diagnose the CLI/runtime path instead of bypassing it.
 
 ## Command Selection
 
 | Need | Prefer |
 | --- | --- |
 | Discover exact command syntax | `univer help`, `univer help <command...>` |
-| Start a workbook package | `univer new` or `univer import` |
+| Start a local univerfile | `univer new` or `univer import` |
 | Hand back Excel-compatible output | `univer export` |
 | Understand workbook shape before editing | `univer inspect workbook`, then `univer inspect range` |
 | Locate content-defined cells | `univer search`, scoped with `--sheet` and/or `--range` when possible |
@@ -79,9 +79,12 @@ Direct package access can corrupt workbooks or teach the agent false state. If t
 | Create a local changeset from local mutations | `univer commit --message <message>` |
 | Discard uncommitted local mutations | `univer restore` |
 | Reset local unsynced commits | `univer reset --soft HEAD~N` or `univer reset --hard HEAD~N` |
-| Initialize a local package from an existing remote unit | `univer clone --unit-id <unitID>` |
-| Pull remote-only changes for a bound package | `univer pull` |
+| Initialize a local univerfile from an existing remote unit | `univer clone --unit-id <unitID>` |
+| Pull remote-only changes for a bound local unit | `univer pull` |
 | Sync local and remote versioning state | `univer sync` |
+| Materialize a SaC sidecar baseline | `univer sac materialize <univerfile>` |
+| Create a SaC migration pack | `univer sac migration create <description> <univerfile>` |
+| Apply, roll back, or verify SaC source | `univer sac apply <univerfile>`, `univer sac rollback <univerfile>`, `univer sac verify <univerfile> --json` |
 | Diagnose runtime problems | `univer doctor`, `univer daemon status` |
 | Prepare a bug report or Univer team support artifact after user authorization | `univer doctor collect` |
 
@@ -341,7 +344,7 @@ univer status "$WB"
 
 ### Clone, Pull, And Sync
 
-Use `clone` when a remote workbook unit already exists and you need a new local package path. The target `.univer` path must be nonexistent or empty.
+Use `clone` when a remote workbook unit already exists and you need a new local univerfile path. The target `.univer` path must be nonexistent or empty.
 
 ```bash
 WB=./budget.univer
@@ -350,7 +353,7 @@ univer status "$WB"
 univer inspect workbook "$WB"
 ```
 
-Use `pull` when you only need missing remote changesets for a package already bound to a remote unit. Use `sync` to sync local and remote versioning state.
+Use `pull` when you only need missing remote changesets for a local unit already bound to a remote unit. Use `sync` to sync local and remote versioning state.
 
 ```bash
 univer status "$WB"
@@ -362,7 +365,24 @@ univer sync "$WB"
 univer status "$WB"
 ```
 
-`sync` creates the remote workbook first when the package is still local-only. It pulls remote changes and pushes local changesets, but it does not push uncommitted local mutations. Remote endpoints come from `collaboration.defaultRemote` and `collaboration.remotes.<name>.url`.
+`sync` creates the remote workbook first when the local unit is still local-only. It pulls remote changes and pushes local changesets, but it does not push uncommitted local mutations. Remote endpoints come from `collaboration.defaultRemote` and `collaboration.remotes.<name>.url`.
+
+### SaC Sidecar Baseline
+
+Use SaC when workbook behavior should be maintained as ordered Facade Migration Pack source. The
+target remains the explicit `.univer` path; authoring source lives in `<univerfile>.sac/`.
+
+```bash
+univer config set experimental.sac true
+univer sac materialize "$WB"
+univer sac migration create "Add Revenue Model" "$WB"
+univer sac apply "$WB"
+univer sac verify "$WB" --json
+```
+
+Use `univer sac rollback "$WB"` to undo the newest applied SaC pack. Do not use `univer workspace`
+or stale `univer sac rebuild` workflows. For non-trivial SaC source work, route through
+`writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-development`.
 
 ### Export Handoff
 
@@ -393,9 +413,9 @@ Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can pri
 
 ## Gotchas
 
-- `manifest.json` is metadata only. It does not prove sheet names, formulas, changed cells, or handoff correctness.
-- Package contents are not a meaningful way to infer spreadsheet data. Use public CLI reads instead.
-- Local file identity is the workbook path, such as `./budget.univer`, not `unitId`, `sessionId`, or manifest ids.
+- Internal metadata does not prove sheet names, formulas, changed cells, or handoff correctness.
+- Univerfile storage contents are not a meaningful way to infer spreadsheet data. Use public CLI reads instead.
+- Local file identity is the workbook path, such as `./budget.univer`, not `unitId`, `sessionId`, or internal ids.
 - Command success is not enough after import, mutation, export, or handoff. Verify workbook-visible state.
 - A non-zero exit means the operation failed. Read stderr for the diagnostic, usage, and retry guidance.
 - `search` may be unavailable or limited in some installed versions. Fall back to bounded `inspect range`.
@@ -410,14 +430,14 @@ Avoid `pnpm dev -- ...` in clean pipeline examples. The pnpm/tsx wrapper can pri
 - `restore` discards only uncommitted local mutations; it does not remove local commits.
 - `reset` is local-only and limited to `HEAD~N` over unsynced local commits. Do not use it as a remote revert or force-push workflow.
 - `sync` does not push uncommitted local mutations. Commit verified workbook changes first.
-- If `sync` reports an invalid remote binding, stop and diagnose the package or remote setup.
-- `pull` requires a package already bound to a remote unit. Use `sync` for first remote creation or `clone --unit-id` for an existing remote unit.
+- If `sync` reports an invalid remote binding, stop and diagnose the local unit or remote setup.
+- `pull` requires a local unit already bound to a remote unit. Use `sync` for first remote creation or `clone --unit-id` for an existing remote unit.
 - `clone` replaced older remote binding wording. Do not use or invent a `bind` command.
 - If runtime-backed commands fail to start, inspect `univer daemon status` before retrying blindly.
-- If workbook-visible reads disagree with package metadata, trust workbook-visible reads first.
+- If workbook-visible reads disagree with internal metadata, trust workbook-visible reads first.
 
 ## Support
 
 Only enter support flow when the user asks to report a suspected CLI bug. Public issues: https://github.com/dream-num/skills/issues. Community support and builder discussions: https://discord.gg/nThHPupraR. Private artifacts: email developer@univer.ai; get authorization before guiding `univer doctor collect`.
 
-Skill document revision: 2026-05-22.
+Skill document revision: 2026-06-05.

@@ -72,7 +72,7 @@ Use this shape:
 # <Feature Name> Success Criteria
 
 **Task:** <one-sentence restatement of the user task>
-**Source:** <workbook/package, user prompt, files, or commands that define the task>
+**Source:** <workbook/univerfile, user prompt, files, or commands that define the task>
 
 ## Success Checklist
 
@@ -131,6 +131,8 @@ Before defining pack tasks, map the files the plan expects execution to touch:
 - Plan: `<univerfile>.sac/plans/<topic>.md`
 - Assertions: `<univerfile>.sac/migrations/<pack>/assertions.ts`
 - Migration Packs: `<univerfile>.sac/migrations/<pack>/`
+- Generated Types: `<univerfile>.sac/types/`
+- Verify Reports: `<univerfile>.sac/runs/`
 - Fixtures or readonly probes: exact workbook paths, sheets, ranges, or commands used as evidence
 
 For each file, state its responsibility. This locks the boundary between workbook intent,
@@ -190,6 +192,8 @@ Success Criteria: <univerfile>.sac/success-criteria/<topic>.md
 - Plan:
 - Assertions:
 - Migration Packs:
+- Generated Types:
+- Verify Reports:
 - Fixtures/probes:
 
 ## Range Roles
@@ -233,6 +237,7 @@ Success Criteria: <univerfile>.sac/success-criteria/<topic>.md
 
 - Assertions to write or update first:
 - Allowed bootstrap/probe:
+- Baseline/materialize state:
 - Completion verify command:
 
 ## Pack Tasks
@@ -277,6 +282,20 @@ Output-heavy transformations should capture shape, mapping, ordering, grouping, 
 value/formula semantics. Formatting, validation, protection, chart, comment, layout, or sheet
 structure changes should capture visible state, presentation or interaction semantics, preservation
 rules, and negative constraints.
+
+## SaC Source Contract Rules
+
+When the target has no sidecar source baseline, the plan should call for
+`univer sac materialize <univerfile>` before creating migration packs. Do not use `univer workspace`
+or stale `univer sac rebuild` workflows.
+
+Migration source lives under `<univerfile>.sac/migrations/<pack>/`. `pack.ts` owns pack metadata and
+must use pack-level `description`, `files`, and `unitMigrations`. Unit migration files should use
+`defineUnitMigration({ apply({ univerAPI }) { ... } })`.
+
+Do not plan source that relies on unit migration `title`, `univerAPI.getActiveWorkbook()`,
+`apply({ workbook })`, `apply({ sheet })`, or `apply({ univerfile })`. The runtime session is already
+bound to the target univerfile; use APIs available in `<univerfile>.sac/types/`.
 
 ## Contract Decision Evidence Rules
 
@@ -392,7 +411,8 @@ Expected: FAIL for the intended workbook-visible reason, not setup or typo failu
 
 - [ ] **Step 3: Implement the minimal Migration Pack change**
 
-Edit only `migrations/<pack>.ts` and any pack-local helper required by the current assertion.
+Edit only `<univerfile>.sac/migrations/<pack>/` files and any pack-local helper required by the
+current assertion.
 
 - [ ] **Step 4: Run verify and confirm pass**
 

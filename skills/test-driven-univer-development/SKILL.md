@@ -8,8 +8,8 @@ description: "Use when implementing or repairing Univer univerfile sidecar SaC b
 Test-Driven Univer Development is univerfile sidecar SaC TDD for Univer workbooks. Behavior is
 complete only when assertion contracts prove the changed packs through `univer sac verify`.
 
-This is not generic code TDD. The goal is correct Univer package behavior through source, runtime,
-and assertion evidence. For spreadsheet projects, that includes Excel domain semantics, range roles,
+This is not generic code TDD. The goal is correct univerfile sidecar behavior through source,
+runtime, and assertion evidence. For spreadsheet projects, that includes Excel domain semantics, range roles,
 formulas, computed values, formatting, validation, protection, preservation, and negative
 constraints.
 
@@ -44,8 +44,9 @@ Exceptions require explicit user agreement and must be recorded in the handoff.
 - Use `writing-univer-plans` first for complex workbook behavior.
 - Use `executing-univer-plans` when following a written plan pack-by-pack.
 - For complex workbook behavior, assertions trace to the plan, and the plan traces to
-  `success-criteria/<topic>.md`; do not bypass either source artifact.
+  `<univerfile>.sac/success-criteria/<topic>.md`; do not bypass either source artifact.
 - Treat `assertions.ts` as the workbook-visible contract for each non-trivial changed pack.
+- Treat `<univerfile>.sac/types/` as the local Facade API reference for SaC migration source.
 - Allow bounded bootstrap or readonly probes when needed, but never use them as final completion
   evidence.
 - Do not claim completion from `univer sac apply` success.
@@ -172,6 +173,11 @@ exists and baseline evidence confirms the behavior is missing.
 
 Implement only what the current pack and assertion require. Do not add unrelated sheets, helper
 ranges, broad formatting, or future behavior.
+
+Use the current SaC source contract: `pack.ts` owns pack-level `description`, `files`, and
+`unitMigrations`; unit migration files use `defineUnitMigration({ apply({ univerAPI }) { ... } })`.
+Do not add unit migration `title`, call `univerAPI.getActiveWorkbook()`, or write `apply` handlers
+that expect `{ workbook }`, `{ sheet }`, or `{ univerfile }`.
 
 ### Verify GREEN - Use the Report
 
