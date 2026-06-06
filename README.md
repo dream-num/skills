@@ -28,8 +28,8 @@ This repository exposes canonical Univer product skills:
 - **☁️ Cloud-backed workbook multiplayer**  
   Clone, pull, and sync shared workbook state through Univer’s OT-based collaboration layer, so agents can work across machines and regions.
 
-- **🔁 Scripts over cells, not files**  
-  Read and write bounded sheet ranges through `univer run` Facade APIs without opening univerfile internals.
+- **🔁 SaC source over workbook-visible cells, not files**  
+  Use materialized SaC sidecars, readonly sidecar inspect scripts, and Facade Migration Packs without opening univerfile internals.
 
 - **📊 Excel-compatible handoff**  
   Import and export `.xlsx` files while agents work against structured Univer workbook state internally.

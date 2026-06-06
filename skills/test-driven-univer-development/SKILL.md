@@ -208,9 +208,9 @@ has its own assertions.
 
 ### REPAIR - Keep the Contract Honest
 
-Readonly probes such as `univer run`, `univer view`, or assertion readback evidence may help debug failures.
-Convert useful probe findings back into the plan, migration source, or assertions, then return to
-`univer sac verify`.
+Readonly probes such as materialized sidecar evidence, sidecar `univer inspect` scripts,
+`univer view`, or assertion readback evidence may help debug failures. Convert useful probe findings
+back into the plan, migration source, or assertions, then return to `univer sac verify`.
 
 If verification changes expected behavior, update the plan before or alongside source/assertion
 repairs.

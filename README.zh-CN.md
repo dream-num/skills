@@ -28,8 +28,8 @@
 - **☁️ 云端 workbook multiplayer**  
   基于 Univer 的 OT 协同层 clone、pull、sync 共享 workbook state，让跨机器、跨地域的 agents 可以协作处理同一份工作簿。
 
-- **🔁 通过脚本处理 workbook-visible cells，而不是拆文件**  
-  通过 `univer run` Facade API 读写有边界的 sheet ranges，不需要打开 univerfile 内部结构。
+- **🔁 通过 SaC source 处理 workbook-visible cells，而不是拆文件**  
+  通过 materialized SaC sidecar、readonly sidecar inspect scripts 和 Facade Migration Packs 处理 workbook，不需要打开 univerfile 内部结构。
 
 - **📊 Excel 兼容交付**  
   支持 `.xlsx` import/export；agent 内部处理的是结构化 Univer workbook state。
