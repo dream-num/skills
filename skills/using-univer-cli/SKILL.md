@@ -54,8 +54,8 @@ digraph using_univer_cli {
 SaC source authoring MUST follow this order:
 
 1. **Success criteria then plan**: load `writing-univer-plans`, write or update
-   `<univerfile>.sac/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
-   and write or update `<univerfile>.sac/plans/<topic>.md`.
+   `<hidden-sidecar>/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
+   and write or update `<hidden-sidecar>/plans/<topic>.md`.
 2. **Execute the plan**: load `executing-univer-plans`, review the plan critically, and execute one
    Migration Pack at a time.
 3. **TDD each pack from the plan**: load `test-driven-univer-development`, derive
@@ -69,6 +69,10 @@ SaC source authoring MUST follow this order:
 When a target has no SaC sidecar baseline yet, bootstrap it with
 `univer sac materialize <univerfile>` before creating migration packs. Do not use `univer workspace`
 or stale `univer sac rebuild` workflows.
+
+`<hidden-sidecar>` means the path returned by SaC commands, not a path guessed by appending `.sac`.
+On POSIX, `Budget.univer` resolves to `.Budget.univer.sac/`; on Windows, `Budget.univer.sac/`
+is used with the hidden filesystem attribute.
 
 Do not write the plan before the success criteria checklist.
 Do not write `assertions.ts` before the plan.
@@ -128,8 +132,8 @@ For ordinary workbook-visible tasks, load `univer-cli` and stay with workbook-vi
 For SaC source authoring or complex workbook behavior:
 
 1. Load `writing-univer-plans` before editing migration source.
-2. Write or update univerfile sidecar success criteria under `<univerfile>.sac/success-criteria/`,
-   then the plan under `<univerfile>.sac/plans/`.
+2. Write or update univerfile sidecar success criteria under `<hidden-sidecar>/success-criteria/`,
+   then the plan under `<hidden-sidecar>/plans/`.
 3. If the target has no materialized sidecar baseline, run `univer sac materialize <univerfile>`
    before creating migration packs.
 4. Load `executing-univer-plans` to review and execute the plan pack-by-pack.

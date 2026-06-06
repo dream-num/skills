@@ -80,12 +80,12 @@ final `univer sac verify <univerfile> --json` status and returned assertion evid
 
 ## Load Success Criteria and Review the Plan
 
-Before editing `assertions.ts` or `<univerfile>.sac/migrations/`, read the success criteria and plan
+Before editing `assertions.ts` or `<hidden-sidecar>/migrations/`, read the success criteria and plan
 critically.
 
 Confirm it includes:
 
-- a referenced `<univerfile>.sac/success-criteria/<topic>.md` file with a checklist, explicit non-goals, and plan-time ambiguities
+- a referenced `<hidden-sidecar>/success-criteria/<topic>.md` file with a checklist, explicit non-goals, and plan-time ambiguities
 - workbook-visible goal and explicit non-goals
 - baseline evidence and readonly probes already used
 - range roles with read/write/preserve rules
@@ -96,6 +96,9 @@ Confirm it includes:
 - source contract expectations such as pack-level `description` and `apply({ univerAPI })`
 - assertion gate for every non-trivial changed pack
 - completion verify command
+
+`<hidden-sidecar>` is the `sidecarPath` resolved by SaC commands. Do not infer it by appending
+`.sac` to the target; read `sidecarPath` and verify `reportPath` from command JSON when available.
 
 If any item is missing, Stop and repair the plan. Do not proceed from memory.
 

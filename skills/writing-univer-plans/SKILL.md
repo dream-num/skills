@@ -60,8 +60,12 @@ current workbook evidence, then restart execution from the plan.
 Before writing the sidecar plan, create or update:
 
 ```text
-<univerfile>.sac/success-criteria/<topic>.md
+<hidden-sidecar>/success-criteria/<topic>.md
 ```
+
+`<hidden-sidecar>` is the SaC-resolved authoring sidecar path. On POSIX, `Budget.univer` resolves
+to `.Budget.univer.sac/`; on Windows, `Budget.univer.sac/` is used with the hidden filesystem
+attribute. Prefer command JSON fields such as `sidecarPath` and `reportPath` over hand-built paths.
 
 This file is a short checklist, not a plan. It translates the user task into pass conditions before
 heavy workbook reasoning starts.
@@ -127,12 +131,12 @@ a giant plan that hides independent assertion gates.
 
 Before defining pack tasks, map the files the plan expects execution to touch:
 
-- Success Criteria: `<univerfile>.sac/success-criteria/<topic>.md`
-- Plan: `<univerfile>.sac/plans/<topic>.md`
-- Assertions: `<univerfile>.sac/migrations/<pack>/assertions.ts`
-- Migration Packs: `<univerfile>.sac/migrations/<pack>/`
-- Generated Types: `<univerfile>.sac/types/`
-- Verify Reports: `<univerfile>.sac/runs/`
+- Success Criteria: `<hidden-sidecar>/success-criteria/<topic>.md`
+- Plan: `<hidden-sidecar>/plans/<topic>.md`
+- Assertions: `<hidden-sidecar>/migrations/<pack>/assertions.ts`
+- Migration Packs: `<hidden-sidecar>/migrations/<pack>/`
+- Generated Types: `<hidden-sidecar>/types/`
+- Verify Reports: `<hidden-sidecar>/runs/`
 - Fixtures or readonly probes: exact workbook paths, sheets, ranges, or commands used as evidence
 
 For each file, state its responsibility. This locks the boundary between workbook intent,
@@ -143,8 +147,8 @@ assertions, migration source, and evidence before execution starts.
 Write or update the success criteria and plan files under the SaC sidecar:
 
 ```text
-<univerfile>.sac/success-criteria/<topic>.md
-<univerfile>.sac/plans/<topic>.md
+<hidden-sidecar>/success-criteria/<topic>.md
+<hidden-sidecar>/plans/<topic>.md
 ```
 
 Use an existing project naming convention if one exists. Keep the success criteria close to the plan
@@ -163,7 +167,7 @@ Every plan MUST start with this header:
 
 **Goal:** <one sentence describing the workbook-visible outcome>
 
-Success Criteria: <univerfile>.sac/success-criteria/<topic>.md
+Success Criteria: <hidden-sidecar>/success-criteria/<topic>.md
 
 **Workbook Contract:** <2-3 sentences describing the spreadsheet behavior, not code structure>
 
@@ -245,9 +249,9 @@ Success Criteria: <univerfile>.sac/success-criteria/<topic>.md
 ### Task 1: `<pack-id>`
 
 **Files:**
-- Plan: `<univerfile>.sac/plans/<topic>.md`
-- Test: `<univerfile>.sac/migrations/<pack>/assertions.ts`
-- Migration: `<univerfile>.sac/migrations/<pack>/`
+- Plan: `<hidden-sidecar>/plans/<topic>.md`
+- Test: `<hidden-sidecar>/migrations/<pack>/assertions.ts`
+- Migration: `<hidden-sidecar>/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 - [ ] **Step 2: Run verify and confirm expected failure**
@@ -289,13 +293,13 @@ When the target has no sidecar source baseline, the plan should call for
 `univer sac materialize <univerfile>` before creating migration packs. Do not use `univer workspace`
 or stale `univer sac rebuild` workflows.
 
-Migration source lives under `<univerfile>.sac/migrations/<pack>/`. `pack.ts` owns pack metadata and
+Migration source lives under `<hidden-sidecar>/migrations/<pack>/`. `pack.ts` owns pack metadata and
 must use pack-level `description`, `files`, and `unitMigrations`. Unit migration files should use
 `defineUnitMigration({ apply({ univerAPI }) { ... } })`.
 
 Do not plan source that relies on unit migration `title`, `univerAPI.getActiveWorkbook()`,
 `apply({ workbook })`, `apply({ sheet })`, or `apply({ univerfile })`. The runtime session is already
-bound to the target univerfile; use APIs available in `<univerfile>.sac/types/`.
+bound to the target univerfile; use APIs available in `<hidden-sidecar>/types/`.
 
 ## Contract Decision Evidence Rules
 
@@ -396,9 +400,9 @@ guessing. Use exact file paths, exact commands, and expected outcomes.
 ### Task N: <pack-id> - <workbook intent>
 
 **Files:**
-- Plan: `<univerfile>.sac/plans/<topic>.md`
-- Test: `<univerfile>.sac/migrations/<pack>/assertions.ts`
-- Migration: `<univerfile>.sac/migrations/<pack>/`
+- Plan: `<hidden-sidecar>/plans/<topic>.md`
+- Test: `<hidden-sidecar>/migrations/<pack>/assertions.ts`
+- Migration: `<hidden-sidecar>/migrations/<pack>/`
 
 - [ ] **Step 1: Write the failing assertion**
 
@@ -411,7 +415,7 @@ Expected: FAIL for the intended workbook-visible reason, not setup or typo failu
 
 - [ ] **Step 3: Implement the minimal Migration Pack change**
 
-Edit only `<univerfile>.sac/migrations/<pack>/` files and any pack-local helper required by the
+Edit only `<hidden-sidecar>/migrations/<pack>/` files and any pack-local helper required by the
 current assertion.
 
 - [ ] **Step 4: Run verify and confirm pass**

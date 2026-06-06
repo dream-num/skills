@@ -383,7 +383,10 @@ univer status "$WB"
 ### SaC Sidecar Baseline
 
 Use SaC when workbook behavior should be maintained as ordered Facade Migration Pack source. The
-target remains the explicit `.univer` path; authoring source lives in `<univerfile>.sac/`.
+target remains the explicit `.univer` path; authoring source lives in `<hidden-sidecar>/`.
+Use `sidecarPath` and `reportPath` from SaC command JSON instead of appending `.sac` to the target.
+On POSIX, `Budget.univer` resolves to `.Budget.univer.sac/`; on Windows, `Budget.univer.sac/`
+is used with the hidden filesystem attribute.
 
 ```bash
 univer config set experimental.sac true

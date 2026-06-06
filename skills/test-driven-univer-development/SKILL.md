@@ -44,9 +44,11 @@ Exceptions require explicit user agreement and must be recorded in the handoff.
 - Use `writing-univer-plans` first for complex workbook behavior.
 - Use `executing-univer-plans` when following a written plan pack-by-pack.
 - For complex workbook behavior, assertions trace to the plan, and the plan traces to
-  `<univerfile>.sac/success-criteria/<topic>.md`; do not bypass either source artifact.
+  `<hidden-sidecar>/success-criteria/<topic>.md`; do not bypass either source artifact.
 - Treat `assertions.ts` as the workbook-visible contract for each non-trivial changed pack.
-- Treat `<univerfile>.sac/types/` as the local Facade API reference for SaC migration source.
+- Treat `<hidden-sidecar>/types/` as the local Facade API reference for SaC migration source.
+- Treat `<hidden-sidecar>` as the `sidecarPath` resolved by SaC commands, and read verify
+  `reportPath` from JSON instead of constructing `<target>.sac/runs/...`.
 - Allow bounded bootstrap or readonly probes when needed, but never use them as final completion
   evidence.
 - Do not claim completion from `univer sac apply` success.
