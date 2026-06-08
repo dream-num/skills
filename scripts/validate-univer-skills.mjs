@@ -29,6 +29,15 @@ function recordWarning(message) {
   warnings.push(message);
 }
 
+function recordDrift({ failOnDrift, message, skill }) {
+  if (failOnDrift) {
+    recordError(message);
+    return;
+  }
+
+  recordWarning(withSyncCommand(message, skill));
+}
+
 function unixPath(filePath) {
   return filePath.split(path.sep).join("/");
 }
@@ -263,14 +272,14 @@ async function validateExposureDirectory({ label, exposureRoot, failOnDrift }) {
     if (stat.isSymbolicLink()) {
       if (canonicalRealpath !== exposedRealpath) {
         const message = `${label}: ${skill} symlink resolves to ${exposedRealpath ?? "unresolved"}, expected ${canonicalRealpath}`;
-        failOnDrift ? recordError(message) : recordWarning(withSyncCommand(message, skill));
+        recordDrift({ failOnDrift, message, skill });
       }
       continue;
     }
 
     if (!stat.isDirectory()) {
       const message = `${label}: ${skill} is neither symlink nor directory`;
-      failOnDrift ? recordError(message) : recordWarning(withSyncCommand(message, skill));
+      recordDrift({ failOnDrift, message, skill });
       continue;
     }
 
@@ -279,7 +288,7 @@ async function validateExposureDirectory({ label, exposureRoot, failOnDrift }) {
       const preview = diffs.slice(0, 5).join(", ");
       const suffix = diffs.length > 5 ? `, ... ${diffs.length - 5} more` : "";
       const message = `${label}: ${skill} diverges from canonical source (${preview}${suffix})`;
-      failOnDrift ? recordError(message) : recordWarning(withSyncCommand(message, skill));
+      recordDrift({ failOnDrift, message, skill });
     }
   }
 
