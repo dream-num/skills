@@ -39,7 +39,7 @@ This repository exposes canonical Univer product skills:
 The skills cover complementary workbook workflows:
 
 - `using-univer-cli` is the required entry skill for workbook tasks; it keeps agents on Univer CLI instead of ad hoc spreadsheet libraries, then routes ordinary work to `univer-cli` and complex SaC behavior to the plan, execution, and TDD skills
-- `univer-cli` is for workbook-visible work: `new`, `import`, `export`, `run`, `view`, `status`, `commit`, and `sac`
+- `univer-cli` is for workbook-visible work: `new`, `import`, `export`, sidecar inspect scripts, `view`, `status`, `commit`, and `sac`
 - `writing-univer-plans` is for complex SaC workbook behavior planning, range roles, Migration Pack boundaries, and assertion gates written under `<hidden-sidecar>/plans/`
 - `executing-univer-plans` is for reviewing written plans and executing one Migration Pack at a time
 - `test-driven-univer-development` is for assertion-backed SaC TDD, `univer sac verify <univerfile> --json`, and evidence-driven repair
@@ -99,7 +99,7 @@ cp -R skills/test-driven-univer-development ~/.cursor/skills/
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
 | [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | Required entry skill for workbook tasks, with Univer CLI as the workbook engine and SaC TDD handoff when needed | choosing the right Univer path before acting | canonical |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, bounded run scripts, view, import/export, and versioning | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, sidecar inspect scripts, view, import/export, and versioning | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 | [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Univerfile sidecar success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | complex workbook behavior decomposition before editing migration source | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | implementing written Univer plans without skipping assertion gates | canonical |
 | [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Univerfile sidecar SaC TDD with assertion coverage, apply/verify, returned assertion evidence repair, and handoff gates | implementing Facade Migration Packs with strong workbook-visible proof | canonical |
@@ -123,13 +123,14 @@ Use using-univer-cli to build this complex workbook behavior as SaC source. Rout
 
 - OS: Linux or macOS
 - `univer-cli` skill: requires `univer`
-- SaC workflow skills: require `univer` with experimental SaC enabled for `univer sac` workflows
+- SaC workflow skills: require `univer` with `univer sac` workflows available
 - common companion tools for shell roundtrips: `awk`, `sed`, `python3` or `python`
 
 ## Contributing
 
 - keep each skill self-contained under `skills/<skill-name>/`
 - keep `SKILL.md` concise and move details into one-level `references/`
+- run `npm run validate` before publishing skill package changes
 - add or update eval prompts for behavior changes
 
 ## License

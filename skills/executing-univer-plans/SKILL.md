@@ -89,6 +89,8 @@ Confirm it includes:
 - workbook-visible goal and explicit non-goals
 - baseline evidence and readonly probes already used
 - range roles with read/write/preserve rules
+- target schema inventory when the task rebuilds, summarizes, aggregates, splits, consolidates, or
+  otherwise reports into structured output ranges
 - workbook behavior contract fields relevant to the task
 - Contract Decision Evidence for high-risk decisions
 - Migration Pack sequence
@@ -111,6 +113,7 @@ Repair the plan before execution when:
 - the plan does not reference success criteria
 - a success checklist item is missing from the plan or contradicted by it
 - a range role is unclear
+- a report/summary target has no explicit header/body/footer/spacer/blank-tail classification
 - a high-risk decision lacks evidence strength
 - an assumption is implicit or presented as proof
 - a pack has no durable workbook intent

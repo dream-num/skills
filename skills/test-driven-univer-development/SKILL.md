@@ -127,6 +127,9 @@ Assertions should cover:
   existing output, and preserve-only ranges
 - boundary and negative constraints: no extra headings, no helper sheets, cleared tails, no
   unintended overwrite, no unwanted formatting changes
+- report schema boundaries: last body row, summary/footer label, footer amount/formula or stored
+  value, spacer columns, and first true blank tail row for aggregate, summarize, split, report,
+  rebuild, or consolidation tasks
 - style/export safety: valid `#RRGGBB` or documented color strings, expected number formats, and
   export-compatible workbook-visible values when styles or formulas are involved
 - workbook-behavior contract decisions: output shape, sorting, grouping, mapping,
@@ -233,6 +236,9 @@ Examples:
   value type
 - structural decisions: verify section headers, segment boundaries, and first/last row after the
   final layout is determined
+- report-schema decisions: when a target area has `TOTAL`, `SUBTOTAL`, `SUM(...)`, footer labels, or
+  template formulas, verify whether the final workbook rebuilds, moves, recomputes, or intentionally
+  deletes that footer; also verify the first true blank tail row after it
 - blank/error decisions: verify at least one no-match or missing-data row that would distinguish a
   real blank from `#N/A`, `n/a`, spaces, NBSP, or zero
 - date-window decisions: verify the first computed row, the row before and after the boundary, one

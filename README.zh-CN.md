@@ -39,7 +39,7 @@
 这些 skills 覆盖互补的 workbook workflow：
 
 - `using-univer-cli` 是 workbook 任务的强制入口，先把 agent 锁定在 Univer CLI 路径上，避免临时改用 spreadsheet libraries，再判断普通 workbook work 还是 SaC plan/execution/TDD workflow
-- `univer-cli` 负责 workbook-visible work：`new`、`import`、`export`、`run`、`view`、`status`、`commit` 和 `sac`
+- `univer-cli` 负责 workbook-visible work：`new`、`import`、`export`、sidecar inspect scripts、`view`、`status`、`commit` 和 `sac`
 - `writing-univer-plans` 负责复杂 SaC workbook behavior planning，把 range roles、Migration Pack boundaries 和 assertion gates 写入 `<hidden-sidecar>/plans/`
 - `executing-univer-plans` 负责 review 已写好的 plan，并一次执行一个 Migration Pack
 - `test-driven-univer-development` 负责 assertion-backed SaC TDD、`univer sac verify <univerfile> --json` 和 evidence-driven repair
@@ -99,7 +99,7 @@ cp -R skills/test-driven-univer-development ~/.cursor/skills/
 | Skill | What it does | Best for | Status |
 |---|---|---|---|
 | [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | workbook 任务的强制入口，把 workbook engine 固定为 Univer CLI，并在需要时 handoff 到 SaC TDD | 行动前选择正确 Univer 路径 | canonical |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, bounded run scripts, view, import/export, and versioning | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, sidecar inspect scripts, view, import/export, and versioning | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
 | [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Univerfile sidecar success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | 修改 migration source 之前拆解复杂 workbook behavior | canonical |
 | [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | 不跳过 assertion gates 地执行已写好的 Univer plans | canonical |
 | [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Univerfile sidecar SaC TDD with assertion coverage, apply/verify, returned assertion evidence repair, and handoff gates | 用强 workbook-visible evidence 实现 Facade Migration Packs | canonical |
@@ -123,13 +123,14 @@ Use using-univer-cli to build this complex workbook behavior as SaC source. Rout
 
 - OS: Linux or macOS
 - `univer-cli` skill: requires `univer`
-- SaC workflow skills: requires `univer` with experimental SaC enabled for `univer sac` workflows
+- SaC workflow skills: requires `univer` with `univer sac` workflows available
 - common companion tools for shell roundtrips: `awk`, `sed`, `python3` or `python`
 
 ## Contributing
 
 - keep each skill self-contained under `skills/<skill-name>/`
 - keep `SKILL.md` concise and move details into one-level `references/`
+- run `npm run validate` before publishing skill package changes
 - add or update eval prompts for behavior changes
 
 ## License

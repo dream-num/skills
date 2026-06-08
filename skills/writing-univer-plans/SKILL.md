@@ -112,6 +112,8 @@ A plan is complete only when it can drive assertion-first implementation.
 - Do not start Migration Packs from intuition about "what spreadsheets usually do."
 - Do not treat examples, answer ranges, or preview windows as target output without recording why.
 - Do not mark ambiguous domain decisions as proven when they are assumptions.
+- Do not collapse reusable report schema into stale output. Headers, section labels, spacer columns,
+  total/subtotal footers, formulas, formats, and true blank tails need separate range roles.
 - Do not hand off to execution while any changed pack lacks an assertion gate.
 - Do not hand off until the plan identifies workbook behavior contract choices for complex behavior.
 
@@ -210,11 +212,24 @@ Success Criteria: <hidden-sidecar>/success-criteria/<topic>.md
 - Existing output:
 - Preserve-only:
 
+## Target Schema Inventory
+
+- Header/section rows:
+- Body/data rows:
+- Summary/footer rows:
+- Spacer/blank regions:
+- Formula/format evidence:
+- Example/template evidence:
+- Stale data vs reusable schema:
+
 ## Workbook Behavior Contract
 
 - Visible target/state:
 - Source/input dependency:
 - Shape/layout boundary:
+- Clear-before-write boundary:
+- Summary/footer semantics:
+- Final blank-tail boundary:
 - Ordering/grouping/mapping policy:
 - Value/formula semantics:
 - Formatting/presentation semantics:
@@ -275,6 +290,27 @@ gates that distinguish the real target output from the example.
 
 Answer ranges and output ranges are constraints and evidence windows. They do not prove that the
 top-left cell is the output start or that the range contains the full contract.
+
+For report, aggregate, summarize, split, rebuild, or consolidation tasks, inspect both the head and
+tail of every relevant output window before writing the plan. Classify headers, body rows,
+summary/footer rows, spacer columns, formulas, number formats, and true blank tails separately.
+When source-derived body row counts are known, reconcile them with the target/output window height;
+extra rows must be explained as footers, section rows, or blank tails before assertions may expect
+blanks.
+
+Treat "clear existing data before ..." as an execution boundary, not a final-state rule. The final
+state still needs any reusable report headers, footers, formulas, formats, and blank tails indicated
+by the instruction or workbook-visible template.
+
+If the task says an existing area is an example, template, or "pretty much correct", infer the full
+workbook pattern from that area: body rows, total/subtotal footer rows, formulas, spacer columns,
+formats, and blank-tail placement. Do not preserve or discard only the convenient part without
+recording discriminating evidence.
+
+If the plan deletes or blanks workbook-visible `TOTAL`, `SUBTOTAL`, `SUM(...)`, footer labels, or
+similar summary structure, it must cite explicit instruction or workbook evidence that the summary
+schema should be removed. Otherwise plan to rebuild, move, or recompute the summary/footer after
+replacing stale body rows.
 
 ## Workbook Behavior Contract Rules
 
