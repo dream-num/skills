@@ -23,10 +23,11 @@ Decide the workflow before touching workbook content.
 ```dot
 digraph using_univer_cli {
     "Workbook task received" [shape=doublecircle];
-    "Ordinary workbook-visible work?" [shape=diamond];
     "Load univer-cli" [shape=box];
+    "Identify or create .univer target" [shape=box];
+    "Use sidecarPath or materialize" [shape=box];
     "Use workbook-visible verification" [shape=box];
-    "SaC source or complex behavior?" [shape=diamond];
+    "Complex durable behavior?" [shape=diamond];
     "Load writing-univer-plans" [shape=box];
     "Success criteria then plan" [shape=box];
     "Load executing-univer-plans" [shape=box];
@@ -36,11 +37,12 @@ digraph using_univer_cli {
     "Implement only after the assertion gate exists" [shape=box];
     "Verify and repair" [shape=box];
 
-    "Workbook task received" -> "Ordinary workbook-visible work?";
-    "Ordinary workbook-visible work?" -> "Load univer-cli" [label="yes"];
-    "Load univer-cli" -> "Use workbook-visible verification";
-    "Ordinary workbook-visible work?" -> "SaC source or complex behavior?" [label="no"];
-    "SaC source or complex behavior?" -> "Load writing-univer-plans" [label="yes"];
+    "Workbook task received" -> "Load univer-cli";
+    "Load univer-cli" -> "Identify or create .univer target";
+    "Identify or create .univer target" -> "Use sidecarPath or materialize";
+    "Use sidecarPath or materialize" -> "Use workbook-visible verification";
+    "Use sidecarPath or materialize" -> "Complex durable behavior?";
+    "Complex durable behavior?" -> "Load writing-univer-plans" [label="yes"];
     "Load writing-univer-plans" -> "Success criteria then plan";
     "Success criteria then plan" -> "Load executing-univer-plans";
     "Load executing-univer-plans" -> "Execute the plan";
@@ -67,8 +69,13 @@ SaC source authoring MUST follow this order:
    evidence to drive repairs before claiming completion.
 
 When a target has no SaC sidecar baseline yet, bootstrap it with
-`univer sac materialize <univerfile>` before creating migration packs. Do not use `univer workspace`
-or stale `univer sac rebuild` workflows.
+`univer sac materialize <univerfile>` before creating migration packs. File import already returns
+`sidecarPath` after generating SaC import source. Do not use `univer workspace` or stale
+`univer sac rebuild` workflows.
+
+SaC commands require a clean target. Commit or restore uncommitted local mutations before
+`materialize`, `apply`, `rollback`, or `verify`. Materialize uses committed-state replay: init data
+plus synced changesets plus local changesets, excluding uncommitted mutations.
 
 `<hidden-sidecar>` means the path returned by SaC commands, not a path guessed by appending `.sac`.
 On POSIX, `Budget.univer` resolves to `.Budget.univer.sac/`; on Windows, `Budget.univer.sac/`
@@ -119,14 +126,13 @@ These thoughts mean STOP and route through Univer CLI:
 | Task shape | Load |
 | --- | --- |
 | Harness-provided workbook task with its own local contract, prepared workbook, or required handoff artifact | Follow the task-local harness contract first, then use `univer-cli` plus the appropriate workbook or SaC route below |
-| Pure import/export handoff | `univer-cli` |
-| Ordinary workbook-visible inspection, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli`, starting with `univer sac materialize <univerfile> --json` unless the task is pure import/export |
+| Import/export handoff | `univer-cli`; use returned `sidecarPath` after file import and export only after workbook-visible checks when changes matter |
+| Workbook-visible inspection, bounded edit, formula review, preview, comments, commit, pull, or sync | `univer-cli`, starting from the returned `sidecarPath` or `univer sac materialize <univerfile> --json` |
 | SaC source authoring, Facade Migration Pack work, `assertions.ts`, `univer sac`, or complex workbook behavior development | `writing-univer-plans`, `executing-univer-plans`, then `test-driven-univer-development` |
 | Existing or legacy workbook with no SaC source, where the user wants behavior converted into SaC source | `univer-cli` for readonly baseline probes, then `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-development` |
 
-Ordinary workbook-visible work should materialize the SaC sidecar first unless it is pure
-import/export. It should not enter the full SaC TDD workflow unless the user asks to author SaC
-source or durable workbook behavior.
+Workbook-visible work should disclose the SaC sidecar first. It should not enter the full SaC TDD
+workflow unless the user asks to author SaC source or durable workbook behavior.
 
 For ordinary workbook-visible tasks, load `univer-cli`, read the materialized sidecar first, and
 stay with workbook-visible verification.

@@ -190,6 +190,9 @@ univer sac apply <univerfile>
 univer sac verify <univerfile> --json
 ```
 
+The target must be clean before apply and verify. If verify reports setup/error evidence for
+uncommitted local mutations, commit or restore those mutations before judging assertion behavior.
+
 Read the JSON summary and returned assertion evidence.
 
 Confirm that the changed pack is checked and has at least one passed assertion. A zero-assertion,

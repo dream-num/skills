@@ -93,6 +93,8 @@ Confirm it includes:
 - Contract Decision Evidence for high-risk decisions
 - Migration Pack sequence
 - materialize/baseline state for the target sidecar
+- clean-target requirement before `materialize`, `apply`, `rollback`, and `verify`
+- committed-state materialize expectation: init data plus synced changesets plus local changesets, not uncommitted mutations
 - source contract expectations such as pack-level `description` and `apply({ univerAPI })`
 - assertion gate for every non-trivial changed pack
 - completion verify command

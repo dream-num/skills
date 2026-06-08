@@ -24,14 +24,20 @@ runtime ids. When a multi-unit command asks for a local unit scope, pass the exp
 `--local-unit-id` for that command without treating it as the file identity.
 
 `.univer` files are CLI operation targets, not agent-editable data stores. Do not read or patch
-univerfile internals. For durable workbook changes, the current path is SaC source:
+univerfile internals. The current workbook authoring path is SaC source:
 `univer sac materialize`, `univer sac migration create`, `univer sac apply`, and
 `univer sac verify`.
 
-Pure import/export handoff work may stay on `univer import` and `univer export`. Other workbook
-inspection or mutation work should first materialize the SaC sidecar and use the returned
-`sidecarPath` as the agent's primary workspace. The materialized sidecar already contains useful
-structure, docs, generated source, and type information.
+`univer import` and `univer export` are entry and handoff commands around that SaC path. File
+import appends generated SaC migration source and returns `sidecarPath`; use that field as the
+agent's primary workspace instead of guessing a hidden path. For existing workbooks, materialize the
+SaC sidecar and use the returned `sidecarPath`. The sidecar contains useful structure, docs,
+generated source, inspect scratch space, and type information.
+
+SaC commands require clean target state. Commit or restore uncommitted local mutations before
+`univer sac materialize`, `univer sac apply`, `univer sac rollback`, or `univer sac verify`.
+Materialize reads committed workbook state: init data plus synced changesets plus local changesets,
+with uncommitted mutations excluded by the preflight.
 
 `univer inspect <univerfile> --file <script.js>` is a read-only auxiliary probe. The script must be
 a `.js` file under `<sidecarPath>/inspect-scripts/`. It is scratch space: create scripts as needed,
@@ -61,15 +67,15 @@ Use this skill when the task involves spreadsheet or workbook work, especially:
 
 1. Pick one explicit workbook path, for example `./budget.univer`.
 2. Create or import a workbook first if no `.univer` target exists.
-3. Unless the task is pure import/export, run `univer sac materialize "$WB" --json` and read the
-   returned `sidecarPath`.
-4. Inspect the materialized sidecar first: README, generated migration source, generated types,
+3. Run `univer sac materialize "$WB" --json` when the workbook was not just created by a file
+   import that already returned `sidecarPath`.
+4. Inspect the sidecar first: README, generated migration source, generated types,
    plans, success criteria, applied-state docs, and existing assertions.
 5. Use `inspect-scripts/*.js` only when the materialized sidecar does not already expose the
    workbook-visible fact you need.
 6. Mutate durable workbook behavior through SaC migration packs, not ad hoc runtime scripts.
-7. Verify with `univer sac verify "$WB" --json` and the returned assertion evidence when assertions
-   exist.
+7. Verify with `univer sac verify "$WB" --json` and the returned assertion evidence. A
+   zero-assertion or all-skipped verify run is not completion evidence for a changed pack.
 8. Export only after verification when the user needs a handoff file.
 9. After changes have been verified, if the user may need to inspect, audit, or review the final
    workbook, check the current agent tool surface first. If a browser tool is available, run
@@ -101,7 +107,7 @@ what you need, diagnose the CLI/runtime path instead of bypassing it.
 | Discover exact command syntax | `univer help`, `univer help <command...>` |
 | Start a local univerfile from a blank file or spreadsheet source | `univer new` or `univer import --file <input.xlsx|csv|url> <file.univer>` |
 | Hand back Excel-compatible output | `univer export` |
-| Begin any non-export/import workbook work | `univer sac materialize <univerfile> --json`, then read `sidecarPath` |
+| Begin workbook work after new/import | Use returned `sidecarPath` from import, or run `univer sac materialize <univerfile> --json` and read `sidecarPath` |
 | Understand workbook shape before editing | Materialized sidecar README/source/types first; sidecar `univer inspect` script only as auxiliary readback |
 | Locate content-defined cells | Sidecar inspect script scanning bounded sheets/ranges after materialize |
 | Read rectangular data | Sidecar inspect script returning `getValues()`, `getDisplayValues()`, or `getFormulas()` |
@@ -121,7 +127,7 @@ what you need, diagnose the CLI/runtime path instead of bypassing it.
 | Pull remote-only changes for a bound local unit | `univer pull` |
 | Sync local and remote versioning state | `univer sync` |
 | Create a SaC migration pack | `univer sac migration create <description> <univerfile>` |
-| Apply, roll back, or verify SaC source | `univer sac apply <univerfile>`, `univer sac rollback <univerfile>`, `univer sac verify <univerfile> --json` |
+| Apply, roll back, or verify SaC source | Clean target first, then `univer sac apply <univerfile>`, `univer sac rollback <univerfile>`, `univer sac verify <univerfile> --json` |
 | Diagnose runtime problems | `univer doctor`, `univer daemon status` |
 | Prepare a bug report or Univer team support artifact after user authorization | `univer doctor collect` |
 

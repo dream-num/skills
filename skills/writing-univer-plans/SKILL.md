@@ -293,6 +293,10 @@ When the target has no sidecar source baseline, the plan should call for
 `univer sac materialize <univerfile>` before creating migration packs. Do not use `univer workspace`
 or stale `univer sac rebuild` workflows.
 
+Materialize is committed-state only: init data plus synced changesets plus local changesets replayed
+through runtime-visible workbook state. Plans must require a clean target before `materialize`,
+`apply`, `rollback`, or `verify`; uncommitted local mutations are setup debt, not source evidence.
+
 Migration source lives under `<hidden-sidecar>/migrations/<pack>/`. `pack.ts` owns pack metadata and
 must use pack-level `description`, `files`, and `unitMigrations`. Unit migration files should use
 `defineUnitMigration({ apply({ univerAPI }) { ... } })`.
