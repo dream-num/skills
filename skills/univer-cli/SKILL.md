@@ -120,10 +120,12 @@ what you need, diagnose the CLI/runtime path instead of bypassing it.
 | Start a local univerfile from a blank file or spreadsheet source | `univer new` or `univer import --file <input.xlsx|csv|url> <file.univer>` |
 | Hand back Excel-compatible output | `univer export` |
 | Begin workbook work after new/import | Use returned `sidecarPath` from import, or run `univer sac materialize <univerfile> --json` and read `sidecarPath` |
-| Discover target units and capabilities | Materialized sidecar README/AGENTS, command JSON, or managed inspect tools when available; record `localUnitId`, unit type, name, and capability status |
-| Understand workbook shape before editing | Materialized sidecar README/source/types and unit inventory first; sidecar `univer inspect` script only as auxiliary readback |
-| Locate content-defined cells | Managed search/neighborhood evidence when available, or a sidecar inspect script scanning bounded sheets/ranges after materialize |
-| Read rectangular data | Managed range evidence when available, or a sidecar inspect script returning `getValues()`, `getDisplayValues()`, or `getFormulas()` |
+| Discover target units and capabilities | Materialized sidecar README/AGENTS, command JSON, or `inspect-tools/units.js`; record `localUnitId`, unit type, name, and capability status |
+| Understand workbook shape before editing | `inspect-tools/sheet-overview.js` for sheet names, used ranges, bounded samples, formulas, warnings, and candidate regions |
+| Locate content-defined cells | `inspect-tools/sheet-search.js` when visible text, labels, keys, or values are known but coordinates are not |
+| Read context around a known anchor | `inspect-tools/sheet-neighborhood.js` when a found cell/range needs nearby headers, labels, totals, or surrounding values |
+| Read rectangular data | `inspect-tools/sheet-range.js` when sheet name and A1 rectangle are known |
+| Audit or locate formulas | `inspect-tools/sheet-formulas.js` when formulas are the evidence target |
 | Write a known rectangular matrix back | SaC migration pack with explicit sheet and A1 range boundaries, then `sac apply` and `sac verify` |
 | Apply bounded workbook-local logic | SaC migration pack |
 | Create or maintain workbook charts | SaC migration pack using chart Facade APIs, plus `univer view` for visual review |
@@ -181,6 +183,13 @@ Managed sheet tools return agent-normalized text/value evidence by default. Use
 exact `rawValues`, `displayValues`, `values`, `cellData`, or `valueDetails` only when the task
 explicitly depends on storage text, multi-line cell contents, typed value/display distinctions, rich
 cell data, or export/debug evidence.
+
+Managed tool routing is a recommendation, not a limitation. `units.js` helps discover ids,
+`sheet-overview.js` helps understand shape, `sheet-search.js` helps find anchors,
+`sheet-neighborhood.js` helps inspect context, `sheet-range.js` helps read known rectangles, and
+`sheet-formulas.js` helps audit formula cells. Combine tools when that makes the workbook reasoning
+clearer, and use a bounded scratch probe under `inspect-scripts/` when the managed tools do not
+answer the evidence question.
 
 `sheet-overview` may include `regions`: candidate non-empty rectangular areas derived from visible
 row and column occupancy. Use each region's bounded head/tail samples to notice table boundaries,

@@ -23,14 +23,14 @@ Read `sidecarPath` from the JSON. Use that path for plans, success criteria, mig
 generated types, and scratch inspect scripts.
 
 Before unit-specific evidence, discover the relevant unit's `localUnitId`, unit type, name, and
-capability status from the materialized sidecar, command JSON, or managed inspect tools when
-available. Replace `replace-with-discovered-sheet-localUnitId` in examples with that discovered
-sheet unit id.
+capability status from the materialized sidecar, command JSON, or `inspect-tools/units.js`.
+Replace `replace-with-discovered-sheet-localUnitId` in examples with that discovered sheet unit id.
 
 ## Locate Before Editing
 
-Use a read-only sidecar inspect script before editing when the target is defined by visible workbook
-content:
+Use a read-only managed inspect tool before editing when the target is defined by visible workbook
+content. `sheet-search.js` is a good starting point when you know visible text but not coordinates;
+switch to `sheet-neighborhood.js` or `sheet-range.js` once an anchor or rectangle is clear:
 
 ```bash
 SIDECAR=$(node -e "console.log(JSON.parse(require('node:fs').readFileSync('./materialize.json','utf8')).sidecarPath)")
@@ -54,16 +54,18 @@ bounded value preview. Keep the scan bounded to the task's known sheets or likel
 
 ## Read Range Data
 
-Use read-only sidecar inspect scripts when the agent needs rectangular workbook data. Prefer
+Use read-only managed inspect tools when the agent needs rectangular workbook data. Prefer
 normalized values for ordinary labels, copied text, matching, grouping, and write decisions. Request
 raw values, display values, cell data, or value details only when the task explicitly depends on
 exact storage text, multi-line cell contents, typed value/display distinctions, rich cell data, or
 export/debug evidence.
 
-Run `sheet-overview.js` first and inspect `regions` when present. Region evidence exposes candidate
-non-empty rectangular areas with their own bounded head/tail samples, which is useful for spotting
-side-by-side tables, uneven table heights, footers, formulas, spacer columns, and true blank tails
-without dumping the whole sheet.
+When sheet shape is unclear, `sheet-overview.js` is a useful first read. Inspect `regions` when
+present: region evidence exposes candidate non-empty rectangular areas with their own bounded
+head/tail samples, which is useful for spotting side-by-side tables, uneven table heights, footers,
+formulas, spacer columns, and true blank tails without dumping the whole sheet. This is guidance,
+not a required sequence; combine managed tools or fall back to a bounded scratch probe when the
+evidence question needs something else.
 
 ```bash
 cat > ./read-sheet1.params.json <<'JSON'
