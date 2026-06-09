@@ -56,8 +56,9 @@ bounded value preview. Keep the scan bounded to the task's known sheets or likel
 
 Use read-only sidecar inspect scripts when the agent needs rectangular workbook data. Prefer
 normalized values for ordinary labels, copied text, matching, grouping, and write decisions. Request
-raw values, display values, or cell data only when the task explicitly depends on exact storage text,
-multi-line cell contents, rich cell data, or export/debug evidence.
+raw values, display values, cell data, or value details only when the task explicitly depends on
+exact storage text, multi-line cell contents, typed value/display distinctions, rich cell data, or
+export/debug evidence.
 
 Run `sheet-overview.js` first and inspect `regions` when present. Region evidence exposes candidate
 non-empty rectangular areas with their own bounded head/tail samples, which is useful for spotting
@@ -70,7 +71,7 @@ cat > ./read-sheet1.params.json <<'JSON'
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
   "sheetName": "Sheet1",
   "rangeA1": "A1:D4",
-  "include": ["normalizedValues", "formulas", "numberFormats"]
+  "include": ["normalizedValues", "formulas", "numberFormats", "valueDetails"]
 }
 JSON
 univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./read-sheet1.params.json

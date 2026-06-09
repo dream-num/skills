@@ -178,8 +178,9 @@ sed -n '1,40p' ./range.json
 
 Managed sheet tools return agent-normalized text/value evidence by default. Use
 `normalizedValues` for ordinary labels, copied text, matching, grouping, and write planning. Request
-exact `rawValues`, `displayValues`, `values`, or `cellData` only when the task explicitly depends on
-storage text, multi-line cell contents, rich cell data, or export/debug evidence.
+exact `rawValues`, `displayValues`, `values`, `cellData`, or `valueDetails` only when the task
+explicitly depends on storage text, multi-line cell contents, typed value/display distinctions, rich
+cell data, or export/debug evidence.
 
 `sheet-overview` may include `regions`: candidate non-empty rectangular areas derived from visible
 row and column occupancy. Use each region's bounded head/tail samples to notice table boundaries,
