@@ -40,7 +40,7 @@ cat > ./find-west.params.json <<'JSON'
   "sheetName": "Orders",
   "rangeA1": "A1:Z200",
   "query": "West",
-  "types": ["displayValues"],
+  "types": ["normalizedValues"],
   "match": "contains",
   "neighborhood": 1,
   "maxResults": 50
@@ -54,9 +54,15 @@ bounded value preview. Keep the scan bounded to the task's known sheets or likel
 
 ## Read Range Data
 
-Use read-only sidecar inspect scripts when the agent needs rectangular workbook data. Return display
-values for human-facing checks, raw values for numeric comparisons, and formulas when formula
-structure matters.
+Use read-only sidecar inspect scripts when the agent needs rectangular workbook data. Prefer
+normalized values for ordinary labels, copied text, matching, grouping, and write decisions. Request
+raw values, display values, or cell data only when the task explicitly depends on exact storage text,
+multi-line cell contents, rich cell data, or export/debug evidence.
+
+Run `sheet-overview.js` first and inspect `regions` when present. Region evidence exposes candidate
+non-empty rectangular areas with their own bounded head/tail samples, which is useful for spotting
+side-by-side tables, uneven table heights, footers, formulas, spacer columns, and true blank tails
+without dumping the whole sheet.
 
 ```bash
 cat > ./read-sheet1.params.json <<'JSON'
@@ -64,7 +70,7 @@ cat > ./read-sheet1.params.json <<'JSON'
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
   "sheetName": "Sheet1",
   "rangeA1": "A1:D4",
-  "include": ["displayValues", "rawValues", "formulas"]
+  "include": ["normalizedValues", "formulas", "numberFormats"]
 }
 JSON
 univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./read-sheet1.params.json
@@ -84,8 +90,10 @@ univer sac apply "$WB" --json
 univer sac verify "$WB" --json
 ```
 
-Verification should prove headers, sample rows, key columns, and formulas. Row count alone is weak
-evidence because shifted columns can still preserve row count.
+Verification should prove headers, sample rows, key columns, formulas, and changed workbook
+resources. Use `styles`, `backgroundColors`, `conditionalFormats`, `filter`, or `tables` assertions
+when formatting, native conditional formatting, filters, or table resources are part of the task.
+Row count alone is weak evidence because shifted columns can still preserve row count.
 
 ## Use A Sidecar Inspect Script
 

@@ -178,7 +178,9 @@ so future agents can distinguish the target checklist from the reasoning and exe
 
 ## Plan Document Header
 
-Every plan MUST start with this header:
+For complex SaC workbook behavior, start with this header. Small bounded edits may use a shorter
+plan, but they still need to name the success criteria, workbook contract, execution scope, and
+verify boundary before assertions or migration source.
 
 ```md
 # <Feature Name> Univer Plan
@@ -198,7 +200,11 @@ Success Criteria: <hidden-sidecar>/success-criteria/<topic>.md
 ---
 ```
 
-## Required Plan Shape
+## Plan Shape
+
+Use this shape as the default for complex workbook behavior. Omit fields that are irrelevant to the
+task, but do not omit evidence, range roles, behavior choices, pack boundaries, or assertion gates
+that decide the workbook outcome.
 
 ```md
 ## Workbook Intent
@@ -325,6 +331,8 @@ tail, formulas, formats, and surrounding structure to classify the range before 
 For report, aggregate, summarize, split, rebuild, or consolidation tasks, inspect both the head and
 tail of every relevant output window before writing the plan. Classify headers, body rows,
 summary/footer rows, spacer columns, formulas, number formats, and true blank tails separately.
+Also inspect managed overview `regions` when available so side-by-side tables, uneven table
+heights, and region-specific tail/footer evidence are not hidden by a single sheet-level sample.
 When source-derived body row counts are known, reconcile them with the target/output window height;
 extra rows must be explained as footers, section rows, or blank tails before assertions may expect
 blanks.
@@ -333,15 +341,15 @@ Treat destructive instructions such as clearing, replacing, or rebuilding as exe
 The final state still needs any reusable schema, formulas, formats, summaries, or blank areas that
 the user instruction or workbook evidence makes part of the target behavior.
 
-If the task says an existing area is an example, template, or "pretty much correct", infer the full
-workbook pattern from that area: body rows, total/subtotal footer rows, formulas, spacer columns,
-formats, and blank-tail placement. Do not preserve or discard only the convenient part without
-recording discriminating evidence.
+If the task says an existing area is an example, template, or "pretty much correct", treat the full
+area as pattern evidence: body rows, total/subtotal footer rows, formulas, spacer columns, formats,
+and blank-tail placement may all matter. Decide which parts are reusable schema, stale examples, or
+irrelevant only after recording discriminating evidence.
 
-If the plan deletes or blanks workbook-visible `TOTAL`, `SUBTOTAL`, `SUM(...)`, footer labels, or
-similar summary structure, it must cite explicit instruction or workbook evidence that the summary
-schema should be removed. Otherwise plan to rebuild, move, or recompute the summary/footer after
-replacing stale body rows.
+Workbook-visible `TOTAL`, `SUBTOTAL`, `SUM(...)`, footer labels, and similar summary structure are
+schema evidence. If the plan deletes, blanks, rebuilds, moves, or recomputes that structure, cite the
+instruction or workbook evidence that decided the policy instead of letting stale body rows or a
+convenient target window decide it.
 
 ## Workbook Behavior Contract Rules
 
@@ -352,7 +360,9 @@ choices that assertions can verify.
 Output-heavy transformations should capture shape, mapping, ordering, grouping, truncation, and
 value/formula semantics. Formatting, validation, protection, chart, comment, layout, or sheet
 structure changes should capture visible state, presentation or interaction semantics, preservation
-rules, and negative constraints.
+rules, and negative constraints. Conditional formatting, sheet filter, and table tasks should name
+the resource assertion gate that will verify them, such as `styles`, `backgroundColors`,
+`conditionalFormats`, `filter`, or `tables`.
 
 ## SaC Source Contract Rules
 
@@ -379,8 +389,8 @@ bound to the target univerfile; use APIs available in `<hidden-sidecar>/types/`.
 
 ## Contract Decision Evidence Rules
 
-For every high-risk or non-obvious workbook behavior decision, record evidence before editing
-migration source.
+For every high-risk or non-obvious workbook behavior decision that affects the changed workbook
+state, record evidence before editing migration source.
 
 High-risk decisions include ordering precedence, grouping and truncation order, source-to-target
 mapping, sign-to-label mapping, label wording, blank-versus-zero-versus-error policy, date-window
@@ -391,9 +401,14 @@ workbook layout can reasonably be read in more than one way.
 
 Exact workbook-visible value preservation is itself a behavior decision. When text, whitespace,
 identifiers, dates, booleans, number/text typing, blanks, zeroes, errors, formulas, display strings,
-or formats matter, the plan must say which evidence surface will prove the contract. Use the
-assertion helper that matches the decision: `values`, `rawValues`, `displayValues`, `cellData`,
-`numberFormats`, or formula assertions.
+or formats matter, the plan should say which evidence surface proves the contract. Prefer managed
+inspect `normalizedValues` for ordinary labels, copied text, matching, grouping, and write decisions.
+Request exact `rawValues`, `displayValues`, `values`, or `cellData` only when the task explicitly
+depends on storage text, multi-line cell contents, rich cell data, or export/debug evidence. Do not
+turn raw stored artifacts such as trailing line terminators, NBSP, or rich-text data markers into the
+plan contract unless the exact-text requirement is explicit. Use the assertion helper that matches
+the decision: `values`, `rawValues`, `displayValues`, `cellData`, `numberFormats`, or formula
+assertions.
 
 - Do not write `Unknowns: none` when a decision depends on domain intuition, ambiguous wording,
   partial preview data, or an unchecked sample/reference pattern.
@@ -402,8 +417,10 @@ assertion helper that matches the decision: `values`, `rawValues`, `displayValue
 - If the chosen rule is based only on instruction wording, quote the deciding phrase in the plan.
 - If no decisive evidence exists, mark the decision as an assumption and choose the rule that best
   satisfies the final target/output wording.
-- Each high-risk decision must have at least one assertion or readonly probe that would fail if a
-  plausible wrong interpretation were used.
+- For high-risk decisions that affect changed or scored workbook state, choose assertion coverage or
+  a bounded readonly probe that would fail for a plausible wrong interpretation when that evidence
+  is available. If evidence remains underdetermined, record the assumption and preserve that
+  uncertainty in the handoff.
 - Do not infer debit/credit, in/out, positive/negative, or similar semantic labels from source-side
   signs or business convention alone; connect the mapping to target labels, examples, instruction
   wording, workbook evidence, or a declared assumption.
@@ -419,8 +436,8 @@ assertion helper that matches the decision: `values`, `rawValues`, `displayValue
   source/target evidence.
 - Treat blank, zero, `#N/A`, `n/a`, spaces, and NBSP as different outputs. The plan must say which
   one is intended and cite evidence for at least one blank/error/zero edge case when relevant.
-- For date-window or period logic, record whether the boundary is inclusive or exclusive and probe
-  the first computed row, the row before and after the boundary, one middle row, and the last row.
+- For date-window or period logic, record whether the boundary is inclusive or exclusive and gather
+  enough boundary evidence to distinguish the chosen rule from the likely wrong rule.
 - For workbook styles, normalize malformed or shorthand colors to valid `#RRGGBB` or safe
   `rgb(r, g, b)` before applying them. Do not pass malformed hex or named colors directly to style
   APIs unless the API explicitly documents support for that form.

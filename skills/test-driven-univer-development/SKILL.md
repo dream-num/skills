@@ -145,6 +145,8 @@ Assertions should cover:
 - report schema boundaries: last body row, summary/footer label, footer amount/formula or stored
   value, spacer columns, and first true blank tail row for aggregate, summarize, split, report,
   rebuild, or consolidation tasks
+- region boundaries: managed overview `regions` when side-by-side tables, uneven table heights, or
+  region-specific tail/footer evidence could be hidden by one sheet-level sample
 - style/export safety: valid `#RRGGBB` or documented color strings, expected number formats, and
   export-compatible workbook-visible values when styles or formulas are involved
 - workbook-behavior contract decisions: output shape, sorting, grouping, mapping,
@@ -240,41 +242,55 @@ repairs.
 
 ## Assertion Coverage Rules
 
-For each high-risk decision recorded in the plan's Contract Decision Evidence table, add at least one
-assertion or readonly probe that distinguishes the chosen rule from a plausible wrong rule.
+Choose assertions from the workbook decisions the plan actually makes. A changed pack needs
+meaningful assertion evidence, but coverage should be discriminating rather than exhaustive
+ceremony.
+
+For high-risk decisions that affect changed workbook state, prefer at least one assertion or bounded
+readonly probe that would reject a plausible wrong rule. If the workbook evidence remains
+underdetermined, record that assumption in the plan and handoff instead of treating an assertion as
+proof that the assumption was workbook-proven.
 
 Choose assertion evidence by the workbook decision:
 
+- use normalized inspect evidence for ordinary labels, copied text, matching, grouping, and write
+  decisions before translating the plan into `values` or `rawValues` assertions
 - use `values` or `rawValues` when numeric, date, boolean, text, blank, zero, or error identity
-  matters
+  matters after the plan has chosen the stored-value contract
 - use `displayValues` when the visible formatted string is the contract
 - use `cellData` when type, formula cache, style id, or cell model shape is the evidence
 - use `numberFormats` when number/date/percent/currency interpretation matters
+- use `styles` or `backgroundColors` when static visual formatting such as fill, font color,
+  boldness, alignment, wrapping, or borders is the workbook-visible contract
+- use `conditionalFormats`, `filter`, or `tables` when the task creates or changes native
+  conditional formatting rules, sheet filters, or table resources
 - use formula assertions when formula structure matters independently of calculated values
 - use sheet, used-range, and representative range assertions for structure and preservation
 
-Decision-specific coverage is mandatory when relevant:
+Decision-specific coverage reminders:
 
-- sort/group/truncation decisions: verify first, middle, last, and the first excluded candidate when
-  output capacity is limited
-- mapping decisions: verify representative source-to-target coordinates, including one row for each
-  side of a category, sign, blank/zero, or boundary mapping when relevant
-- text decisions: verify exact casing, whitespace, abbreviations, singular/plural wording, and stored
-  value type
+- sort/group/truncation decisions: use boundary rows such as first, middle, last, or first excluded
+  candidate when those rows distinguish the chosen ordering rule
+- mapping decisions: use representative source-to-target coordinates, including category, sign,
+  blank/zero, or boundary mappings that decide the behavior
+- text decisions: check exact casing, whitespace, abbreviations, singular/plural wording, and stored
+  value type when those details are part of the visible contract; rely on normalized text evidence by
+  default, and assert raw/control-character preservation only when the plan cites explicit exact
+  storage or cell model evidence
 - structural decisions: verify section headers, segment boundaries, and first/last row after the
-  final layout is determined
+  final layout is determined when they affect the output contract
 - report-schema decisions: when a target area has `TOTAL`, `SUBTOTAL`, `SUM(...)`, footer labels, or
-  template formulas, verify whether the final workbook rebuilds, moves, recomputes, or intentionally
-  deletes that footer; also verify the first true blank tail row after it
-- blank/error decisions: verify at least one no-match or missing-data row that would distinguish a
-  real blank from `#N/A`, `n/a`, spaces, NBSP, or zero
-- date-window decisions: verify the first computed row, the row before and after the boundary, one
-  middle row, and the last row
+  template formulas, verify the chosen policy: rebuild, move, recompute, preserve, or intentionally
+  delete; check the first true blank tail row when it is part of the contract
+- blank/error decisions: use a no-match or missing-data row when it distinguishes real blank from
+  `#N/A`, `n/a`, spaces, NBSP, or zero
+- date-window decisions: check enough boundary rows to distinguish inclusive/exclusive or rolling
+  window behavior
 - stale/example target decisions: when existing target values could be stale examples or partial
-  output, verify at least one counterexample that would fail if those values were incorrectly
-  preserved
-- style decisions: verify normalized color strings and exported workbook compatibility when an
-  invalid or ambiguous color token appears in the request
+  output, use a counterexample that would fail if those values were incorrectly preserved
+- style/resource decisions: verify normalized color strings and Facade-visible resource semantics
+  with `styles`, `backgroundColors`, `conditionalFormats`, `filter`, or `tables`; exported workbook
+  compatibility can be supplemental, but value-only assertions are not enough for resource tasks
 
 A passed assertion that only mirrors the migration output is not enough when the underlying semantic
 decision was ambiguous. If the same assertion would pass for the plausible wrong rule, strengthen it
@@ -284,9 +300,10 @@ Do not treat a passing assertion as GREEN if it only confirms copied existing ta
 proving they match the instruction-derived workbook behavior.
 
 For exact-value decisions, assertions should prove the workbook-visible contract rather than the
-implementation's preferred normalization. Cover exact casing, whitespace, punctuation, identifiers,
-stored value type, dates, booleans, blanks, zeroes, and error placeholders when those details are
-visible or were part of a high-risk decision.
+implementation's preferred normalization. Cover casing, whitespace, punctuation, identifiers, stored
+value type, dates, booleans, blanks, zeroes, and error placeholders when those details are visible or
+were part of a high-risk decision; avoid locking raw artifacts into the contract unless evidence says
+they are user-visible output.
 
 Assertions cannot turn an underdetermined assumption into workbook-proven truth. When the plan marks
 a decision as `underdetermined assumption`, assertions should verify that the implementation

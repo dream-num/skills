@@ -164,7 +164,7 @@ cat > ./range.params.json <<'JSON'
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
   "sheetName": "Sheet1",
   "rangeA1": "A1:D20",
-  "include": ["displayValues", "rawValues", "formulas"]
+  "include": ["normalizedValues", "formulas", "numberFormats"]
 }
 JSON
 univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./range.params.json > ./range.json 2> ./range.err
@@ -175,6 +175,15 @@ if [ "$status" -ne 0 ]; then
 fi
 sed -n '1,40p' ./range.json
 ```
+
+Managed sheet tools return agent-normalized text/value evidence by default. Use
+`normalizedValues` for ordinary labels, copied text, matching, grouping, and write planning. Request
+exact `rawValues`, `displayValues`, `values`, or `cellData` only when the task explicitly depends on
+storage text, multi-line cell contents, rich cell data, or export/debug evidence.
+
+`sheet-overview` may include `regions`: candidate non-empty rectangular areas derived from visible
+row and column occupancy. Use each region's bounded head/tail samples to notice table boundaries,
+footer rows, spacer columns, formulas, and true blank tails before deciding what the region means.
 
 ## Workflow References
 
