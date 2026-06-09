@@ -17,7 +17,8 @@ constraints.
 NO MIGRATION PACK IMPLEMENTATION WITHOUT A PLAN-DERIVED FAILING ASSERTION FIRST.
 
 If you wrote migration source before the assertion failed for the intended workbook-visible reason:
-Delete or revert the migration source change and restart from the plan-derived assertion gate.
+delete or revert that premature migration source change and restart from the plan-derived assertion
+gate.
 
 No exceptions:
 
@@ -25,6 +26,9 @@ No exceptions:
 - Do not adapt it while writing assertions.
 - Do not leave it commented out.
 - Implement fresh from the plan-derived failing assertion.
+
+If the premature source is mixed with pre-existing user or project changes, isolate and discard only
+your premature source. Do not revert unrelated work.
 </EXTREMELY-IMPORTANT>
 
 ## When to Use
@@ -45,6 +49,8 @@ Exceptions require explicit user agreement and must be recorded in the handoff.
 - Use `executing-univer-plans` when following a written plan pack-by-pack.
 - For complex workbook behavior, assertions trace to the plan, and the plan traces to
   `<hidden-sidecar>/success-criteria/<topic>.md`; do not bypass either source artifact.
+- For unit-specific behavior, the plan and assertions must identify the target `.univer` path,
+  relevant `localUnitId`, unit type, and spreadsheet sheet/range coordinates when applicable.
 - Treat `assertions.ts` as the workbook-visible contract for each non-trivial changed pack.
 - Treat `<hidden-sidecar>/types/` as the local Facade API reference for SaC migration source.
 - Treat `<hidden-sidecar>` as the `sidecarPath` resolved by SaC commands, and read verify
@@ -102,17 +108,24 @@ digraph test_driven_univer_development {
     verify_red -> green [label="yes"];
     verify_red -> red [label="wrong failure"];
     green -> verify_green;
-    verify_green -> repair [label="yes"];
-    verify_green -> green [label="no"];
+    verify_green -> repair [label="no"];
+    verify_green -> next [label="yes"];
     repair -> verify_green [label="stay green"];
-    verify_green -> next;
 }
 ```
 
+Use the smallest loop that protects the workbook contract:
+
+1. Write the plan-derived assertion or repair the assertion source.
+2. Confirm the assertion is independent of the implementation output.
+3. Implement the minimal Migration Pack change.
+4. Run apply/verify as needed and read the returned report evidence.
+5. Repair the plan, assertion, or migration when the evidence disagrees.
+
 ### RED - Write the Assertion First
 
-Derive assertions from the plan: user intent, baseline evidence, range roles, final-layout reasoning,
-and Contract Decision Evidence.
+Derive assertions from the plan: user intent, baseline evidence, unit scope, range roles,
+final-layout reasoning, and Contract Decision Evidence.
 
 Do not derive assertions from whatever the migration happened to write.
 
@@ -120,6 +133,8 @@ Assertions should cover:
 
 - workbook-visible final state: sheets, used ranges, headers, representative values, formulas, and
   computed values
+- unit-aware target scope: target `.univer` path, `localUnitId`, unit type, sheet names, and A1
+  ranges when relevant
 - Excel domain semantics: signs, categories, period boundaries, text casing, blank-versus-zero,
   blank-versus-error placeholders, singular/plural label preservation, stored value type,
   display-critical values, and formula behavior
@@ -135,6 +150,8 @@ Assertions should cover:
 - workbook-behavior contract decisions: output shape, sorting, grouping, mapping,
   value/formula semantics, formatting/presentation, interaction/validation/protection,
   preservation, and negative constraints
+- value evidence through the right helper: `values`, `rawValues`, `displayValues`, `cellData`,
+  `numberFormats`, or formula assertions
 - meaningful cases: first, middle, last, blank, zero, date-boundary, text-boundary, and
   grouping-boundary rows when relevant
 
@@ -181,7 +198,7 @@ ranges, broad formatting, or future behavior.
 
 Use the current SaC source contract: `pack.ts` owns pack-level `description`, `files`, and
 `unitMigrations`; unit migration files use `defineUnitMigration({ apply({ univerAPI }) { ... } })`.
-Do not add unit migration `title`, call `univerAPI.getActiveWorkbook()`, or write `apply` handlers
+Do not add unit migration `title`, call active workbook entrypoints, or write `apply` handlers
 that expect `{ workbook }`, `{ sheet }`, or `{ univerfile }`.
 
 ### Verify GREEN - Use the Report
@@ -226,7 +243,17 @@ repairs.
 For each high-risk decision recorded in the plan's Contract Decision Evidence table, add at least one
 assertion or readonly probe that distinguishes the chosen rule from a plausible wrong rule.
 
-Examples:
+Choose assertion evidence by the workbook decision:
+
+- use `values` or `rawValues` when numeric, date, boolean, text, blank, zero, or error identity
+  matters
+- use `displayValues` when the visible formatted string is the contract
+- use `cellData` when type, formula cache, style id, or cell model shape is the evidence
+- use `numberFormats` when number/date/percent/currency interpretation matters
+- use formula assertions when formula structure matters independently of calculated values
+- use sheet, used-range, and representative range assertions for structure and preservation
+
+Decision-specific coverage is mandatory when relevant:
 
 - sort/group/truncation decisions: verify first, middle, last, and the first excluded candidate when
   output capacity is limited

@@ -22,6 +22,11 @@ univer sac materialize "$WB" --json > ./materialize.json
 Read `sidecarPath` from the JSON. Use that path for plans, success criteria, migration source,
 generated types, and scratch inspect scripts.
 
+Before unit-specific evidence, discover the relevant unit's `localUnitId`, unit type, name, and
+capability status from the materialized sidecar, command JSON, or managed inspect tools when
+available. Replace `replace-with-discovered-sheet-localUnitId` in examples with that discovered
+sheet unit id.
+
 ## Locate Before Editing
 
 Use a read-only sidecar inspect script before editing when the target is defined by visible workbook
@@ -29,25 +34,19 @@ content:
 
 ```bash
 SIDECAR=$(node -e "console.log(JSON.parse(require('node:fs').readFileSync('./materialize.json','utf8')).sidecarPath)")
-mkdir -p "$SIDECAR/inspect-scripts"
-cat > "$SIDECAR/inspect-scripts/find-west.js" <<'JS'
-() => {
-  const workbook = univerAPI.getActiveWorkbook();
-  const sheet = workbook.getSheetByName("Orders") ?? workbook.getActiveSheet();
-  const values = sheet.getRange("A1:Z200").getDisplayValues();
-  const matches = [];
-  for (let row = 0; row < values.length; row += 1) {
-    for (let col = 0; col < values[row].length; col += 1) {
-      if (String(values[row][col]).includes("West")) {
-        matches.push({ row: row + 1, col: col + 1, value: values[row][col] });
-      }
-    }
-  }
-  return { sheetName: sheet.getSheetName(), matches };
+cat > ./find-west.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-discovered-sheet-localUnitId",
+  "sheetName": "Orders",
+  "rangeA1": "A1:Z200",
+  "query": "West",
+  "types": ["displayValues"],
+  "match": "contains",
+  "neighborhood": 1,
+  "maxResults": 50
 }
-JS
-univer inspect "$WB" --file "$SIDECAR/inspect-scripts/find-west.js"
-rm -f "$SIDECAR/inspect-scripts/find-west.js"
+JSON
+univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-search.js" --params ./find-west.params.json
 ```
 
 Return match metadata that is useful for the edit: sheet name, row, column, header context, and a
@@ -60,18 +59,15 @@ values for human-facing checks, raw values for numeric comparisons, and formulas
 structure matters.
 
 ```bash
-cat > "$SIDECAR/inspect-scripts/read-sheet1.js" <<'JS'
-() => {
-  const sheet = univerAPI.getActiveWorkbook().getSheetByName("Sheet1");
-  if (!sheet) throw new Error("Sheet1 not found");
-  return {
-    displayValues: sheet.getRange("A1:D4").getDisplayValues(),
-    formulas: sheet.getRange("A1:D4").getFormulas()
-  };
+cat > ./read-sheet1.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-discovered-sheet-localUnitId",
+  "sheetName": "Sheet1",
+  "rangeA1": "A1:D4",
+  "include": ["displayValues", "rawValues", "formulas"]
 }
-JS
-univer inspect "$WB" --file "$SIDECAR/inspect-scripts/read-sheet1.js"
-rm -f "$SIDECAR/inspect-scripts/read-sheet1.js"
+JSON
+univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./read-sheet1.params.json
 ```
 
 ## Write Generated Table Data
@@ -99,7 +95,7 @@ Inspect scripts should:
 - use a `.js` extension
 - wrap code in `() => { ... }` or `async () => { ... }`
 - return JSON-compatible data with explicit success or error fields
-- use explicit workbook, sheet, and A1 range boundaries
+- use explicit target path, `localUnitId`, sheet, and A1 range boundaries
 - prefer A1 notation for fixed workbook-facing locations
 - remember numeric coordinate overloads are 0-based
 - wait for formula calculation with the documented formula wait API before reading same-probe

@@ -56,8 +56,8 @@ digraph executing_univer_plans {
 
 1. Read the success criteria file referenced by the plan.
 2. Read the plan file.
-3. Review it critically against the success criteria, workbook contract, range roles, decision evidence, pack sequence,
-   assertion gates, and verify command.
+3. Review it critically against the success criteria, target/unit scope, workbook contract, range
+   roles, decision evidence, pack sequence, assertion gates, and verify command.
 4. If there are concerns, stop and repair the success criteria or plan before starting execution.
 5. If there are no concerns, Create or update a task list with one task per Migration Pack.
 
@@ -87,6 +87,10 @@ Confirm it includes:
 
 - a referenced `<hidden-sidecar>/success-criteria/<topic>.md` file with a checklist, explicit non-goals, and plan-time ambiguities
 - workbook-visible goal and explicit non-goals
+- target `.univer` path and relevant unit scope: `localUnitId`, unit type, unit name, and capability
+  status when unit-specific behavior is involved
+- spreadsheet coordinates such as sheet names and A1 ranges recorded as coordinates inside the
+  selected spreadsheet unit
 - baseline evidence and readonly probes already used
 - range roles with read/write/preserve rules
 - target schema inventory when the task rebuilds, summarizes, aggregates, splits, consolidates, or
@@ -113,13 +117,15 @@ Repair the plan before execution when:
 - the plan does not reference success criteria
 - a success checklist item is missing from the plan or contradicted by it
 - a range role is unclear
+- target path, unit identity, unit type, or spreadsheet coordinate scope is missing for
+  unit-specific behavior
 - a report/summary target has no explicit header/body/footer/spacer/blank-tail classification
 - a high-risk decision lacks evidence strength
 - an assumption is implicit or presented as proof
 - a pack has no durable workbook intent
 - a pack has no assertion gate
-- the plan would use stale `univer workspace`, `univer sac rebuild`, unit migration `title`,
-  `getActiveWorkbook()`, or an `apply` context other than `{ univerAPI }`
+- the plan would use removed workspace/rebuild workflows, unit migration `title`,
+  active workbook entrypoints, or an `apply` context other than `{ univerAPI }`
 - the verify command is missing
 - the plan conflicts with observed workbook evidence
 

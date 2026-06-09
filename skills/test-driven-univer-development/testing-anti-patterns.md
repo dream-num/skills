@@ -199,9 +199,8 @@ The fix:
 - Failure reason is setup, typo, stale apply state, or invalid assertion
 - Assertion copied from migration output
 - Assertion changed after a migration failure without a plan update
-- Migration source uses stale wrapper shapes such as unit migration `title`,
-  `univerAPI.getActiveWorkbook()`, `apply({ workbook })`, `apply({ sheet })`, or
-  `apply({ univerfile })`
+- Migration source uses stale wrapper shapes such as unit migration `title`, active workbook
+  entrypoints, `apply({ workbook })`, `apply({ sheet })`, or `apply({ univerfile })`
 - Readonly probe used as final proof
 - Verify run has zero assertions, all skipped packs, or unchecked changed packs
 - Fixture omits sheets, formats, validations, protected ranges, helper rows, or formula dependencies

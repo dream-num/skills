@@ -26,6 +26,7 @@ digraph using_univer_cli {
     "Load univer-cli" [shape=box];
     "Identify or create .univer target" [shape=box];
     "Use sidecarPath or materialize" [shape=box];
+    "Discover units and capabilities" [shape=box];
     "Use workbook-visible verification" [shape=box];
     "Complex durable behavior?" [shape=diamond];
     "Load writing-univer-plans" [shape=box];
@@ -40,8 +41,9 @@ digraph using_univer_cli {
     "Workbook task received" -> "Load univer-cli";
     "Load univer-cli" -> "Identify or create .univer target";
     "Identify or create .univer target" -> "Use sidecarPath or materialize";
-    "Use sidecarPath or materialize" -> "Use workbook-visible verification";
-    "Use sidecarPath or materialize" -> "Complex durable behavior?";
+    "Use sidecarPath or materialize" -> "Discover units and capabilities";
+    "Discover units and capabilities" -> "Use workbook-visible verification";
+    "Discover units and capabilities" -> "Complex durable behavior?";
     "Complex durable behavior?" -> "Load writing-univer-plans" [label="yes"];
     "Load writing-univer-plans" -> "Success criteria then plan";
     "Success criteria then plan" -> "Load executing-univer-plans";
@@ -53,7 +55,7 @@ digraph using_univer_cli {
 }
 ```
 
-SaC source authoring MUST follow this order:
+SaC source authoring and complex durable behavior MUST follow this order:
 
 1. **Success criteria then plan**: load `writing-univer-plans`, write or update
    `<hidden-sidecar>/success-criteria/<topic>.md`, inspect enough workbook-visible evidence,
@@ -68,14 +70,20 @@ SaC source authoring MUST follow this order:
 5. **Verify and repair**: use `univer sac verify <univerfile> --json` and the returned assertion
    evidence to drive repairs before claiming completion.
 
+This route protects ambiguous workbook behavior. Treat the `.univer` path as the target container,
+discover relevant units (`localUnitId`, unit type, name, and capability status), then read
+task-local evidence from the sidecar, current help, managed inspect tools when available, and
+readonly sidecar inspect scripts when needed. Record durable decisions in the success criteria and
+plan before writing assertions or migration source.
+
 When a target has no SaC sidecar baseline yet, bootstrap it with
 `univer sac materialize <univerfile>` before creating migration packs. File import already returns
-`sidecarPath` after generating SaC import source. Do not use `univer workspace` or stale
-`univer sac rebuild` workflows.
+`sidecarPath` after generating SaC import source. Do not use removed workspace or rebuild
+workflows.
 
 SaC commands require a clean target. Commit or restore uncommitted local mutations before
-`materialize`, `apply`, `rollback`, or `verify`. Materialize uses committed-state replay: init data
-plus synced changesets plus local changesets, excluding uncommitted mutations.
+`materialize`, `apply`, `rollback`, or `verify`. Materialize uses committed-state replay: init data,
+synced changesets, and committed local changesets; uncommitted mutations are excluded.
 
 `<hidden-sidecar>` means the path returned by SaC commands, not a path guessed by appending `.sac`.
 On POSIX, `Budget.univer` resolves to `.Budget.univer.sac/`; on Windows, `Budget.univer.sac/`
@@ -119,7 +127,8 @@ These thoughts mean STOP and route through Univer CLI:
 1. Identify the workbook artifact and target outcome.
 2. Route to the owning Univer skill before touching workbook content.
 3. Use path-first `univer` commands or SaC source workflows; avoid univerfile internals.
-4. Verify with workbook-visible evidence before claiming completion.
+4. Discover target units and capabilities before unit-specific reads or mutations.
+5. Verify with workbook-visible evidence before claiming completion.
 
 ## Route Details
 
@@ -134,8 +143,8 @@ These thoughts mean STOP and route through Univer CLI:
 Workbook-visible work should disclose the SaC sidecar first. It should not enter the full SaC TDD
 workflow unless the user asks to author SaC source or durable workbook behavior.
 
-For ordinary workbook-visible tasks, load `univer-cli`, read the materialized sidecar first, and
-stay with workbook-visible verification.
+For ordinary workbook-visible tasks, load `univer-cli`, read the materialized sidecar first,
+discover the relevant unit scope, and stay with workbook-visible verification.
 
 ## SaC TDD Route
 
@@ -161,8 +170,9 @@ roles, pack boundaries, and assertion gates become explicit.
 
 When a user provides a legacy workbook without SaC source, use `univer-cli` to materialize the SaC
 sidecar first. Read the materialized sidecar as primary baseline evidence, and use readonly sidecar
-inspect scripts, view, or export/import checks only as supplemental probes. Capture useful facts into
-the SaC plan, migration source, or assertions before continuing.
+inspect scripts, managed inspect tools when available, view, or export/import checks only as
+supplemental probes. Capture useful facts into the SaC plan, migration source, or assertions before
+continuing.
 
 Readonly baseline probes are not completion evidence. SaC TDD completion evidence comes from
 `test-driven-univer-development`: changed packs need assertion coverage and a relevant

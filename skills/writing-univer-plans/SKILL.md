@@ -14,10 +14,12 @@ Excel-domain meaning, range roles, formulas, formatting, validation, preservatio
 assertion gates.
 
 <EXTREMELY-IMPORTANT>
-If complex SaC workbook behavior is involved, you MUST write or update the sidecar plan before
-writing `assertions.ts` or editing Migration Packs.
+If complex SaC workbook behavior is involved, you MUST write or update the sidecar success criteria
+and plan before writing `assertions.ts` or editing Migration Packs.
 
-IF THIS SKILL APPLIES, SUCCESS CRITERIA FIRST. PLAN SECOND. ASSERTIONS THIRD. MIGRATION SOURCE FOURTH.
+SUCCESS CRITERIA FIRST. PLAN SECOND. ASSERTIONS THIRD. MIGRATION SOURCE FOURTH.
+
+Do not let Migration Pack source become the authority for expected workbook behavior.
 </EXTREMELY-IMPORTANT>
 
 ## The Rule
@@ -49,6 +51,19 @@ digraph writing_univer_plans {
 }
 ```
 
+A useful plan answers:
+
+- what the user-visible outcome is
+- which workbook evidence supports it
+- which ranges are source, target, helper, reference, example, or preserve-only
+- which workbook semantics are chosen for values, formulas, display, formatting, layout, and
+  preservation
+- which assertion gates would catch a plausible wrong interpretation
+
+Use as much planning structure as the workbook risk requires. A small durable edit may need a short
+plan; a reshape, report, formula, format, chart, or multi-sheet behavior needs explicit evidence and
+assertion gates.
+
 Do not write the plan before writing or updating the success criteria.
 Do not write `assertions.ts` before the plan.
 Do not edit Migration Packs before plan-derived assertions.
@@ -76,7 +91,8 @@ Use this shape:
 # <Feature Name> Success Criteria
 
 **Task:** <one-sentence restatement of the user task>
-**Source:** <workbook/univerfile, user prompt, files, or commands that define the task>
+**Source:** <target .univer file, user prompt, files, or commands that define the task>
+**Unit Scope:** <localUnitId/unit type when known, or what must be discovered>
 
 ## Success Checklist
 
@@ -112,8 +128,9 @@ A plan is complete only when it can drive assertion-first implementation.
 - Do not start Migration Packs from intuition about "what spreadsheets usually do."
 - Do not treat examples, answer ranges, or preview windows as target output without recording why.
 - Do not mark ambiguous domain decisions as proven when they are assumptions.
-- Do not collapse reusable report schema into stale output. Headers, section labels, spacer columns,
-  total/subtotal footers, formulas, formats, and true blank tails need separate range roles.
+- Do not collapse reusable workbook schema into stale output. Headers, section labels, spacer
+  columns, summaries, formulas, formats, and true blank tails need separate range roles when they
+  affect the requested behavior.
 - Do not hand off to execution while any changed pack lacks an assertion gate.
 - Do not hand off until the plan identifies workbook behavior contract choices for complex behavior.
 
@@ -133,13 +150,16 @@ a giant plan that hides independent assertion gates.
 
 Before defining pack tasks, map the files the plan expects execution to touch:
 
+- Target: `<file.univer>`
+- Unit Scope: discovered `localUnitId`, unit type, unit name, and capability status when relevant
 - Success Criteria: `<hidden-sidecar>/success-criteria/<topic>.md`
 - Plan: `<hidden-sidecar>/plans/<topic>.md`
 - Assertions: `<hidden-sidecar>/migrations/<pack>/assertions.ts`
 - Migration Packs: `<hidden-sidecar>/migrations/<pack>/`
 - Generated Types: `<hidden-sidecar>/types/`
 - Verify Reports: `<hidden-sidecar>/runs/`
-- Fixtures or readonly probes: exact workbook paths, sheets, ranges, or commands used as evidence
+- Fixtures or readonly probes: exact target paths, `localUnitId` values, sheets, ranges, or commands
+  used as evidence
 
 For each file, state its responsibility. This locks the boundary between workbook intent,
 assertions, migration source, and evidence before execution starts.
@@ -192,8 +212,18 @@ Success Criteria: <hidden-sidecar>/success-criteria/<topic>.md
 - Readonly probes:
 - Unknowns:
 
+## Target / Unit Scope
+
+- Target `.univer` path:
+- Unit inventory evidence:
+- Relevant `localUnitId`:
+- Unit type and capability status:
+- Spreadsheet coordinates, if applicable:
+
 ## Source File Map
 
+- Target:
+- Unit Scope:
 - Success Criteria:
 - Plan:
 - Assertions:
@@ -284,12 +314,13 @@ Range roles include source data, target output, helper/control input, lookup/ref
 existing output, and preserve-only areas.
 
 Source data, helper/control input, lookup/reference, example/demo, existing output, and preserve-only
-ranges are not target output unless the user explicitly says to change them. If an example/demo range
-is used to infer a formula, layout, or behavior, capture that reasoning in the plan and add assertion
-gates that distinguish the real target output from the example.
+ranges are not target output unless the user explicitly says to change them. If an example or
+template range is used to infer a formula, layout, format, or behavior, capture the evidence and add
+assertion gates that distinguish the intended target output from the example.
 
-Answer ranges and output ranges are constraints and evidence windows. They do not prove that the
-top-left cell is the output start or that the range contains the full contract.
+Output ranges are constraints and evidence windows. They do not by themselves prove the output
+start, final shape, summary policy, blank-tail policy, or full workbook contract. Inspect enough head,
+tail, formulas, formats, and surrounding structure to classify the range before writing assertions.
 
 For report, aggregate, summarize, split, rebuild, or consolidation tasks, inspect both the head and
 tail of every relevant output window before writing the plan. Classify headers, body rows,
@@ -298,9 +329,9 @@ When source-derived body row counts are known, reconcile them with the target/ou
 extra rows must be explained as footers, section rows, or blank tails before assertions may expect
 blanks.
 
-Treat "clear existing data before ..." as an execution boundary, not a final-state rule. The final
-state still needs any reusable report headers, footers, formulas, formats, and blank tails indicated
-by the instruction or workbook-visible template.
+Treat destructive instructions such as clearing, replacing, or rebuilding as execution boundaries.
+The final state still needs any reusable schema, formulas, formats, summaries, or blank areas that
+the user instruction or workbook evidence makes part of the target behavior.
 
 If the task says an existing area is an example, template, or "pretty much correct", infer the full
 workbook pattern from that area: body rows, total/subtotal footer rows, formulas, spacer columns,
@@ -326,18 +357,23 @@ rules, and negative constraints.
 ## SaC Source Contract Rules
 
 When the target has no sidecar source baseline, the plan should call for
-`univer sac materialize <univerfile>` before creating migration packs. Do not use `univer workspace`
-or stale `univer sac rebuild` workflows.
+`univer sac materialize <univerfile>` before creating migration packs. Do not use removed workspace
+or rebuild workflows.
 
-Materialize is committed-state only: init data plus synced changesets plus local changesets replayed
-through runtime-visible workbook state. Plans must require a clean target before `materialize`,
+Materialize models committed workbook state. Plans must require a clean target before `materialize`,
 `apply`, `rollback`, or `verify`; uncommitted local mutations are setup debt, not source evidence.
+
+Plans must distinguish the target `.univer` file path from unit scope. For unit-specific behavior,
+record the relevant `localUnitId`, unit type, unit name, and capability status when discoverable.
+For spreadsheet behavior, record sheet names and A1 ranges as coordinates inside that selected unit,
+not as substitutes for the target path or unit identity.
 
 Migration source lives under `<hidden-sidecar>/migrations/<pack>/`. `pack.ts` owns pack metadata and
 must use pack-level `description`, `files`, and `unitMigrations`. Unit migration files should use
-`defineUnitMigration({ apply({ univerAPI }) { ... } })`.
+`defineUnitMigration({ apply({ univerAPI }) { ... } })` and explicit
+`univerAPI.getWorkbook(localUnitId)` when reading or mutating a spreadsheet unit.
 
-Do not plan source that relies on unit migration `title`, `univerAPI.getActiveWorkbook()`,
+Do not plan source that relies on unit migration `title`, active workbook entrypoints,
 `apply({ workbook })`, `apply({ sheet })`, or `apply({ univerfile })`. The runtime session is already
 bound to the target univerfile; use APIs available in `<hidden-sidecar>/types/`.
 
@@ -347,16 +383,17 @@ For every high-risk or non-obvious workbook behavior decision, record evidence b
 migration source.
 
 High-risk decisions include ordering precedence, grouping and truncation order, source-to-target
-mapping, sign-to-column mapping, singular/plural label wording, blank-versus-zero-versus-error
-policy, date-window inclusive boundaries, malformed color handling, text casing or whitespace
-preservation, header or section-boundary handling, formula-versus-static-value strategy, and any
-behavior where the instruction can reasonably be read in more than one way.
+mapping, sign-to-label mapping, label wording, blank-versus-zero-versus-error policy, date-window
+inclusive boundaries, malformed color handling, text casing or whitespace preservation, header or
+section-boundary handling, formula-versus-static-value strategy, and any behavior where the
+instruction, source data, existing output, template evidence, display formatting, formulas, or
+workbook layout can reasonably be read in more than one way.
 
-Exact workbook-visible value preservation is itself a behavior decision. When text, spaces,
-punctuation, identifiers, date values, boolean values, number/text typing, blanks, zeroes, or error
-placeholders are visible, the plan must say whether they are preserved exactly or intentionally
-transformed. Do not normalize values just because the normalized form looks cleaner or more
-conventional.
+Exact workbook-visible value preservation is itself a behavior decision. When text, whitespace,
+identifiers, dates, booleans, number/text typing, blanks, zeroes, errors, formulas, display strings,
+or formats matter, the plan must say which evidence surface will prove the contract. Use the
+assertion helper that matches the decision: `values`, `rawValues`, `displayValues`, `cellData`,
+`numberFormats`, or formula assertions.
 
 - Do not write `Unknowns: none` when a decision depends on domain intuition, ambiguous wording,
   partial preview data, or an unchecked sample/reference pattern.
@@ -365,18 +402,18 @@ conventional.
 - If the chosen rule is based only on instruction wording, quote the deciding phrase in the plan.
 - If no decisive evidence exists, mark the decision as an assumption and choose the rule that best
   satisfies the final target/output wording.
-- Each high-risk decision must have at least one assertion or readonly probe that would fail if the
-  opposite interpretation were used.
+- Each high-risk decision must have at least one assertion or readonly probe that would fail if a
+  plausible wrong interpretation were used.
 - Do not infer debit/credit, in/out, positive/negative, or similar semantic labels from source-side
   signs or business convention alone; connect the mapping to target labels, examples, instruction
-  wording, or a declared assumption.
+  wording, workbook evidence, or a declared assumption.
 - Preserve workbook-visible label text when writing headers, categories, statuses, departments, and
   names. Normalize labels for matching only unless the instruction explicitly asks to rename,
   singularize, pluralize, clean, or reformat the written label.
-- Existing target or answer-range values are evidence, not authority. When the task asks to compute,
-  fill, repair, replace, reshape, transpose, consolidate, or enter formulas into that range, treat
-  existing values as possible examples, stale state, or partial output until the instruction and
-  workbook evidence prove they are intended final values.
+- Existing target values are evidence, not authority. When the task asks to compute, fill, repair,
+  replace, reshape, transpose, consolidate, or enter formulas into a range, classify existing values
+  as reusable schema, example, stale state, partial output, or preserve-only before using them as
+  expected final values.
 - If existing target values conflict with the instruction-derived rule, record both interpretations
   in Contract Decision Evidence and choose using discriminating instruction wording plus inspected
   source/target evidence.
