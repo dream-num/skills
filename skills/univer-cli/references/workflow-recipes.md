@@ -73,11 +73,17 @@ cat > ./read-sheet1.params.json <<'JSON'
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
   "sheetName": "Sheet1",
   "rangeA1": "A1:D4",
-  "include": ["normalizedValues", "formulas", "numberFormats", "valueDetails"]
+  "include": ["normalizedValues", "valueDetails", "formulas", "numberFormats", "semanticStyles"]
 }
 JSON
 univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./read-sheet1.params.json
 ```
+
+Use this contract-oriented `sheet-range.js` read when assertions depend on typed values, formulas,
+formats, or semantic style traits. Keep raw style ids and raw `cellData.s` snapshots out of plans and
+assertions; use `styles` or `backgroundColors` assertions for workbook-visible style contracts.
+For large evidence, add `--format compact` to get a lossless scan-friendly view; keep JSON for
+programmatic parsing and tests.
 
 ## Write Generated Table Data
 

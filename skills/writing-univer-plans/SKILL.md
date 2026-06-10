@@ -404,11 +404,15 @@ identifiers, dates, booleans, number/text typing, blanks, zeroes, errors, formul
 or formats matter, the plan should say which evidence surface proves the contract. Prefer managed
 inspect `normalizedValues` for ordinary labels, copied text, matching, grouping, and write decisions.
 Request exact `rawValues`, `displayValues`, `values`, or `cellData` only when the task explicitly
-depends on storage text, multi-line cell contents, rich cell data, or export/debug evidence. Do not
-turn raw stored artifacts such as trailing line terminators, NBSP, or rich-text data markers into the
-plan contract unless the exact-text requirement is explicit. Use the assertion helper that matches
-the decision: `values`, `rawValues`, `displayValues`, `cellData`, `numberFormats`, or formula
-assertions.
+depends on storage text, multi-line cell contents, rich cell data, or export/debug evidence. Use
+`valueDetails`, `numberFormats`, formulas, and `semanticStyles` from `sheet-range.js` when typed
+value, display, format, formula, or style traits affect the plan/assertion contract. Do not turn raw
+stored artifacts such as trailing line terminators, NBSP, rich-text data markers, raw style ids, or
+`cellData.s` snapshots into the plan contract unless the exact-storage requirement is explicit and
+the assertion helper supports it. Use the assertion helper that matches the decision: `values`,
+`rawValues`, `displayValues`, `cellData`, `numberFormats`, formula assertions, `styles`, or
+`backgroundColors`.
+For value evidence, the core helper sequence remains `values`, `rawValues`, `displayValues`, `cellData` before choosing style-specific helpers.
 
 - Do not write `Unknowns: none` when a decision depends on domain intuition, ambiguous wording,
   partial preview data, or an unchecked sample/reference pattern.

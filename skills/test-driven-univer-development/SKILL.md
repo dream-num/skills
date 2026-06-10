@@ -154,6 +154,9 @@ Assertions should cover:
   preservation, and negative constraints
 - value evidence through the right helper: `values`, `rawValues`, `displayValues`, `cellData`,
   `numberFormats`, or formula assertions
+- style evidence through semantic helpers: use `styles` or `backgroundColors` with stable traits and
+  valid `#RRGGBB` / `rgb(r, g, b)` colors; do not assert raw style ids, `styleId`, `style.id`, or
+  raw `cellData.s` snapshots
 - meaningful cases: first, middle, last, blank, zero, date-boundary, text-boundary, and
   grouping-boundary rows when relevant
 

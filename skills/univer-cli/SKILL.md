@@ -166,7 +166,7 @@ cat > ./range.params.json <<'JSON'
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
   "sheetName": "Sheet1",
   "rangeA1": "A1:D20",
-  "include": ["normalizedValues", "formulas", "numberFormats"]
+  "include": ["normalizedValues", "valueDetails", "formulas", "numberFormats", "semanticStyles"]
 }
 JSON
 univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./range.params.json > ./range.json 2> ./range.err
@@ -178,11 +178,16 @@ fi
 sed -n '1,40p' ./range.json
 ```
 
+Use `--format compact` for large inspect envelopes when a lossless, easier-to-scan view helps
+manual reasoning. Keep default JSON or `--format json` for scripts, tests, and machine parsing.
+
 Managed sheet tools return agent-normalized text/value evidence by default. Use
 `normalizedValues` for ordinary labels, copied text, matching, grouping, and write planning. Request
-exact `rawValues`, `displayValues`, `values`, `cellData`, or `valueDetails` only when the task
-explicitly depends on storage text, multi-line cell contents, typed value/display distinctions, rich
-cell data, or export/debug evidence.
+exact `rawValues`, `displayValues`, `values`, `cellData`, `valueDetails`, `numberFormats`, formulas,
+or `semanticStyles` when the task explicitly depends on storage text, multi-line cell contents,
+typed value/display distinctions, formats, formulas, semantic style traits, rich cell data, or
+export/debug evidence. For assertion planning, use `sheet-range.js` contract evidence over raw
+workbook internals and never turn raw style ids or `cellData.s` snapshots into assertion contracts.
 
 Managed tool routing is a recommendation, not a limitation. `units.js` helps discover ids,
 `sheet-overview.js` helps understand shape, `sheet-search.js` helps find anchors,
