@@ -44,6 +44,12 @@ SaC commands require clean target state. Commit or restore uncommitted local mut
 Materialize reads committed workbook state: init data plus synced changesets plus local changesets,
 with uncommitted mutations excluded by the preflight.
 
+`SAC_UNIT_STATE_DRIFT` is a hard stop: current committed workbook state differs from the sidecar
+active applied state. Read the diagnostic before recovery. Clean no-draft drift can be recovered by
+materializing and applying again. Dirty targets must be committed or restored first. If un-applied
+packs are present, materialize must fail closed unless `--preserve-drafts` is explicitly used; that
+flow moves drafts to sidecar recovery and requires later review and reattachment.
+
 `univer inspect <univerfile> --script <tool.js> --params <params.json>` is a read-only auxiliary
 probe. Prefer managed tools under `<sidecarPath>/inspect-tools/`; use scratch `.js` probes under
 `<sidecarPath>/inspect-scripts/` only when a managed tool cannot answer the evidence question.
@@ -125,8 +131,10 @@ what you need, diagnose the CLI/runtime path instead of bypassing it.
 | Locate content-defined cells | `inspect-tools/sheet-search.js` when visible text, labels, keys, or values are known but coordinates are not |
 | Read context around a known anchor | `inspect-tools/sheet-neighborhood.js` when a found cell/range needs nearby headers, labels, totals, or surrounding values |
 | Read rectangular data | `inspect-tools/sheet-range.js` when sheet name and A1 rectangle are known |
+| Inspect conditional formatting rules | `inspect-tools/sheet-conditional-formats.js` when value-dependent style rules, status colors, or conditional formatting resources need evidence |
 | Audit or locate formulas | `inspect-tools/sheet-formulas.js` when formulas are the evidence target |
 | Write a known rectangular matrix back | SaC migration pack with explicit sheet and A1 range boundaries, then `sac apply` and `sac verify` |
+| Update values keyed by an existing sheet column | Inspect key and target columns, then use `univer sac migration create <description> <univerfile> --template sheet-keyed-write` and edit the generated TODO TypeScript source |
 | Apply bounded workbook-local logic | SaC migration pack |
 | Create or maintain workbook charts | SaC migration pack using chart Facade APIs, plus `univer view` for visual review |
 | Create or maintain workbook shapes and connectors | SaC migration pack using shape Facade APIs, plus `univer view` for visual review |
@@ -143,6 +151,7 @@ what you need, diagnose the CLI/runtime path instead of bypassing it.
 | Sync local and remote versioning state | `univer sync` |
 | Create a SaC migration pack | `univer sac migration create <description> <univerfile>` |
 | Apply, roll back, or verify SaC source | Clean target first, then `univer sac apply <univerfile>`, `univer sac rollback <univerfile>`, `univer sac verify <univerfile> --json` |
+| Recover from `SAC_UNIT_STATE_DRIFT` | Read the diagnostic. Clean/no-draft drift can materialize then apply; dirty targets must commit/restore first; draft packs require review or explicit `univer sac materialize <univerfile> --preserve-drafts` |
 | Diagnose runtime problems | `univer doctor`, `univer daemon status` |
 | Prepare a bug report or Univer team support artifact after user authorization | `univer doctor collect` |
 

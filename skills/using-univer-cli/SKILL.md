@@ -85,6 +85,12 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
 `materialize`, `apply`, `rollback`, or `verify`. Materialize uses committed-state replay: init data,
 synced changesets, and committed local changesets; uncommitted mutations are excluded.
 
+`SAC_UNIT_STATE_DRIFT` is not bypassable. Use the diagnostic to distinguish clean no-draft recovery
+from dirty targets and draft-pack recovery. Dirty targets must be committed or restored first.
+Materialize must fail closed when un-applied draft packs would be displaced; use
+`univer sac materialize <univerfile> --preserve-drafts` only when you intentionally want sidecar
+recovery quarantine and later source review/reattachment.
+
 `<hidden-sidecar>` means the path returned by SaC commands, not a path guessed by appending `.sac`.
 On POSIX, `Budget.univer` resolves to `.Budget.univer.sac/`; on Windows, `Budget.univer.sac/`
 is used with the hidden filesystem attribute.

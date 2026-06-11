@@ -26,6 +26,40 @@ Before unit-specific evidence, discover the relevant unit's `localUnitId`, unit 
 capability status from the materialized sidecar, command JSON, or `inspect-tools/units.js`.
 Replace `replace-with-discovered-sheet-localUnitId` in examples with that discovered sheet unit id.
 
+## Recover From SaC Unit State Drift
+
+`SAC_UNIT_STATE_DRIFT` means the current committed workbook state and the sidecar active applied
+state do not match. Treat it as a hard stop and choose recovery from the diagnostic.
+
+Clean target with no un-applied packs:
+
+```bash
+univer sac materialize "$WB" --json > ./materialize.json
+univer sac apply "$WB" --json
+univer sac verify "$WB" --json
+```
+
+Dirty target:
+
+```bash
+univer status "$WB"
+# Commit or restore the reported local mutations before materialize/apply recovery.
+```
+
+Un-applied packs detected:
+
+```bash
+# Prefer reviewing, applying, or removing the packs first.
+# If you intentionally need to re-baseline while preserving drafts:
+univer sac materialize "$WB" --preserve-drafts --json > ./materialize.json
+```
+
+After `--preserve-drafts`, read the sidecar
+`materialize-recovery/<recovery-id>/draft-recovery-manifest.json`. Preserved packs are outside the
+active source chain; review their classification (`pending`, `empty-draft`, or
+`invalid-source-chain` when reported) and recreate or reattach source against the new baseline
+before applying. Verify workbook-visible state after the recovered apply.
+
 ## Locate Before Editing
 
 Use a read-only managed inspect tool before editing when the target is defined by visible workbook
@@ -103,6 +137,63 @@ Verification should prove headers, sample rows, key columns, formulas, and chang
 resources. Use `styles`, `backgroundColors`, `conditionalFormats`, `filter`, or `tables` assertions
 when formatting, native conditional formatting, filters, or table resources are part of the task.
 Row count alone is weak evidence because shifted columns can still preserve row count.
+
+## Write Values By Existing Sheet Keys
+
+Use this recipe for status columns, report matrices, review result columns, or other updates where
+one visible sheet column already contains stable keys and another visible column should receive new
+values. First inspect the key column and target column with managed tools so the migration source is
+based on workbook evidence, not guessed coordinates.
+
+```bash
+cat > ./keyed-range.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-discovered-sheet-localUnitId",
+  "sheetName": "Sheet1",
+  "ranges": [
+    { "label": "keys", "rangeA1": "A1:A20" },
+    { "label": "target", "rangeA1": "K1:K20" }
+  ],
+  "include": ["values", "valueDetails", "numberFormats"]
+}
+JSON
+univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./keyed-range.params.json
+
+univer sac migration create "Update Statuses" "$WB" --template sheet-keyed-write --json
+# Edit <sidecarPath>/migrations/<pack-id>/update-statuses.unit.ts:
+# - replace localUnitId, sheetName, keyColumn, targetColumn, startRow/endRow
+# - replace valuesByKey with the evidence-backed key/value pairs
+univer sac apply "$WB" --json
+univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./keyed-range.params.json
+```
+
+The generated file is an ordinary TODO TypeScript Facade migration. It is not a DSL and it does not
+read `--params` as workbook mutation data; edit the source before `sac apply`. For dynamic keyed
+writes, prefer A1 addresses built from explicit column letters and one-based row numbers unless the
+Facade row/column overload coordinate base has been confirmed for the exact API in use. Do not use
+`sheet.getRange(row, column)` as the default keyed-update pattern.
+
+## Inspect Conditional Formatting Rules
+
+Use `inspect-tools/sheet-conditional-formats.js` for conditional formatting resources, status-color
+rules, or style rules that depend on cell values. It reports rule facts: original A1 target ranges,
+raw range bounds, condition fields, style config, and priority/order/stop flags when available. It
+does not prove final rendered cell style for every cell.
+
+```bash
+cat > ./conditional-formats.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-discovered-sheet-localUnitId",
+  "sheetName": "Sheet1",
+  "rangeA1": "K2:K100"
+}
+JSON
+univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-conditional-formats.js" --params ./conditional-formats.params.json
+```
+
+Combine this rule evidence with `sheet-range.js` value evidence when the rendered outcome depends on
+cell values. Use `univer view` as supplemental review when the user needs actual rendered
+appearance. Do not inspect workbook internals for conditional formatting resources.
 
 ## Use A Sidecar Inspect Script
 
