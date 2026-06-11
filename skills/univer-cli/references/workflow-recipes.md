@@ -149,10 +149,9 @@ based on workbook evidence, not guessed coordinates.
 cat > ./keyed-range.params.json <<'JSON'
 {
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
-  "sheetName": "Sheet1",
   "ranges": [
-    { "label": "keys", "rangeA1": "A1:A20" },
-    { "label": "target", "rangeA1": "K1:K20" }
+    { "label": "keys", "sheetName": "Sheet1", "rangeA1": "A1:A20" },
+    { "label": "target", "sheetName": "Sheet1", "rangeA1": "K1:K20" }
   ],
   "include": ["values", "valueDetails", "numberFormats"]
 }
