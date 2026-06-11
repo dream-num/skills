@@ -9,9 +9,9 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(__filename), "..");
 const skillsRoot = path.join(root, "skills");
-const requiredSkills = [
+const requiredSkills = ["univer-cli"];
+const removedWorkflowSkills = [
   "using-univer-cli",
-  "univer-cli",
   "writing-univer-plans",
   "executing-univer-plans",
   "test-driven-univer-development"
@@ -131,6 +131,25 @@ async function validateSkillStructure() {
     }
   }
 
+  const inspectToolsDir = path.join(skillsRoot, "univer-cli", "inspect-tools");
+  if (!existsSync(inspectToolsDir)) {
+    recordError("skills/univer-cli/inspect-tools: missing managed inspect tool resource directory");
+  } else {
+    const manifestPath = path.join(inspectToolsDir, "tools.manifest.json");
+    if (!existsSync(manifestPath)) {
+      recordError("skills/univer-cli/inspect-tools/tools.manifest.json: missing managed inspect tool manifest");
+    }
+  }
+
+  const assetsDir = path.join(skillsRoot, "univer-cli", "assets");
+  const scriptsDir = path.join(skillsRoot, "univer-cli", "scripts");
+  if (existsSync(assetsDir)) {
+    recordError("skills/univer-cli/assets: managed inspect tools must not move to generic assets");
+  }
+  if (existsSync(scriptsDir)) {
+    recordError("skills/univer-cli/scripts: managed inspect tools must stay under inspect-tools");
+  }
+
   reports.push(`structure: ${requiredSkills.length} official skills checked`);
 }
 
@@ -141,6 +160,11 @@ async function validateReadmes() {
     for (const skill of requiredSkills) {
       if (!text.includes(`./skills/${skill}/SKILL.md`)) {
         recordError(`${relativeToRoot(readme)}: missing link to ${skill}`);
+      }
+    }
+    for (const skill of removedWorkflowSkills) {
+      if (text.includes(`./skills/${skill}/SKILL.md`)) {
+        recordError(`${relativeToRoot(readme)}: must not link removed workflow skill ${skill}`);
       }
     }
   }
@@ -168,7 +192,8 @@ async function validateStaleContractText() {
     "use-univer-cli",
     "univer-plan",
     "univer-tdd",
-    "univer-spreadsheet-tdd"
+    "univer-spreadsheet-tdd",
+    ...removedWorkflowSkills
   ];
   const staleCommandTokens = [
     "univer run",
@@ -197,6 +222,33 @@ async function validateStaleContractText() {
       for (const token of staleCommandTokens) {
         if (line.includes(token) && !isExplicitlyHistoricalOrNegative(contextLine)) {
           recordError(`${relativeToRoot(file)}:${index + 1}: stale command guidance "${token}" appears in current contract text`);
+        }
+      }
+    });
+  }
+
+  const workflowLawTokens = [
+    "SUCCESS CRITERIA FIRST",
+    "PLAN SECOND",
+    "ASSERTIONS THIRD",
+    "MIGRATION SOURCE FOURTH",
+    "RED - Write the Assertion First",
+    "Verify RED",
+    "GREEN - Implement",
+    "NO MIGRATION PACK IMPLEMENTATION WITHOUT",
+    "Load test-driven-univer-development",
+    "Load writing-univer-plans",
+    "Load executing-univer-plans"
+  ];
+
+  for (const file of contractFiles) {
+    const text = await readText(file);
+    const lines = text.split(/\r?\n/);
+    lines.forEach((line, index) => {
+      const contextLine = [lines[index - 1] ?? "", line, lines[index + 1] ?? ""].join(" ");
+      for (const token of workflowLawTokens) {
+        if (line.includes(token) && !isExplicitlyHistoricalOrNegative(contextLine)) {
+          recordError(`${relativeToRoot(file)}:${index + 1}: product skill must not mandate workflow law "${token}"`);
         }
       }
     });
@@ -255,14 +307,14 @@ async function realpathOrNull(filePath) {
   }
 }
 
-async function validateExposureDirectory({ label, exposureRoot, failOnDrift }) {
+async function validateExposureDirectory({ label, exposureRoot, failOnDrift, sourceRoot = skillsRoot }) {
   if (!existsSync(exposureRoot)) {
     reports.push(`${label}: ${exposureRoot} not present`);
     return;
   }
 
   for (const skill of requiredSkills) {
-    const canonicalDir = path.join(skillsRoot, skill);
+    const canonicalDir = path.join(sourceRoot, skill);
     const exposedDir = path.join(exposureRoot, skill);
     if (!existsSync(exposedDir)) continue;
 
@@ -317,7 +369,8 @@ async function validateDrift() {
     await validateExposureDirectory({
       label: "repo-local .codex/skills",
       exposureRoot: path.join(repoRoot, ".codex", "skills"),
-      failOnDrift: true
+      failOnDrift: true,
+      sourceRoot: path.join(repoRoot, "packages", "skills", "skills")
     });
   } else {
     reports.push("repo-local .codex/skills: skipped; pass --repo-root to check repository exposure");
