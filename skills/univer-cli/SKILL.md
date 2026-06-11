@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when solving spreadsheet workbook problems with the `univer` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` univerfiles, SaC sidecar authoring, sidecar inspect scripts, formulas, formatting, charts, shapes, floating images, live preview and viewer review comments, versioning, or export/import handoffs."
+description: "Use when solving spreadsheet workbook problems with the `univer` CLI as a terminal-native spreadsheet engine: Excel-compatible `.xlsx` handoff, `.univer` univerfiles, SaC sidecar authoring, managed inspect tools, formulas, formatting, charts, shapes, floating images, live preview and viewer review comments, versioning, or export/import handoffs."
 ---
 
 # univer-cli
@@ -44,10 +44,8 @@ SaC commands require clean target state. Commit or restore uncommitted local mut
 Materialize reads committed workbook state: init data plus synced changesets plus local changesets,
 with uncommitted mutations excluded by the preflight.
 
-`univer inspect <univerfile> --script <tool.js> --params <params.json>` is a read-only auxiliary
-probe. Prefer managed tools under `<sidecarPath>/inspect-tools/`; use scratch `.js` probes under
-`<sidecarPath>/inspect-scripts/` only when a managed tool cannot answer the evidence question.
-Params are a JSON object file. For unit-specific reads, pass an explicit discovered `localUnitId`.
+`univer inspect <univerfile> --tool <tool-id> --params <params.json>` runs an installed managed readonly evidence tool. Use `univer inspect tools list --json` to see available managed tools and `univer inspect tools resolve <tool-id> --json` to explain whether a tool comes from a trusted external package, a Codex installed skill package, or the bundled registry. Use `univer inspect <univerfile> --script <probe.js> --params <params.json>` only for scratch `.js` probes under `<sidecarPath>/inspect-scripts/` when a managed tool cannot answer the evidence question.
+Params must be a JSON object. For unit-specific reads, pass an explicit discovered `localUnitId`.
 Durable workbook changes belong in SaC migration packs, not inspect scripts.
 
 Unsupported doc, slide, or unknown units are still units in the target container. Use only
@@ -114,18 +112,28 @@ what you need, diagnose the CLI/runtime path instead of bypassing it.
 
 ## Command Selection
 
+For SaC migration templates, use CLI discovery before choosing. Start with
+`univer help sac migration create`; when a machine-readable candidate list is useful, run
+`univer sac migration templates --json` and compare each template's `useWhen` metadata with
+workbook-visible evidence. If no template matches the task shape, create an ordinary empty draft with
+`univer sac migration create <description> <univerfile>` and author the migration source by hand.
+The CLI help and JSON command are the authoritative supported-template list; do not infer templates
+by intentionally passing invalid ids, scanning sidecars, scanning installed skills, or assuming custom
+template installation.
+
 | Need | Prefer |
 | --- | --- |
 | Discover exact command syntax | `univer help`, `univer help <command...>` |
 | Start a local univerfile from a blank file or spreadsheet source | `univer new` or `univer import --file <input.xlsx|csv|url> <file.univer>` |
 | Hand back Excel-compatible output | `univer export` |
 | Begin workbook work after new/import | Use returned `sidecarPath` from import, or run `univer sac materialize <univerfile> --json` and read `sidecarPath` |
-| Discover target units and capabilities | Materialized sidecar README/AGENTS, command JSON, or `inspect-tools/units.js`; record `localUnitId`, unit type, name, and capability status |
-| Understand workbook shape before editing | `inspect-tools/sheet-overview.js` for sheet names, used ranges, bounded samples, formulas, warnings, and candidate regions |
-| Locate content-defined cells | `inspect-tools/sheet-search.js` when visible text, labels, keys, or values are known but coordinates are not |
-| Read context around a known anchor | `inspect-tools/sheet-neighborhood.js` when a found cell/range needs nearby headers, labels, totals, or surrounding values |
-| Read rectangular data | `inspect-tools/sheet-range.js` when sheet name and A1 rectangle are known |
-| Audit or locate formulas | `inspect-tools/sheet-formulas.js` when formulas are the evidence target |
+| Discover target units and capabilities | Materialized sidecar README/AGENTS, command JSON, or `units`; record `localUnitId`, unit type, name, and capability status |
+| Understand workbook shape before editing | `sheet-overview` for sheet names, used ranges, bounded samples, formulas, warnings, and candidate regions |
+| Locate content-defined cells | `sheet-search` when visible text, labels, keys, or values are known but coordinates are not |
+| Read context around a known anchor | `sheet-neighborhood` when a found cell/range needs nearby headers, labels, totals, or surrounding values |
+| Read rectangular data | `sheet-range` when sheet name and A1 rectangle are known |
+| Inspect conditional formatting rules | `sheet-conditional-formats` when value-dependent style rules, status colors, or conditional formatting resources need evidence |
+| Audit or locate formulas | `sheet-formulas` when formulas are the evidence target |
 | Write a known rectangular matrix back | SaC migration pack with explicit sheet and A1 range boundaries, then `sac apply` and `sac verify` |
 | Apply bounded workbook-local logic | SaC migration pack |
 | Create or maintain workbook charts | SaC migration pack using chart Facade APIs, plus `univer view` for visual review |
@@ -142,6 +150,7 @@ what you need, diagnose the CLI/runtime path instead of bypassing it.
 | Pull remote-only changes for a bound local unit | `univer pull` |
 | Sync local and remote versioning state | `univer sync` |
 | Create a SaC migration pack | `univer sac migration create <description> <univerfile>` |
+| Update values keyed by an existing sheet column | Inspect key and target columns, confirm `sheet-keyed-write` from `univer sac migration templates --json`, then use `univer sac migration create <description> <univerfile> --template sheet-keyed-write` and edit the generated TODO TypeScript source |
 | Apply, roll back, or verify SaC source | Clean target first, then `univer sac apply <univerfile>`, `univer sac rollback <univerfile>`, `univer sac verify <univerfile> --json` |
 | Diagnose runtime problems | `univer doctor`, `univer daemon status` |
 | Prepare a bug report or Univer team support artifact after user authorization | `univer doctor collect` |
@@ -160,16 +169,15 @@ stderr separately so downstream tools receive only the intended JSON or file pat
 
 ```bash
 univer sac materialize "$WB" --json > ./materialize.json
-SIDECAR=$(node -e "console.log(JSON.parse(require('node:fs').readFileSync('./materialize.json','utf8')).sidecarPath)")
 cat > ./range.params.json <<'JSON'
 {
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
   "sheetName": "Sheet1",
   "rangeA1": "A1:D20",
-  "include": ["normalizedValues", "formulas", "numberFormats"]
+  "include": ["normalizedValues", "valueDetails", "formulas", "numberFormats", "semanticStyles"]
 }
 JSON
-univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./range.params.json > ./range.json 2> ./range.err
+univer inspect "$WB" --tool sheet-range --params ./range.params.json > ./range.json 2> ./range.err
 status=$?
 if [ "$status" -ne 0 ]; then
   sed -n '1,80p' ./range.err
@@ -184,10 +192,10 @@ exact `rawValues`, `displayValues`, `values`, `cellData`, or `valueDetails` only
 explicitly depends on storage text, multi-line cell contents, typed value/display distinctions, rich
 cell data, or export/debug evidence.
 
-Managed tool routing is a recommendation, not a limitation. `units.js` helps discover ids,
-`sheet-overview.js` helps understand shape, `sheet-search.js` helps find anchors,
-`sheet-neighborhood.js` helps inspect context, `sheet-range.js` helps read known rectangles, and
-`sheet-formulas.js` helps audit formula cells. Combine tools when that makes the workbook reasoning
+Managed tool routing is a recommendation, not a limitation. `units` helps discover ids,
+`sheet-overview` helps understand shape, `sheet-search` helps find anchors,
+`sheet-neighborhood` helps inspect context, `sheet-range` helps read known rectangles, and
+`sheet-formulas` helps audit formula cells. Combine tools when that makes the workbook reasoning
 clearer, and use a bounded scratch probe under `inspect-scripts/` when the managed tools do not
 answer the evidence question.
 
@@ -202,7 +210,7 @@ footer rows, spacer columns, formulas, and true blank tails before deciding what
 recipe. The reference covers:
 
 - create/import then materialize and read `sidecarPath`
-- locate/read workbook-visible data with sidecar inspect scripts
+- locate/read workbook-visible data with managed inspect tools
 - write generated table data through SaC migration packs
 - maintain charts, shapes, and floating images
 - preview locally and read viewer review comments
@@ -213,7 +221,7 @@ Do not treat references as new authority for mandatory safety rules. If a recipe
 
 ## Script And Handoff Rules
 
-Use small sidecar inspect scripts or exported handoff files to reduce large ranges before bringing
+Use small managed inspect tools or exported handoff files to reduce large ranges before bringing
 data back to the agent. Diagnostics and help belong outside the data stream a script consumes.
 
 - Keep target path, `localUnitId`, sheet name, and range explicit.

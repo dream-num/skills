@@ -23,17 +23,16 @@ Read `sidecarPath` from the JSON. Use that path for plans, success criteria, mig
 generated types, and scratch inspect scripts.
 
 Before unit-specific evidence, discover the relevant unit's `localUnitId`, unit type, name, and
-capability status from the materialized sidecar, command JSON, or `inspect-tools/units.js`.
+capability status from the materialized sidecar, command JSON, or `units`.
 Replace `replace-with-discovered-sheet-localUnitId` in examples with that discovered sheet unit id.
 
 ## Locate Before Editing
 
 Use a read-only managed inspect tool before editing when the target is defined by visible workbook
-content. `sheet-search.js` is a good starting point when you know visible text but not coordinates;
-switch to `sheet-neighborhood.js` or `sheet-range.js` once an anchor or rectangle is clear:
+content. `sheet-search` is a good starting point when you know visible text but not coordinates;
+switch to `sheet-neighborhood` or `sheet-range` once an anchor or rectangle is clear:
 
 ```bash
-SIDECAR=$(node -e "console.log(JSON.parse(require('node:fs').readFileSync('./materialize.json','utf8')).sidecarPath)")
 cat > ./find-west.params.json <<'JSON'
 {
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
@@ -46,7 +45,7 @@ cat > ./find-west.params.json <<'JSON'
   "maxResults": 50
 }
 JSON
-univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-search.js" --params ./find-west.params.json
+univer inspect "$WB" --tool sheet-search --params ./find-west.params.json
 ```
 
 Return match metadata that is useful for the edit: sheet name, row, column, header context, and a
@@ -60,7 +59,7 @@ raw values, display values, cell data, or value details only when the task expli
 exact storage text, multi-line cell contents, typed value/display distinctions, rich cell data, or
 export/debug evidence.
 
-When sheet shape is unclear, `sheet-overview.js` is a useful first read. Inspect `regions` when
+When sheet shape is unclear, `sheet-overview` is a useful first read. Inspect `regions` when
 present: region evidence exposes candidate non-empty rectangular areas with their own bounded
 head/tail samples, which is useful for spotting side-by-side tables, uneven table heights, footers,
 formulas, spacer columns, and true blank tails without dumping the whole sheet. This is guidance,
@@ -73,11 +72,17 @@ cat > ./read-sheet1.params.json <<'JSON'
   "localUnitId": "replace-with-discovered-sheet-localUnitId",
   "sheetName": "Sheet1",
   "rangeA1": "A1:D4",
-  "include": ["normalizedValues", "formulas", "numberFormats", "valueDetails"]
+  "include": ["normalizedValues", "valueDetails", "formulas", "numberFormats", "semanticStyles"]
 }
 JSON
-univer inspect "$WB" --script "$SIDECAR/inspect-tools/sheet-range.js" --params ./read-sheet1.params.json
+univer inspect "$WB" --tool sheet-range --params ./read-sheet1.params.json
 ```
+
+Use this contract-oriented `sheet-range` read when assertions depend on typed values, formulas,
+formats, or semantic style traits. Keep raw style ids and raw `cellData.s` snapshots out of plans and
+assertions; use `styles` or `backgroundColors` assertions for workbook-visible style contracts.
+For large evidence, add `--format compact` to get a lossless scan-friendly view; keep JSON for
+programmatic parsing and tests.
 
 ## Write Generated Table Data
 
@@ -98,6 +103,65 @@ resources. Use `styles`, `backgroundColors`, `conditionalFormats`, `filter`, or 
 when formatting, native conditional formatting, filters, or table resources are part of the task.
 Row count alone is weak evidence because shifted columns can still preserve row count.
 
+## Write Values By Existing Sheet Keys
+
+Use this recipe for status columns, report matrices, review result columns, or other updates where
+one visible sheet column already contains stable keys and another visible column should receive new
+values. First inspect the key column and target column with managed tools so the migration source is
+based on workbook evidence, not guessed coordinates. Before choosing the template, run
+`univer sac migration templates --json` when you need machine-readable metadata and confirm the
+template `useWhen` matches this keyed-update shape; if it does not match, create an ordinary empty
+migration pack and author the TypeScript source by hand.
+
+```bash
+cat > ./keyed-range.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-discovered-sheet-localUnitId",
+  "ranges": [
+    { "label": "keys", "sheetName": "Sheet1", "rangeA1": "A1:A20" },
+    { "label": "target", "sheetName": "Sheet1", "rangeA1": "K1:K20" }
+  ],
+  "include": ["values", "valueDetails", "numberFormats"]
+}
+JSON
+univer inspect "$WB" --tool sheet-range --params ./keyed-range.params.json
+
+univer sac migration create "Update Statuses" "$WB" --template sheet-keyed-write --json
+# Edit <sidecarPath>/migrations/<pack-id>/update-statuses.unit.ts:
+# - replace localUnitId, sheetName, keyColumn, targetColumn, startRow/endRow
+# - replace valuesByKey with the evidence-backed key/value pairs
+univer sac apply "$WB" --json
+univer inspect "$WB" --tool sheet-range --params ./keyed-range.params.json
+```
+
+The generated file is an ordinary TODO TypeScript Facade migration. It is not a DSL and it does not
+read `--params` as workbook mutation data; edit the source before `sac apply`. For dynamic keyed
+writes, prefer A1 addresses built from explicit column letters and one-based row numbers unless the
+Facade row/column overload coordinate base has been confirmed for the exact API in use. Do not use
+`sheet.getRange(row, column)` as the default keyed-update pattern.
+
+## Inspect Conditional Formatting Rules
+
+Use `sheet-conditional-formats` for conditional formatting resources, status-color
+rules, or style rules that depend on cell values. It reports rule facts: original A1 target ranges,
+raw range bounds, condition fields, style config, and priority/order/stop flags when available. It
+does not prove final rendered cell style for every cell.
+
+```bash
+cat > ./conditional-formats.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-discovered-sheet-localUnitId",
+  "sheetName": "Sheet1",
+  "rangeA1": "K2:K100"
+}
+JSON
+univer inspect "$WB" --tool sheet-conditional-formats --params ./conditional-formats.params.json
+```
+
+Combine this rule evidence with `sheet-range` value evidence when the rendered outcome depends on
+cell values. Use `univer view` as supplemental review when the user needs actual rendered
+appearance. Do not inspect workbook internals for conditional formatting resources.
+
 ## Use A Sidecar Inspect Script
 
 Inspect scripts should:
@@ -116,7 +180,7 @@ Inspect scripts should:
 ## Create Or Maintain Charts
 
 Use SaC migration packs for workbook-local charts and `univer view` for visual inspection.
-Command-line verification can use sidecar inspect scripts to read facade state such as
+Command-line verification can use managed inspect tools to read facade state such as
 `sheet.getCharts()`, `chart.getChartId()`, `chart.getRange()`, `chart.getSeriesData()`, and
 `chart.getCategoryData()`.
 
@@ -139,7 +203,7 @@ Special chart types have stricter source shapes:
 ## Create Or Maintain Shapes
 
 Use SaC migration packs for workbook-local shapes and connectors and `univer view` for visual
-inspection. Command-line verification can use sidecar inspect scripts to read facade state such as
+inspection. Command-line verification can use managed inspect tools to read facade state such as
 `sheet.getShapes()`, `shape.isLineShape()`, `shape.getShapeId()`, `shape.getShapeType()`,
 `shape.getPosition()`, `shape.getSize()`, `shape.getStartConnectInfo()`, and
 `shape.getEndConnectInfo()`.
@@ -163,7 +227,7 @@ shape images, perform browser screenshots, or provide an interactive shape edito
 ## Create Or Maintain Floating Images
 
 Use SaC migration packs for workbook-local floating images and `univer view` for visual inspection.
-Command-line verification can use sidecar inspect scripts to read facade state such as
+Command-line verification can use managed inspect tools to read facade state such as
 `sheet.getImages()`, `sheet.getImageById(id)`, `image.getId()`, `image.toBuilder().getSource()`,
 `image.toBuilder().getSourceType()`, and update or delete return values.
 
