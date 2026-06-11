@@ -45,7 +45,7 @@ Materialize reads committed workbook state: init data plus synced changesets plu
 with uncommitted mutations excluded by the preflight.
 
 `univer inspect <univerfile> --tool <tool-id> --params <params.json>` runs an installed managed readonly evidence tool. Use `univer inspect tools list --json` to see available managed tools and `univer inspect tools resolve <tool-id> --json` to explain whether a tool comes from a trusted external package, a Codex installed skill package, or the bundled registry. Use `univer inspect <univerfile> --script <probe.js> --params <params.json>` only for scratch `.js` probes under `<sidecarPath>/inspect-scripts/` when a managed tool cannot answer the evidence question.
-Params must be a JSON object. For unit-specific reads, pass an explicit discovered `localUnitId`.
+Params must be a JSON object. Use `--params -` for one-off managed inspect calls when the params JSON is generated inline or by another command; stdin params must be one JSON object. Use `--params <params.json>` when params should be reviewed, reused, or referenced from a plan. For unit-specific reads, pass an explicit discovered `localUnitId`.
 Durable workbook changes belong in SaC migration packs, not inspect scripts.
 
 Unsupported doc, slide, or unknown units are still units in the target container. Use only
@@ -166,6 +166,14 @@ approach; it usually contains the stable diagnostic code, usage, and retry examp
 
 Keep command stdout machine-readable when a script consumes it. If diagnostics are needed, capture
 stderr separately so downstream tools receive only the intended JSON or file path.
+
+For one-off managed inspect calls, pipe one JSON object into `--params -`:
+
+```bash
+printf '%s' '{"localUnitId":"replace-with-discovered-sheet-localUnitId","sheetName":"Sheet1","rangeA1":"A1:D20"}' | univer inspect "$WB" --tool sheet-range --params -
+```
+
+Use params files when the inputs should be reviewed, reused, or referenced from a plan:
 
 ```bash
 univer sac materialize "$WB" --json > ./materialize.json
