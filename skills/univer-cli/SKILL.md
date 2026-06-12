@@ -118,9 +118,7 @@ SaC is the source-backed authoring path for durable workbook behavior.
 - `pack.files` lists migration implementation entrypoints only. Keep workbook assertions under
   `assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately.
   Ordinary draft packs include `migration.ts`; keep `pack.ts` as metadata and author workbook
-  mutations in listed entrypoint files. For intentional blanks, clear first and skip writes instead
-  of passing `null` inside `setValues()` matrices. When writing total formulas in amount columns,
-  set the formula/value and number format together.
+  mutations in listed entrypoint files.
 
 Migration templates are source scaffolds, not a DSL. Discover them with:
 

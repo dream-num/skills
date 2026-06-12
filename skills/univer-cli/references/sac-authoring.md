@@ -52,7 +52,8 @@ from migration apply source.
 For ranges with intentional blanks, clear the target range first and skip per-cell writes for blank
 cells, or write nonblank cells individually. Do not pass `null` inside `setValues()` matrices. When
 writing totals or other formulas in amount columns, set the formula/value and expected number format
-in the same migration.
+in the same migration. Prefer A1 range strings for simple table writes, and check sidecar
+`types/*.d.ts` before using less familiar range APIs such as `offset()`.
 
 If a pack has already been applied and behavior needs to change, prefer a follow-up migration pack
 over editing already-applied source into hash or applied-state drift.
