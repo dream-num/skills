@@ -52,7 +52,7 @@ view, export, SaC source, apply, rollback, verify, and versioning commands.
 | Record or discard local mutations | `univer commit`, `univer restore`, `univer reset` |
 | Sync remote-bound units | `univer pull`, `univer sync` |
 | Read review comments | `univer view comments <file.univer> --json` |
-| Produce handoff file | `univer export <file.univer> --output <file.xlsx>` |
+| Produce handoff file | `univer export <file.univer> <output.xlsx|csv>` |
 
 ## Evidence Tools
 
@@ -76,6 +76,15 @@ Common tools:
 - `sheet-formulas`: audit formula cells.
 - `sheet-conditional-formats`: inspect conditional formatting rule resources.
 
+For large tables, do not use `sheet-range` as a table dump. Use `sheet-overview` first to learn
+used ranges and table shape. Before writing migration source for aggregate, rebuild, split, or
+reconciliation tasks, obtain compact source/target summary facts such as counts, grouped totals,
+mismatches, and head/tail samples. If managed tools only provide samples or raw grid ranges, write a
+readonly custom inspect script that returns those facts as compact JSON. That summary should replace
+full source-table dumps for that same evidence question; do not also dump the same large source
+tables unless exact row-level evidence is needed for a named ambiguity. Increase `sheet-range` limits
+only when raw cells are genuinely needed and the output will remain reviewable.
+
 Use custom inspect scripts only when managed tools do not answer a bounded evidence question:
 
 ```bash
@@ -98,6 +107,8 @@ SaC is the source-backed authoring path for durable workbook behavior.
 - `inspect-scripts/` is scratch space for readonly probes.
 - `runs/` contains verification reports and sandbox artifacts.
 - `assertions.ts` can express workbook-visible contracts for applied packs when correctness matters.
+- `pack.files` lists migration implementation entrypoints only. Keep `assertions.ts` beside
+  `pack.ts`; `univer sac verify` discovers it separately.
 
 Migration templates are source scaffolds, not a DSL. Discover them with:
 

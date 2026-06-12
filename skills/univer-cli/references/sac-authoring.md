@@ -37,6 +37,10 @@ univer sac migration create "describe-change" "$WB"
 Migration packs are ordinary TypeScript source. Use generated local types in the sidecar. Keep
 target path, `localUnitId`, sheet names, and ranges explicit when behavior is unit-specific.
 
+`pack.files` lists migration implementation entrypoints only. Do not include `assertions.ts`,
+README files, params, probes, or evidence files. Keep `assertions.ts` beside `pack.ts`;
+`univer sac verify` discovers it separately from migration apply source.
+
 If a pack has already been applied and behavior needs to change, prefer a follow-up migration pack
 over editing already-applied source into hash or applied-state drift.
 
