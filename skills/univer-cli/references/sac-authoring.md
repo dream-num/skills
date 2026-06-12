@@ -40,11 +40,19 @@ univer sac migration create "describe-change" "$WB"
 
 Migration packs are ordinary TypeScript source. Use generated local types in the sidecar. Keep
 target path, `localUnitId`, sheet names, and ranges explicit when behavior is unit-specific.
+Ordinary draft packs include a `migration.ts` entrypoint by default. Keep `pack.ts` as metadata and
+execution order; author workbook mutations in listed entrypoint files such as `migration.ts` or
+`*.unit.ts`.
 
 `pack.files` lists migration implementation entrypoints only. Do not include assertion files,
 README files, params, probes, or evidence files. Keep workbook assertions under
 `assertions/**/*.assertions.ts`; `univer sac verify` discovers global assertion entrypoints separately
 from migration apply source.
+
+For ranges with intentional blanks, clear the target range first and skip per-cell writes for blank
+cells, or write nonblank cells individually. Do not pass `null` inside `setValues()` matrices. When
+writing totals or other formulas in amount columns, set the formula/value and expected number format
+in the same migration.
 
 If a pack has already been applied and behavior needs to change, prefer a follow-up migration pack
 over editing already-applied source into hash or applied-state drift.
@@ -87,6 +95,8 @@ Good assertion targets include important labels, headers, totals, formulas, numb
 values, sheet existence, used ranges, filters, tables, key resource semantics, representative rows,
 and aggregate facts. For large tables, prefer stable summaries and representative rows over a full
 cell snapshot.
+For `displayValues`, assert blank cells as empty strings (`""`) because display readback returns
+strings. Use raw/value assertions when null-like storage identity is the contract.
 
 Do not use assertions for temporary intermediate migration states, raw `.univer` storage internals,
 generated ids, broad inspect dumps, or runtime implementation details. Use readonly inspect probes

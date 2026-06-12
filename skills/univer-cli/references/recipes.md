@@ -101,7 +101,11 @@ univer sac verify "$WB" --json
 ```
 
 Choose a template only after workbook-visible evidence shows it fits. If no template fits, create an
-ordinary migration pack.
+ordinary migration pack; edit `migration.ts`, not `pack.ts`. Keep `pack.ts` as metadata and
+execution order only. For output ranges with intentional blanks, clear first and skip blank writes
+instead of passing `null` inside `setValues()`. When writing total formulas in amount columns, set
+the formula/value and number format together. In `displayValues` assertions, use `""` for blank
+cells.
 
 ## Roll Back Latest Applied Boundary
 
