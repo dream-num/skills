@@ -66,6 +66,9 @@ Keep custom probes:
   labels, and thresholds
 - focused on the sheets, ranges, and columns needed for the question
 - compact in output, returning facts such as `count`, `total`, `mismatches`, `head`, and `tail`
+- fail-compact: if extraction or matching fails, return `ok: false`, totals such as
+  `unknownCount`/`mismatchCount`, field diagnostics, and bounded samples rather than dumping every
+  unknown row
 - JSON-oriented when another command or agent will consume the output
 
 Do not use inspect scripts for durable workbook changes.

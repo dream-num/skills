@@ -92,7 +92,9 @@ univer inspect "$WB" --script "$SIDECAR/inspect-scripts/probe.js" --params ./pro
 ```
 
 Custom inspect scripts are readonly probes. Keep them small, parameterized, sidecar-local, and JSON
-oriented. Do not use them for durable workbook mutations.
+oriented. Make probe failures compact: return error counts, field diagnostics, and a few head/tail
+samples, not every unmatched row or raw source record. Do not use them for durable workbook
+mutations.
 
 For more detail, read `references/evidence-tools.md`.
 

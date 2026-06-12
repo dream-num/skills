@@ -58,16 +58,37 @@ SIDECAR=$(node -e 'const fs=require("fs"); const j=JSON.parse(fs.readFileSync(".
 cat > "$SIDECAR/inspect-scripts/probe.js" <<'JS'
 ({ params, univerAPI }) => {
   const workbook = univerAPI.getWorkbook(params.localUnitId);
-  return { ok: true, workbookName: workbook.getName(), params };
+  const sampleLimit = Math.max(1, Math.min(Number(params.sampleLimit ?? 5), 20));
+  const diagnostics = [];
+
+  if (!workbook) {
+    return {
+      ok: false,
+      error: "WORKBOOK_NOT_FOUND",
+      diagnostics: [{ field: "localUnitId", value: params.localUnitId }],
+    };
+  }
+
+  return {
+    ok: true,
+    workbookName: workbook.getName(),
+    facts: {
+      checkedSheets: params.sheetNames ?? [],
+      sampleLimit,
+    },
+    diagnostics,
+  };
 }
 JS
-printf '%s' '{"reason":"bounded-readonly-evidence"}' \
+printf '%s' '{"reason":"bounded-readonly-evidence","sampleLimit":5}' \
   | univer inspect "$WB" --script "$SIDECAR/inspect-scripts/probe.js" --params -
 ```
 
 Scratch probes are function expressions, not ESM or CommonJS modules; do not use `export default` or
-`module.exports`. Keep custom probes readonly and task-local. Promote repeated useful probes to
-managed tools in a separate product change.
+`module.exports`. Keep custom probes readonly and task-local. Keep output bounded: return aggregate
+facts and a few samples; if matching fails, return `ok: false`, counts, field diagnostics, and
+bounded samples instead of dumping every unknown row. Promote repeated useful probes to managed tools
+in a separate product change.
 
 ## Template Migration, Apply, Verify
 
