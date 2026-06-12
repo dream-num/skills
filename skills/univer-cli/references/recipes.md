@@ -56,16 +56,18 @@ needed.
 ```bash
 SIDECAR=$(node -e 'const fs=require("fs"); const j=JSON.parse(fs.readFileSync("./materialize.json","utf8")); console.log(j.sidecarPath)')
 cat > "$SIDECAR/inspect-scripts/probe.js" <<'JS'
-export default async function inspect({ params }) {
-  return { ok: true, params };
+({ params, univerAPI }) => {
+  const workbook = univerAPI.getWorkbook(params.localUnitId);
+  return { ok: true, workbookName: workbook.getName(), params };
 }
 JS
 printf '%s' '{"reason":"bounded-readonly-evidence"}' \
   | univer inspect "$WB" --script "$SIDECAR/inspect-scripts/probe.js" --params -
 ```
 
-Keep custom probes readonly and task-local. Promote repeated useful probes to managed tools in a
-separate product change.
+Scratch probes are function expressions, not ESM or CommonJS modules; do not use `export default` or
+`module.exports`. Keep custom probes readonly and task-local. Promote repeated useful probes to
+managed tools in a separate product change.
 
 ## Template Migration, Apply, Verify
 
