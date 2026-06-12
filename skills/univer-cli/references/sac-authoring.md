@@ -18,13 +18,17 @@ mutations are excluded and should be committed or restored before SaC commands.
 Typical sidecar roles:
 
 - `migrations/`: Facade Migration Pack source.
+- `assertions/`: workbook-level final-state assertion source.
+- `archives/materialize/<archive-id>/migrations/`: previous active migration source archived by
+  materialize for review only.
 - `types/`: generated Facade/SaC reference material.
 - `inspect-scripts/`: scratch readonly probes.
 - `runs/`: verification reports and sandbox artifacts.
 - optional notes, plans, or success criteria if the agent or task uses them.
 
 The sidecar is source and evidence. Canonical workbook data and applied SaC state belong to the
-target `.univer` container.
+target `.univer` container. Archived materialize migrations are not active source and are not
+applied or verified by default.
 
 ## Migration Packs
 
@@ -37,9 +41,10 @@ univer sac migration create "describe-change" "$WB"
 Migration packs are ordinary TypeScript source. Use generated local types in the sidecar. Keep
 target path, `localUnitId`, sheet names, and ranges explicit when behavior is unit-specific.
 
-`pack.files` lists migration implementation entrypoints only. Do not include `assertions.ts`,
-README files, params, probes, or evidence files. Keep `assertions.ts` beside `pack.ts`;
-`univer sac verify` discovers it separately from migration apply source.
+`pack.files` lists migration implementation entrypoints only. Do not include assertion files,
+README files, params, probes, or evidence files. Keep workbook assertions under
+`assertions/**/*.assertions.ts`; `univer sac verify` discovers global assertion entrypoints separately
+from migration apply source.
 
 If a pack has already been applied and behavior needs to change, prefer a follow-up migration pack
 over editing already-applied source into hash or applied-state drift.
@@ -67,10 +72,30 @@ skills. The CLI help and `templates --json` output are the supported discovery s
 
 ## Assertions
 
-`assertions.ts` is useful when correctness matters and workbook-visible behavior should be checked
-repeatably. Assertions can cover values, formulas, ranges, styles, resources, tables, filters, or
-other supported workbook facts.
+`assertions/**/*.assertions.ts` entrypoints are useful when correctness matters and
+workbook-visible final state should be checked repeatably. Assertions can cover values, formulas,
+ranges, styles, resources, tables, filters, or other supported workbook facts.
+
+Treat `assertions/**/*.assertions.ts` as the current acceptance contract for the target workbook.
+Split entrypoints by workbook concern, such as `values.assertions.ts`,
+`formatting.assertions.ts`, or `resources.assertions.ts`, not by migration pack. Other `.ts` files
+under `assertions/` are helpers only when imported by an entrypoint. When a migration changes the
+intended final workbook state, update the global assertions to the new final state in the same
+work. Do not keep old intermediate expectations just because an earlier migration made them true.
+
+Good assertion targets include important labels, headers, totals, formulas, number formats, visible
+values, sheet existence, used ranges, filters, tables, key resource semantics, representative rows,
+and aggregate facts. For large tables, prefer stable summaries and representative rows over a full
+cell snapshot.
+
+Do not use assertions for temporary intermediate migration states, raw `.univer` storage internals,
+generated ids, broad inspect dumps, or runtime implementation details. Use readonly inspect probes
+for investigation; use assertions for repeatable correctness gates.
+
+After authoring or updating migration source, run `univer sac apply "$WB"` when source is pending,
+then `univer sac verify "$WB" --json`. A failed assertion means either the workbook final state is
+wrong or the assertion expectation is wrong; inspect the report before editing either side.
 
 Assertions are a product capability, not a required planning method. Use the agent or user-selected
-planning approach, but keep assertions grounded in task evidence rather than whatever a migration
-happened to write.
+planning approach, but keep global assertions grounded in final-state task evidence rather than
+whatever a migration happened to write.
