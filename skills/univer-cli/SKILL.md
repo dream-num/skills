@@ -52,7 +52,7 @@ view, export, SaC source, apply, rollback, verify, and versioning commands.
 | Record or discard local mutations | `univer commit`, `univer restore`, `univer reset` |
 | Sync remote-bound units | `univer pull`, `univer sync` |
 | Read review comments | `univer view comments <file.univer> --json` |
-| Produce handoff file | `univer export <file.univer> --output <file.xlsx>` |
+| Produce handoff file | `univer export <file.univer> <handoff.xlsx|handoff.csv>` |
 
 ## Evidence Tools
 
@@ -76,6 +76,15 @@ Common tools:
 - `sheet-formulas`: audit formula cells.
 - `sheet-conditional-formats`: inspect conditional formatting rule resources.
 
+For large tables, do not use `sheet-range` as a table dump. Use `sheet-overview` first to learn
+used ranges and table shape. Before writing migration source for aggregate, rebuild, split, or
+reconciliation tasks, obtain compact source/target summary facts such as counts, grouped totals,
+mismatches, and head/tail samples. If managed tools only provide samples or raw grid ranges, write a
+readonly custom inspect script that returns those facts as compact JSON. That summary should replace
+full source-table dumps for that same evidence question; do not also dump the same large source
+tables unless exact row-level evidence is needed for a named ambiguity. Increase `sheet-range` limits
+only when raw cells are genuinely needed and the output will remain reviewable.
+
 Use custom inspect scripts only when managed tools do not answer a bounded evidence question:
 
 ```bash
@@ -92,12 +101,20 @@ For more detail, read `references/evidence-tools.md`.
 SaC is the source-backed authoring path for durable workbook behavior.
 
 - `materialize` creates or refreshes the hidden sidecar for an existing target from committed target
-  state and returns `sidecarPath`.
+  state, preserves global `assertions/`, archives replaced active migrations under
+  `archives/materialize/`, and returns `sidecarPath`.
 - `migrations/` contains Facade Migration Pack source.
+- `archives/materialize/<archive-id>/migrations/` contains previous active migration source archived
+  by materialize for review only; archived migrations are not applied or verified by default.
 - `types/` contains generated local Facade/SaC reference material.
 - `inspect-scripts/` is scratch space for readonly probes.
 - `runs/` contains verification reports and sandbox artifacts.
-- `assertions.ts` can express workbook-visible contracts for applied packs when correctness matters.
+- `assertions/**/*.assertions.ts` entrypoints express the current workbook-visible final-state
+  contract when correctness matters. Split them by workbook concern such as values, formulas,
+  formatting, or resources, not by migration pack. Update them as migrations change intended
+  workbook state; do not preserve intermediate migration-specific expectations there.
+- `pack.files` lists migration implementation entrypoints only. Keep workbook assertions under
+  `assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately.
 
 Migration templates are source scaffolds, not a DSL. Discover them with:
 
@@ -124,13 +141,14 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
   is not proof that workbook-visible behavior is correct.
 - `univer sac rollback <file.univer>` moves the target back across an applied migration boundary. It
   is not arbitrary spreadsheet undo.
-- `univer sac verify <file.univer> --json` checks applied pack assertions against a sandbox copy. It
+- `univer sac verify <file.univer> --json` checks global assertions against a sandbox copy. It
   does not apply pending source. It writes a JSON report at the returned `reportPath`, under
   `runs/<run-id>/verify-report.json`, and may copy artifacts under `runs/<run-id>/artifacts/`.
 
-Zero-assertion, all-skipped, or unchecked changed-pack verify results are weak completion evidence
-for changed durable behavior. When correctness matters, use workbook-visible evidence and relevant
-assertions or readback before handoff.
+Missing global assertions are setup errors and are not completion evidence for changed durable
+behavior. When correctness matters, use workbook-visible evidence and relevant global assertions or
+readback before handoff. Treat failed assertions as a decision point: either the workbook final
+state is wrong, or the global assertion expectation is wrong.
 
 For more detail, read `references/sac-execution.md`.
 

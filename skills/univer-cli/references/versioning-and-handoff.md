@@ -52,7 +52,7 @@ univer view comments "$WB" --json
 Use export when the user needs an Excel-compatible artifact:
 
 ```bash
-univer export "$WB" --output ./handoff.xlsx
+univer export "$WB" ./handoff.xlsx
 ```
 
 Verify the workbook-visible state that matters before export. If export compatibility is itself the

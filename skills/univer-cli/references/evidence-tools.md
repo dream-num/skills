@@ -45,7 +45,14 @@ semantics.
 
 ## Custom Inspect Scripts
 
-Use a custom script when managed tools cannot answer a bounded readonly evidence question:
+Use a custom script when managed tools cannot answer a bounded readonly evidence question. Before
+writing migration source for large-table aggregate, rebuild, split, or reconciliation tasks, prefer
+a custom summary probe over repeated `sheet-range` calls when the useful evidence is an aggregate
+rather than the raw grid: grouped totals, counts, missing labels, mismatches, formula coverage, or
+head/tail samples. A managed overview that only reports used ranges and bounded samples is not a
+substitute for source-derived aggregate facts. The summary probe should replace full source-table
+dumps for that same evidence question; do not also dump the same large source tables unless exact
+row-level evidence is needed for a named ambiguity.
 
 ```bash
 univer inspect "$WB" --script "$SIDECAR/inspect-scripts/probe.js" --params ./probe.params.json
@@ -55,9 +62,10 @@ Keep custom probes:
 
 - readonly
 - small and task-local
-- parameterized through JSON params
-- explicit about target path, `localUnitId`, sheet names, and ranges
+- parameterized through JSON params for variable targets such as `localUnitId`, sheet names, ranges,
+  labels, and thresholds
+- focused on the sheets, ranges, and columns needed for the question
+- compact in output, returning facts such as `count`, `total`, `mismatches`, `head`, and `tail`
 - JSON-oriented when another command or agent will consume the output
 
-Do not use inspect scripts for durable workbook changes. If a custom probe becomes generally useful,
-consider promoting it to a managed inspect tool in a separate product change.
+Do not use inspect scripts for durable workbook changes.

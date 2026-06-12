@@ -33,24 +33,30 @@ Rollback is not arbitrary spreadsheet undo. It operates on the applied SaC chain
 univer sac verify "$WB" --json
 ```
 
-`verify` checks assertions for applied packs against a sandbox copy. It does not apply pending
-source. It returns `reportPath`; read that path instead of constructing a hidden sidecar path by
-hand.
+`verify` checks global `assertions/**/*.assertions.ts` entrypoints against a sandbox copy. It does
+not apply pending source. It returns `reportPath`; read that path instead of constructing a hidden
+sidecar path by hand.
 
 Sidecar `runs/` contains verify evidence:
 
-- `runs/<run-id>/verify-report.json`: checked packs, skipped packs, assertion counts, failures,
+- `runs/<run-id>/verify-report.json`: `assertionSources[]`, assertion counts, failures,
   setup errors, and diagnostics.
 - `runs/<run-id>/artifacts/`: sandbox copy artifacts when verify reaches runtime readback.
 
 Interpretation:
 
-- `status: passed` means checked assertions matched actual readback.
-- `status: failed` means compare expected/actual, pack id, assertion kind, target, diagnostics, and
-  first difference when present.
+- `status: passed` means global assertions matched actual readback.
+- `status: failed` means compare expected/actual, assertion kind, target, diagnostics, and
+  first difference when present. Decide whether the workbook final state is wrong or the global
+  assertion expectation is wrong before editing either side.
 - `status: error` means setup failed before workbook behavior can be judged.
-- zero-assertion, all-skipped, or unchecked changed-pack runs are weak completion evidence for
-  changed durable behavior.
+- missing global assertions are setup errors and are not completion evidence for changed durable
+  behavior.
 
 Use assertions and verify when durable workbook correctness matters. The skill does not require a
 specific RED/GREEN workflow.
+
+Materialize archives replaced active migrations under `archives/materialize/<archive-id>/migrations/`.
+Those archived migrations are review/audit source only; apply, verify, source hashes, and migration
+tail selection use active `migrations/`. Draft preservation remains separate under
+`materialize-recovery/`.
