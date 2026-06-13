@@ -1,26 +1,38 @@
 # Versioning And Handoff
 
-Use versioning and handoff commands after the workbook-visible state that matters for the task has
+Use versioning and handoff commands after the target-visible state that matters for the task has
 been checked.
 
 ## Local State
 
 ```bash
-univer status "$WB"
-univer commit "$WB" --message "Describe verified workbook change"
-univer restore "$WB"
-univer reset "$WB" --soft HEAD~1
+UNIVERFILE=./orders.univer
+UNIT=replace-with-localUnitId
+
+univer status "$UNIVERFILE"
+univer status "$UNIVERFILE" --local-unit-id "$UNIT"
+univer commit "$UNIVERFILE" --local-unit-id "$UNIT" --message "Describe verified change"
+univer restore "$UNIVERFILE" --local-unit-id "$UNIT"
+univer reset "$UNIVERFILE" --local-unit-id "$UNIT" --soft HEAD~1
 ```
 
+`status` is always scoped to the target `.univer` file. It does not inspect the current directory,
+daemon/viewer state, git state, a remote unit by name, or a sheet by name. Omit
+`--local-unit-id` to list all local units, or pass a known `localUnitId` when checking binding and
+cleanliness before a write, pull, or sync.
+
 Use `status` before SaC commands when target cleanliness matters. Use `commit` to record verified
-local mutations. Use `restore` or `reset` only when discarding or reshaping local workbook work is
-intended.
+local mutations for a selected unit. Use `restore` or `reset` only when discarding or reshaping local
+unit work is intended.
 
 ## Remote-Bound Units
 
 ```bash
-univer pull "$WB"
-univer sync "$WB"
+UNIVERFILE=./orders.univer
+UNIT=replace-with-localUnitId
+
+univer pull "$UNIVERFILE" --local-unit-id "$UNIT"
+univer sync "$UNIVERFILE" --local-unit-id "$UNIT"
 ```
 
 Use `pull` for remote-only changes on bound units. Use `sync` when local and remote versioning state
@@ -31,20 +43,26 @@ both need reconciliation.
 When an agent browser tool is available:
 
 ```bash
-univer view "$WB" --no-open --json
+UNIVERFILE=./orders.univer
+
+univer view "$UNIVERFILE" --no-open --json
 ```
 
 Open the returned URL with the browser tool. When no agent browser tool is available and OS browser
 opening is appropriate:
 
 ```bash
-univer view "$WB" --open --json
+UNIVERFILE=./orders.univer
+
+univer view "$UNIVERFILE" --open --json
 ```
 
 Read local viewer review comments with:
 
 ```bash
-univer view comments "$WB" --json
+UNIVERFILE=./orders.univer
+
+univer view comments "$UNIVERFILE" --json
 ```
 
 ## Export Handoff
@@ -52,8 +70,10 @@ univer view comments "$WB" --json
 Use export when the user needs an Excel-compatible artifact:
 
 ```bash
-univer export "$WB" ./handoff.xlsx
+UNIVERFILE=./orders.univer
+
+univer export "$UNIVERFILE" ./handoff.xlsx
 ```
 
-Verify the workbook-visible state that matters before export. If export compatibility is itself the
+Verify the target-visible state that matters before export. If export compatibility is itself the
 task, inspect or reopen the exported handoff through a supported read surface.

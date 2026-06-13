@@ -1,14 +1,18 @@
 # SaC Authoring
 
-SaC is the source-backed authoring surface for durable workbook behavior. Use it when a task needs
-repeatable workbook changes rather than one-off evidence reads.
+SaC is the source-backed authoring surface for durable target behavior. Use it when a task needs
+repeatable target changes rather than one-off evidence reads. Examples use
+`UNIVERFILE=./orders.univer` as a shell variable for the target path; set it in the same shell or
+replace `$UNIVERFILE` with the literal `.univer` path.
 
 ## Materialize
 
 For an existing target, run:
 
 ```bash
-univer sac materialize "$WB" --json
+UNIVERFILE=./orders.univer
+
+univer sac materialize "$UNIVERFILE" --json
 ```
 
 Read `sidecarPath` from command JSON. Do not guess hidden sidecar paths. Materialize uses committed
@@ -26,7 +30,7 @@ Typical sidecar roles:
 - `runs/`: verification reports and sandbox artifacts.
 - optional notes, plans, or success criteria if the agent or task uses them.
 
-The sidecar is source and evidence. Canonical workbook data and applied SaC state belong to the
+The sidecar is source and evidence. Canonical target data and applied SaC state belong to the
 target `.univer` container. Archived materialize migrations are not active source and are not
 applied or verified by default.
 
@@ -35,7 +39,9 @@ applied or verified by default.
 Create durable source with:
 
 ```bash
-univer sac migration create "describe-change" "$WB"
+UNIVERFILE=./orders.univer
+
+univer sac migration create "describe-change" "$UNIVERFILE"
 ```
 
 Migration packs are ordinary TypeScript source. Use generated local types in the sidecar. Keep
@@ -67,11 +73,13 @@ univer sac migration templates --json
 univer help sac migration create
 ```
 
-Choose a template only when its `useWhen` metadata matches workbook-visible evidence. Generate the
+Choose a template only when its `useWhen` metadata matches target-visible evidence. Generate the
 source, inspect it, fill TODOs from evidence, then apply and verify:
 
 ```bash
-univer sac migration create "update-prices" "$WB" --template sheet-keyed-write
+UNIVERFILE=./orders.univer
+
+univer sac migration create "update-prices" "$UNIVERFILE" --template sheet-keyed-write
 ```
 
 If no template fits, create an ordinary migration pack and author the source directly.
@@ -103,9 +111,10 @@ Do not use assertions for temporary intermediate migration states, raw `.univer`
 generated ids, broad inspect dumps, or runtime implementation details. Use readonly inspect probes
 for investigation; use assertions for repeatable correctness gates.
 
-After authoring or updating migration source, run `univer sac apply "$WB"` when source is pending,
-then `univer sac verify "$WB" --json`. A failed assertion means either the workbook final state is
-wrong or the assertion expectation is wrong; inspect the report before editing either side.
+After authoring or updating migration source, run `univer sac apply "$UNIVERFILE"` when source is
+pending, then `univer sac verify "$UNIVERFILE" --json`. A failed assertion means either the target
+final state is wrong or the assertion expectation is wrong; inspect the report before editing either
+side.
 
 Assertions are a product capability, not a required planning method. Use the agent or user-selected
 planning approach, but keep global assertions grounded in final-state task evidence rather than

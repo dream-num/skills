@@ -1,26 +1,38 @@
 # Evidence Tools
 
-Use evidence tools to understand workbook-visible state before deciding coordinates, ranges,
-formulas, styles, resources, or handoff readiness. Evidence tools do not make durable workbook
-changes.
+Use evidence tools to understand target-visible state before deciding coordinates, ranges,
+formulas, styles, resources, or handoff readiness. Evidence tools do not make durable target
+changes. Examples use `UNIVERFILE=./orders.univer` as a shell variable for the target path; set it
+in the same shell or replace `$UNIVERFILE` with the literal `.univer` path.
 
 ## Managed Inspect Tools
 
 Start with managed tools:
 
 ```bash
+UNIVERFILE=./orders.univer
+
 univer inspect tools list --json
 univer inspect tools resolve sheet-overview --json
-univer inspect "$WB" --tool sheet-overview --params ./overview.params.json
 ```
 
-Use `--params <file>` when params should be reviewed, reused, or referenced later. Use
-`--params -` for a one-off JSON object:
+Pass params as either a JSON file path or one JSON object on stdin:
 
 ```bash
-printf '%s' '{"localUnitId":"replace-with-localUnitId","sheetName":"Sheet1","rangeA1":"A1:D20"}' \
-  | univer inspect "$WB" --tool sheet-range --params -
+cat > ./overview.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-localUnitId"
+}
+JSON
+univer inspect "$UNIVERFILE" --tool sheet-overview --params ./overview.params.json
+
+printf '%s' '{"localUnitId":"replace-with-localUnitId"}' \
+  | univer inspect "$UNIVERFILE" --tool sheet-overview --params -
 ```
+
+Do not pass inline JSON as the `--params` value. `--params '{}'` is interpreted as a params file
+path named `{}`. Use `--params -` and stdin for inline JSON, or write the JSON to a file and pass
+that file path.
 
 Tool roles:
 
@@ -55,7 +67,8 @@ dumps for that same evidence question; do not also dump the same large source ta
 row-level evidence is needed for a named ambiguity.
 
 ```bash
-univer inspect "$WB" --script "$SIDECAR/inspect-scripts/probe.js" --params ./probe.params.json
+printf '%s' '{"reason":"bounded-readonly-evidence","sampleLimit":5}' \
+  | univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --params -
 ```
 
 Keep custom probes:

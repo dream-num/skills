@@ -8,4 +8,7 @@ Run managed tools only through the CLI trust gate:
 univer inspect <file.univer> --tool <tool-id> --params <params.json>
 ```
 
+`--params -` also works with a JSON object on stdin. Do not pass inline JSON as the option value:
+`--params '{}'` is treated as a file path named `{}`.
+
 Use `univer inspect tools list --json` and `univer inspect tools resolve <tool-id> --json` to inspect provider selection and compatibility.

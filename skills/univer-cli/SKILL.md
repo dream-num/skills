@@ -5,8 +5,8 @@ description: "Use when working with spreadsheets, workbooks, Excel-compatible fi
 
 # Univer CLI
 
-`univer` is a terminal-native workbook engine. Use this skill to understand the public CLI and SaC
-surfaces for workbook evidence, durable workbook changes, verification, preview, versioning, and
+`univer` is a terminal-native univerfile engine. Use this skill to understand the public CLI and SaC
+surfaces for target evidence, durable .univer changes, verification, preview, versioning, and
 handoff.
 
 Install with `npm i -g univer-cli`. Update with `univer update`. The executable is `univer`.
@@ -14,20 +14,21 @@ Use `univer help` and `univer help <command...>` for exact syntax.
 
 ## Core Model
 
-Treat workbook-visible state as the source of truth. Command success, metadata, or local notes do
+Treat target-visible spreadsheet/unit state as the source of truth. Command success, metadata, or local notes do
 not prove that sheets, values, formulas, formatting, charts, resources, or exported handoff files
 are correct.
 
 The target `.univer` path is the local CLI target identity. Pick one explicit path such as
-`./Budget.univer` and pass that path to commands. Do not target local workbook work by
-`remoteUnitId`, `sessionId`, runtime id, workbook display name, or sheet name.
+`./Budget.univer` and pass that path to commands, including `status`. Do not target local work by `remoteUnitId`, `sessionId`, runtime id, display name, sheet name, or the current
+directory.
 
+Use `UNIVERFILE=./Budget.univer` in shell examples when you want a reusable target variable.
 A `.univer` file is a CLI target container with top-level units. `localUnitId` identifies a unit
 inside that target. `remoteUnitId` is binding metadata. Spreadsheet sheet names, A1 ranges, values,
 formulas, styles, tables, filters, charts, shapes, and images are coordinates or resources inside a
 selected spreadsheet unit.
 
-Use public surfaces for workbook reads and writes. A `.univer` target is not an agent-handwritten
+Use public surfaces for target reads and writes. A `.univer` target is not an agent-handwritten
 source file. Do not bypass the CLI/SaC surfaces to hand-patch the target container. Use inspect,
 view, export, SaC source, apply, rollback, verify, and versioning commands.
 
@@ -39,8 +40,8 @@ view, export, SaC source, apply, rollback, verify, and versioning commands.
 | Import spreadsheet data | `univer import --file <input.xlsx\|csv\|url> <file.univer>` |
 | Append a remote unit | `univer import --remote-unit-id <unitId> <file.univer>` |
 | Initialize from a remote unit | `univer clone <file.univer> --unit-id <unitId>` |
-| Discover units | `univer inspect <file.univer> --tool units --params '{}'` |
-| Read workbook evidence | managed `univer inspect --tool`, then custom readonly `univer inspect --script` probes |
+| Discover units | `printf '%s' '{}' \| univer inspect <file.univer> --tool units --params -` |
+| Read target/unit evidence | managed `univer inspect --tool`, then custom readonly `univer inspect --script` probes |
 | Understand visual state | `univer view`, then open or share the returned URL |
 | Create SaC authoring sidecar | `univer sac materialize <file.univer> --json` |
 | Create durable source | `univer sac migration create <description> <file.univer>` |
@@ -48,9 +49,9 @@ view, export, SaC source, apply, rollback, verify, and versioning commands.
 | Execute pending source | `univer sac apply <file.univer>` |
 | Revert applied boundary | `univer sac rollback <file.univer>` |
 | Verify applied behavior | `univer sac verify <file.univer> --json` |
-| Check local state | `univer status` |
-| Record or discard local mutations | `univer commit`, `univer restore`, `univer reset` |
-| Sync remote-bound units | `univer pull`, `univer sync` |
+| Check local state | `univer status <file.univer> [--local-unit-id <localUnitId>]` |
+| Record or discard local mutations | `univer commit`, `univer restore`, or `univer reset` with `<file.univer> --local-unit-id <localUnitId>` |
+| Sync remote-bound units | `univer pull` or `univer sync` with `<file.univer> --local-unit-id <localUnitId>` |
 | Read review comments | `univer view comments <file.univer> --json` |
 | Produce handoff file | `univer export <file.univer> <handoff.xlsx|handoff.csv>` |
 
@@ -59,12 +60,15 @@ view, export, SaC source, apply, rollback, verify, and versioning commands.
 Managed inspect tools are the preferred readonly evidence surface. Use:
 
 ```bash
+UNIVERFILE=./Budget.univer
 univer inspect tools list --json
 univer inspect tools resolve sheet-range --json
-univer inspect "$WB" --tool sheet-range --params ./range.params.json
 printf '%s' '{"localUnitId":"...","sheetName":"Sheet1","rangeA1":"A1:D20"}' \
-  | univer inspect "$WB" --tool sheet-range --params -
+  | univer inspect "$UNIVERFILE" --tool sheet-range --params -
 ```
+
+`--params` accepts either a real JSON file path or `-` for stdin. Do not pass inline JSON as the
+option value; `--params '{}'` is interpreted as a file path named `{}`.
 
 Common tools:
 
@@ -88,7 +92,8 @@ only when raw cells are genuinely needed and the output will remain reviewable.
 Use custom inspect scripts only when managed tools do not answer a bounded evidence question:
 
 ```bash
-univer inspect "$WB" --script "$SIDECAR/inspect-scripts/probe.js" --params ./probe.params.json
+printf '%s' '{"reason":"bounded-readonly-evidence"}' \
+  | univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --params -
 ```
 
 Custom inspect scripts are readonly probes. Keep them small, parameterized, sidecar-local, and JSON
@@ -158,15 +163,18 @@ For more detail, read `references/sac-execution.md`.
 
 ## Versioning, Preview, And Handoff
 
-Use `univer status` before SaC commands when target cleanliness matters. Use `univer commit` to
-record verified local mutations, `univer restore` or `univer reset` to discard local work, and
-`univer pull` or `univer sync` for remote-bound units.
+Use `univer status <file.univer>` before SaC commands when target cleanliness matters. `status`
+always requires the actual target `.univer` file; it is not a current-directory, daemon, viewer,
+git, remote unit name, or sheet-name status command. Omit `--local-unit-id` to list all local
+units, or pass it when checking one unit's binding and cleanliness before writes, pull, or sync.
+Use `univer commit` to record verified local mutations, `univer restore` or `univer reset` to
+discard local work, and `univer pull` or `univer sync` for remote-bound units.
 
-For visual review, prefer `univer view "$WB" --no-open --json` when an agent browser tool is
-available, then open the returned URL with that tool. Use `univer view "$WB" --open --json` when no
+For visual review, prefer `univer view "$UNIVERFILE" --no-open --json` when an agent browser tool is
+available, then open the returned URL with that tool. Use `univer view "$UNIVERFILE" --open --json` when no
 agent browser tool is available and OS browser opening is appropriate.
 
-Use `univer export` for Excel-compatible handoff after verifying the workbook-visible state that
+Use `univer export` for Excel-compatible handoff after verifying the target-visible state that
 matters for the task.
 
 For more detail, read `references/versioning-and-handoff.md`.

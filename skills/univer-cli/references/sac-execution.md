@@ -1,25 +1,30 @@
 # SaC Execution
 
 Execution commands operate on the target `.univer` and the resolved sidecar source. SaC commands
-require clean target state; use `univer status` and commit or restore uncommitted local mutations
-before `materialize`, `apply`, `rollback`, or `verify`.
+require clean target state; use `univer status <file.univer>` and commit or restore uncommitted
+local mutations before `materialize`, `apply`, `rollback`, or `verify`. Examples use
+`UNIVERFILE=./orders.univer` as a shell variable for the target path; set it in the same shell or
+replace `$UNIVERFILE` with the literal `.univer` path.
 
 ## Apply
 
 ```bash
-univer sac apply "$WB"
+UNIVERFILE=./orders.univer
+
+univer sac apply "$UNIVERFILE"
 ```
 
-`apply` executes pending migration source into the target workbook. It advances the applied SaC
-chain. Apply success means the source executed; it does not prove that workbook-visible behavior is
-correct.
+`apply` executes pending migration source into the target. It advances the applied SaC chain. Apply
+success means the source executed; it does not prove that target-visible behavior is correct.
 
-Use workbook-visible evidence, view/export readback, or `verify` when correctness matters.
+Use target-visible evidence, view/export readback, or `verify` when correctness matters.
 
 ## Rollback
 
 ```bash
-univer sac rollback "$WB"
+UNIVERFILE=./orders.univer
+
+univer sac rollback "$UNIVERFILE"
 ```
 
 `rollback` moves the target back across an applied migration boundary. It is appropriate when the
@@ -30,7 +35,9 @@ Rollback is not arbitrary spreadsheet undo. It operates on the applied SaC chain
 ## Verify
 
 ```bash
-univer sac verify "$WB" --json
+UNIVERFILE=./orders.univer
+
+univer sac verify "$UNIVERFILE" --json
 ```
 
 `verify` checks global `assertions/**/*.assertions.ts` entrypoints against a sandbox copy. It does
@@ -47,13 +54,13 @@ Interpretation:
 
 - `status: passed` means global assertions matched actual readback.
 - `status: failed` means compare expected/actual, assertion kind, target, diagnostics, and
-  first difference when present. Decide whether the workbook final state is wrong or the global
+  first difference when present. Decide whether the target final state is wrong or the global
   assertion expectation is wrong before editing either side.
-- `status: error` means setup failed before workbook behavior can be judged.
+- `status: error` means setup failed before target behavior can be judged.
 - missing global assertions are setup errors and are not completion evidence for changed durable
   behavior.
 
-Use assertions and verify when durable workbook correctness matters. The skill does not require a
+Use assertions and verify when durable target correctness matters. The skill does not require a
 specific RED/GREEN workflow.
 
 Materialize archives replaced active migrations under `archives/materialize/<archive-id>/migrations/`.
