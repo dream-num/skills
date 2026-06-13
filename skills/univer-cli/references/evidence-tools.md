@@ -84,4 +84,4 @@ Keep custom probes:
   unknown row
 - JSON-oriented when another command or agent will consume the output
 
-Do not use inspect scripts for durable workbook changes.
+Do not use inspect scripts for durable target changes.

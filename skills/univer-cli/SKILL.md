@@ -98,14 +98,13 @@ printf '%s' '{"reason":"bounded-readonly-evidence"}' \
 
 Custom inspect scripts are readonly probes. Keep them small, parameterized, sidecar-local, and JSON
 oriented. Make probe failures compact: return error counts, field diagnostics, and a few head/tail
-samples, not every unmatched row or raw source record. Do not use them for durable workbook
-mutations.
+samples, not every unmatched row or raw source record. Do not use them for durable target mutations.
 
 For more detail, read `references/evidence-tools.md`.
 
 ## SaC Authoring
 
-SaC is the source-backed authoring path for durable workbook behavior.
+SaC is the source-backed authoring path for durable target behavior.
 
 - `materialize` creates or refreshes the hidden sidecar for an existing target from committed target
   state, preserves global `assertions/`, archives replaced active migrations under
@@ -116,13 +115,13 @@ SaC is the source-backed authoring path for durable workbook behavior.
 - `types/` contains generated local Facade/SaC reference material.
 - `inspect-scripts/` is scratch space for readonly probes.
 - `runs/` contains verification reports and sandbox artifacts.
-- `assertions/**/*.assertions.ts` entrypoints express the current workbook-visible final-state
-  contract when correctness matters. Split them by workbook concern such as values, formulas,
-  formatting, or resources, not by migration pack. Update them as migrations change intended
-  workbook state; do not preserve intermediate migration-specific expectations there.
-- `pack.files` lists migration implementation entrypoints only. Keep workbook assertions under
+- `assertions/**/*.assertions.ts` entrypoints express the current target-visible final-state contract
+  when correctness matters. Split them by spreadsheet/unit concern such as values, formulas,
+  formatting, or resources, not by migration pack. Update them as migrations change intended target
+  state; do not preserve intermediate migration-specific expectations there.
+- `pack.files` lists migration implementation entrypoints only. Keep global assertions under
   `assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately.
-  Ordinary draft packs include `migration.ts`; keep `pack.ts` as metadata and author workbook
+  Ordinary draft packs include `migration.ts`; keep `pack.ts` as metadata and author target
   mutations in listed entrypoint files.
 
 Migration templates are source scaffolds, not a DSL. Discover them with:
@@ -132,7 +131,7 @@ univer sac migration templates --json
 univer help sac migration create
 ```
 
-Choose a template only when its `useWhen` matches workbook-visible evidence. Generated template
+Choose a template only when its `useWhen` matches target-visible evidence. Generated template
 files are ordinary SaC source with TODOs: read them, fill them from evidence, apply, and verify. If
 no template fits, create an ordinary migration pack.
 
@@ -147,7 +146,7 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
 `materialize`, `apply`, `rollback`, or `verify`.
 
 - `univer sac apply <file.univer>` executes pending migration source into the target. Apply success
-  is not proof that workbook-visible behavior is correct.
+  is not proof that target-visible behavior is correct.
 - `univer sac rollback <file.univer>` moves the target back across an applied migration boundary. It
   is not arbitrary spreadsheet undo.
 - `univer sac verify <file.univer> --json` checks global assertions against a sandbox copy. It
@@ -155,9 +154,9 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
   `runs/<run-id>/verify-report.json`, and may copy artifacts under `runs/<run-id>/artifacts/`.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
-behavior. When correctness matters, use workbook-visible evidence and relevant global assertions or
-readback before handoff. Treat failed assertions as a decision point: either the workbook final
-state is wrong, or the global assertion expectation is wrong.
+behavior. When correctness matters, use target-visible evidence and relevant global assertions or
+readback before handoff. Treat failed assertions as a decision point: either the target final state
+is wrong, or the global assertion expectation is wrong.
 
 For more detail, read `references/sac-execution.md`.
 
@@ -204,7 +203,7 @@ Do not treat those files as generic scripts to run directly.
   decisions. Request raw/display/cell data only when exact storage or display identity matters.
 - Record non-obvious assumptions somewhere durable when the task is complex, but the product skill
   does not require a specific planning method.
-- Use assertions and `verify` when durable workbook correctness matters, but choose the planning or
+- Use assertions and `verify` when durable target correctness matters, but choose the planning or
   TDD method that fits the user and agent runtime.
 - `univer doctor collect` is for authorized bug reports or Univer team support; explain why and ask
   before running it.

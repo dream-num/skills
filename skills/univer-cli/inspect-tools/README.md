@@ -1,7 +1,7 @@
 # Univer CLI Managed Inspect Tool Package
 
 This directory is a manifest-backed managed inspect tool package for the Univer CLI resolver.
-Do not run these JavaScript files directly and do not copy them into workbook sidecars.
+Do not run these JavaScript files directly and do not copy them into SaC sidecars.
 Run managed tools only through the CLI trust gate:
 
 ```bash

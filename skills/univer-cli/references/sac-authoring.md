@@ -22,7 +22,7 @@ mutations are excluded and should be committed or restored before SaC commands.
 Typical sidecar roles:
 
 - `migrations/`: Facade Migration Pack source.
-- `assertions/`: workbook-level final-state assertion source.
+- `assertions/`: global target final-state assertion source.
 - `archives/materialize/<archive-id>/migrations/`: previous active migration source archived by
   materialize for review only.
 - `types/`: generated Facade/SaC reference material.
@@ -47,11 +47,11 @@ univer sac migration create "describe-change" "$UNIVERFILE"
 Migration packs are ordinary TypeScript source. Use generated local types in the sidecar. Keep
 target path, `localUnitId`, sheet names, and ranges explicit when behavior is unit-specific.
 Ordinary draft packs include a `migration.ts` entrypoint by default. Keep `pack.ts` as metadata and
-execution order; author workbook mutations in listed entrypoint files such as `migration.ts` or
+execution order; author target mutations in listed entrypoint files such as `migration.ts` or
 `*.unit.ts`.
 
 `pack.files` lists migration implementation entrypoints only. Do not include assertion files,
-README files, params, probes, or evidence files. Keep workbook assertions under
+README files, params, probes, or evidence files. Keep global assertions under
 `assertions/**/*.assertions.ts`; `univer sac verify` discovers global assertion entrypoints separately
 from migration apply source.
 
@@ -89,15 +89,15 @@ skills. The CLI help and `templates --json` output are the supported discovery s
 
 ## Assertions
 
-`assertions/**/*.assertions.ts` entrypoints are useful when correctness matters and
-workbook-visible final state should be checked repeatably. Assertions can cover values, formulas,
-ranges, styles, resources, tables, filters, or other supported workbook facts.
+`assertions/**/*.assertions.ts` entrypoints are useful when correctness matters and target-visible
+final state should be checked repeatably. Assertions can cover values, formulas, ranges, styles,
+resources, tables, filters, or other supported spreadsheet/unit facts.
 
-Treat `assertions/**/*.assertions.ts` as the current acceptance contract for the target workbook.
-Split entrypoints by workbook concern, such as `values.assertions.ts`,
+Treat `assertions/**/*.assertions.ts` as the current acceptance contract for the target state.
+Split entrypoints by spreadsheet/unit concern, such as `values.assertions.ts`,
 `formatting.assertions.ts`, or `resources.assertions.ts`, not by migration pack. Other `.ts` files
 under `assertions/` are helpers only when imported by an entrypoint. When a migration changes the
-intended final workbook state, update the global assertions to the new final state in the same
+intended final target state, update the global assertions to the new final state in the same
 work. Do not keep old intermediate expectations just because an earlier migration made them true.
 
 Good assertion targets include important labels, headers, totals, formulas, number formats, visible
