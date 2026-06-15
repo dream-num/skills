@@ -41,6 +41,16 @@ be browser-fetchable with CORS enabled. If you only have `UNIVERFILE=./orders.un
 `univer open "$UNIVERFILE"`; first provide or create an HTTP(S) source URL, or use the viewer file
 picker as a manual human-browser fallback.
 
+Use local fallback only when `file.univer.ai` is unreachable:
+
+```bash
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --local --json
+```
+
+Keep the command process running while using the returned local viewer URL. `--local` serves viewer
+assets only; it still requires an HTTP(S), browser-fetchable, CORS-enabled source URL.
+
 ## Read A Known Range
 
 ```bash

@@ -53,6 +53,18 @@ source URL must be fetchable by that browser with CORS enabled. You can pass `--
 to request an initial unit, or `--viewer-url <url>` for staging, local dev, or a private static
 viewer deployment.
 
+Use `--local` only when `file.univer.ai` is not reachable from the current environment:
+
+```bash
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --local --json
+```
+
+`--local` starts a foreground localhost server and returns a local viewer URL. Keep that command
+process running while the browser uses the URL; stopping the process stops the local viewer URL. The
+local server serves viewer assets only. It does not host, proxy, download, upload, sign, or cache
+the source workbook, so the source URL still must be HTTP(S), browser-fetchable, and CORS-enabled.
+
 Hosted `univer open` does not host local files. If you only have a local `.univer` path, ask for or
 create an HTTP(S) source URL before using this handoff. The viewer's local file picker is a manual
 fallback for a human browser session; do not present it as automatic agent handoff.

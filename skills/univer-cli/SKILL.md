@@ -42,7 +42,7 @@ view, export, SaC source, apply, rollback, verify, and versioning commands.
 | Initialize from a remote unit | `univer clone <file.univer> --unit-id <unitId>` |
 | Discover units | `printf '%s' '{}' \| univer inspect <file.univer> --tool units --params -` |
 | Read target/unit evidence | managed `univer inspect --tool`, then custom readonly `univer inspect --script` probes |
-| Understand visual state | `univer open <http-or-https-univerfile-url> --json`, then open the returned `url` |
+| Understand visual state | `univer open <http-or-https-univerfile-url> --json`, then open the returned `url`; use `--local` only when `file.univer.ai` is unreachable |
 | Create SaC authoring sidecar | `univer sac materialize <file.univer> --json` |
 | Create durable source | `univer sac migration create <description> <file.univer>` |
 | Discover migration scaffolds | `univer sac migration templates --json` |
@@ -180,6 +180,19 @@ univer open "$SOURCE_URL" --json
 Open the returned `url` with the available browser tool, such as agent-browser or Playwright. The
 source URL must be fetchable by that browser with CORS enabled. Include the viewer URL in the user
 response when it is useful for handoff or review.
+
+If `file.univer.ai` is not reachable from the current environment, use the explicit local viewer
+fallback:
+
+```bash
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --local --json
+```
+
+This starts a foreground localhost server that serves viewer assets only. It does not host, proxy,
+download, upload, sign, or cache the source workbook. Keep the command process running while using
+the returned local viewer URL; stopping the process stops the URL. The source URL still must be
+HTTP(S), browser-fetchable, and CORS-enabled.
 
 If you only have a local `.univer` path, do not claim that `univer open "$UNIVERFILE"` will
 automatically host, upload, or serve it. Ask for or create an HTTP(S) source URL before using hosted
