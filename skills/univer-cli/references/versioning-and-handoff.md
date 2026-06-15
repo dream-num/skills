@@ -40,21 +40,31 @@ both need reconciliation.
 
 ## Preview And Comments
 
-When an agent browser tool is available:
+When an agent browser tool is available and you have a browser-fetchable HTTP(S) `.univer` source
+URL:
 
 ```bash
-UNIVERFILE=./orders.univer
-
-univer view "$UNIVERFILE" --no-open --json
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --json
 ```
 
-Open the returned URL with the browser tool. When no agent browser tool is available and OS browser
-opening is appropriate:
+Open the returned `url` with agent-browser, Playwright, or another available browser tool. The
+source URL must be fetchable by that browser with CORS enabled. You can pass `--unit <localUnitId>`
+to request an initial unit, or `--viewer-url <url>` for staging, local dev, or a private static
+viewer deployment.
+
+Hosted `univer open` does not host local files. If you only have a local `.univer` path, ask for or
+create an HTTP(S) source URL before using this handoff. The viewer's local file picker is a manual
+fallback for a human browser session; do not present it as automatic agent handoff.
+
+Do not run browser preview in known headless, remote, CI, server, or user-requested no-browser
+environments unless a browser-capable tool or explicit user handoff is available.
+
+Example with a private or local viewer deployment:
 
 ```bash
-UNIVERFILE=./orders.univer
-
-univer view "$UNIVERFILE" --open --json
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --viewer-url http://127.0.0.1:5173/ --json
 ```
 
 Read local viewer review comments with:
