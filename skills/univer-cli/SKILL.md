@@ -63,9 +63,13 @@ Managed inspect tools are the preferred readonly evidence surface. Use:
 UNIVERFILE=./Budget.univer
 univer inspect tools list --json
 univer inspect tools resolve sheet-range --json
-printf '%s' '{"localUnitId":"...","sheetName":"Sheet1","rangeA1":"A1:D20"}' \
+printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' \
   | univer inspect "$UNIVERFILE" --tool sheet-range --params -
 ```
+
+Do not assume a default sheet name such as `Sheet1`. Read the actual sheet names from `units` or
+`sheet-overview` first, then use the exact returned name in `sheetName` and in assertion `range()`
+targets.
 
 `--params` accepts either a real JSON file path or `-` for stdin. Do not pass inline JSON as the
 option value; `--params '{}'` is interpreted as a file path named `{}`.
@@ -123,6 +127,21 @@ SaC is the source-backed authoring path for durable target behavior.
   `assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately.
   Ordinary draft packs include `migration.ts`; keep `pack.ts` as metadata and author target
   mutations in listed entrypoint files.
+
+SaC source uses two generated ambient modules. Import the API from these names directly; do not
+broad-search the sidecar to discover that the API exists:
+
+- Migrations: `import { defineFacadeMigrationPack, defineUnitMigration } from "univer:sac/facade-migration-pack";`
+  Each `defineUnitMigration({ apply })` receives `context.univerAPI` (Facade `FUniver`); start from
+  `context.univerAPI.getWorkbook(localUnitId)`.
+- Assertions: `import { defineAssertions } from "univer:sac/assertions";`
+  `defineAssertions(({ sheet, range }) => { ... })`. `sheet(name)` exposes
+  `exists/usedRange/filter/tables`; `range("Sheet!A1:B2")` (sheet-qualified A1) exposes
+  `values/rawValues/displayValues/cellData/formula/formulas/numberFormats/styles/backgroundColors/conditionalFormats`.
+
+Full Facade method signatures live in the sidecar `types/*.d.ts`. Scope lookups narrowly, e.g.
+`rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of broad reads of the
+sidecar or CLI install. See `references/sac-authoring.md` for a copyable assertion entrypoint.
 
 Migration templates are source scaffolds, not a DSL. Discover them with:
 
