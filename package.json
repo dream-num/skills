@@ -1,0 +1,8 @@
+{
+  "name": "@dream-num/skills",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate-univer-skills.mjs"
+  }
+}

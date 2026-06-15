@@ -1,53 +1,50 @@
-# Official Univer Skills for Workbook Automation
+# Official Univer CLI Skill for Workbook Automation
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Skills](https://img.shields.io/badge/skills-5-0a7ea4.svg)
+![Skills](https://img.shields.io/badge/skills-1-0a7ea4.svg)
 ![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
 Languages: [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-Official Univer skills for workbook automation across Claude Code, Codex, and Cursor.
+Official Univer product skill for workbook automation across Claude Code, Codex, and Cursor.
+Start from [univer.ai](https://univer.ai).
 
-This repository exposes canonical Univer product skills:
+This repository exposes one canonical product skill:
 
-- [`using-univer-cli`](./skills/using-univer-cli/SKILL.md): required entry skill for workbook tasks
-- [`univer-cli`](./skills/univer-cli/SKILL.md): path-first workbook work through `univer`
-- [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md): SaC workbook behavior plans under `<package.univer>/plans/`
-- [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md): plan review and pack-by-pack execution
-- [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md): assertion-backed SaC TDD and verify repair loops
+- [`univer-cli`](./skills/univer-cli/SKILL.md): public `univer` CLI and SaC capability guidance
+  for `.univer` targets, workbook evidence, managed inspect tools, migration packs, verification,
+  preview, versioning, import, export, and handoff.
 
 ## Highlights
 
-- **🧮 A spreadsheet engine that lives in your terminal**  
-  Drive real workbook semantics from the CLI: formulas, formatting, conditional formatting, charts, shapes, layout, import/export, and live preview.
+- **A spreadsheet engine in your terminal**  
+  Drive workbook semantics through the public `univer` CLI: formulas, formatting, conditional
+  formatting, charts, shapes, layout, import/export, and preview.
 
-- **✅ Commits for workbook state**  
-  Agents mutate workbooks fast; humans review the rendered result; only verified changes become explicit, syncable changesets.
+- **Evidence-first workbook work**  
+  Use managed inspect tools, readonly probes, view, verify, and export/readback to understand and
+  prove workbook-visible state.
 
-- **☁️ Cloud-backed workbook multiplayer**  
-  Clone, pull, and sync shared workbook state through Univer’s OT-based collaboration layer, so agents can work across machines and regions.
+- **Source-backed durable changes**  
+  Use SaC sidecars, Facade Migration Packs, templates, apply, rollback, and verify for repeatable
+  workbook behavior.
 
-- **🔁 Pipelines over cells, not files**  
-  Stream sheet ranges through `pipe out` / `pipe in`, route them through shell tools, and write back bounded matrices without cracking open workbook packages.
+- **Excel-compatible handoff**  
+  Import and export `.xlsx` files while agents work against structured `.univer` workbook state.
 
-- **📊 Excel-compatible handoff**  
-  Import and export `.xlsx` files while agents work against structured Univer workbook state internally.
+## Why One Skill
 
-## Why These Skills
+`univer-cli` is a product skill, not an agent workflow package. It explains the Univer CLI and SaC
+public surfaces, evidence boundaries, and best practices. Agents can use any planning method chosen
+by their runtime or user.
 
-The skills cover complementary workbook workflows:
+The skill uses progressive disclosure:
 
-- `using-univer-cli` is the required entry skill for workbook tasks; it keeps agents on Univer CLI instead of ad hoc spreadsheet libraries, then routes ordinary work to `univer-cli` and complex SaC behavior to the plan, execution, and TDD skills
-- `univer-cli` is for workbook-visible work: `new`, `import`, `export`, `inspect`, `search`, `fill`, `run`, and `pipe`
-- `writing-univer-plans` is for complex SaC workbook behavior planning, range roles, Migration Pack boundaries, and assertion gates written under `<package.univer>/plans/`
-- `executing-univer-plans` is for reviewing written plans and executing one Migration Pack at a time
-- `test-driven-univer-development` is for assertion-backed SaC TDD, `univer sac verify <package.univer> --json`, and evidence-driven repair
-
-Use `univer-cli` for workbook inspection, bounded edits, formula review, shell-native roundtrips, and handoff verification.
-Use `using-univer-cli` first when the task could be either ordinary workbook automation or SaC source authoring.
-Use `writing-univer-plans`, `executing-univer-plans`, and `test-driven-univer-development` when workbook behavior should be built as SaC source and verified through `assertions.ts`.
-Benchmark solver tasks should receive task-local `AGENTS.md` constraints from the harness, then route through `using-univer-cli` and the SaC plan/execution/TDD skills.
+- `skills/univer-cli/SKILL.md` is the only required entry point.
+- `skills/univer-cli/references/` contains longer capability notes and checked recipes.
+- `skills/univer-cli/inspect-tools/` contains managed readonly inspect tool resources used through
+  `univer inspect --tool`.
 
 ## Quick Install
 
@@ -63,7 +60,7 @@ Install this skill repository:
 npx skills add dream-num/skills
 ```
 
-Manual install the official workflow skills:
+Manual install:
 
 ```bash
 git clone https://github.com/dream-num/skills.git
@@ -71,66 +68,49 @@ cd skills
 
 # Claude Code
 mkdir -p ~/.claude/skills
-cp -R skills/using-univer-cli ~/.claude/skills/
 cp -R skills/univer-cli ~/.claude/skills/
-cp -R skills/writing-univer-plans ~/.claude/skills/
-cp -R skills/executing-univer-plans ~/.claude/skills/
-cp -R skills/test-driven-univer-development ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
-cp -R skills/using-univer-cli ~/.codex/skills/
 cp -R skills/univer-cli ~/.codex/skills/
-cp -R skills/writing-univer-plans ~/.codex/skills/
-cp -R skills/executing-univer-plans ~/.codex/skills/
-cp -R skills/test-driven-univer-development ~/.codex/skills/
 
 # Cursor
 mkdir -p ~/.cursor/skills
-cp -R skills/using-univer-cli ~/.cursor/skills/
 cp -R skills/univer-cli ~/.cursor/skills/
-cp -R skills/writing-univer-plans ~/.cursor/skills/
-cp -R skills/executing-univer-plans ~/.cursor/skills/
-cp -R skills/test-driven-univer-development ~/.cursor/skills/
 ```
 
-## Available Skills
+## Available Skill
 
-| Skill | What it does | Best for | Status |
-|---|---|---|---|
-| [`using-univer-cli`](./skills/using-univer-cli/SKILL.md) | Required entry skill for workbook tasks, with Univer CLI as the workbook engine and SaC TDD handoff when needed | choosing the right Univer path before acting | canonical |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Path-first workbook automation with lifecycle commands, inspection, cell search, fill, run, and shell-native roundtrips | workbook inspection, content-driven cell lookup, formula review, bounded edits, verification-first authoring, handoff | canonical |
-| [`writing-univer-plans`](./skills/writing-univer-plans/SKILL.md) | Package-local success criteria and SaC plans with workbook intent, range roles, Migration Pack sequence, and assertion gates | complex workbook behavior decomposition before editing migration source | canonical |
-| [`executing-univer-plans`](./skills/executing-univer-plans/SKILL.md) | Plan review and pack-by-pack execution for SaC workbook behavior | implementing written Univer plans without skipping assertion gates | canonical |
-| [`test-driven-univer-development`](./skills/test-driven-univer-development/SKILL.md) | Package-local SaC TDD with assertion coverage, apply/verify, returned assertion evidence repair, and handoff gates | implementing Facade Migration Packs with strong workbook-visible proof | canonical |
+| Skill | Best for | Status |
+| --- | --- | --- |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | workbook inspection, `.univer` targets, managed inspect tools, SaC authoring, apply/rollback/verify, preview, versioning, import/export, and handoff | canonical |
 
 ## Example Prompts
 
 ```text
-Use using-univer-cli to inspect this workbook, list all sheets, and summarize the formulas on the pricing sheet before making any edits.
+Use univer-cli to inspect this workbook, list all sheets, and summarize formulas on the pricing sheet before making any edits.
 ```
 
 ```text
-Use using-univer-cli to import ./input.xlsx into ./Budget.univer, add a bounded review table, then verify the header row and anchor cells.
+Use univer-cli to import --file ./input.xlsx into ./Budget.univer, inspect the target unit and relevant ranges, then create a durable SaC migration for the requested workbook change.
 ```
 
 ```text
-Use using-univer-cli to build this complex workbook behavior as SaC source. Route through writing-univer-plans, executing-univer-plans, and test-driven-univer-development, write success criteria under <package.univer>/success-criteria/ and the plan under <package.univer>/plans/, add assertions.ts coverage, and complete only after univer sac verify <package.univer> --json passes with returned assertion evidence.
+Use univer-cli to create a migration from a suitable template if workbook-visible evidence matches one; otherwise create an ordinary migration pack, apply it, and verify the applied behavior.
 ```
-
 
 ## Requirements
 
 - OS: Linux or macOS
-- `univer-cli` skill: requires `univer`
-- SaC workflow skills: require `univer` with experimental SaC enabled for `univer sac` workflows
-- common companion tools for shell roundtrips: `awk`, `sed`, `python3` or `python`
+- Univer CLI installed as `univer`
+- common shell tools for command roundtrips: `awk`, `sed`, and Node.js
 
 ## Contributing
 
-- keep each skill self-contained under `skills/<skill-name>/`
-- keep `SKILL.md` concise and move details into one-level `references/`
-- add or update eval prompts for behavior changes
+- keep the product skill source under `skills/univer-cli/`
+- keep `SKILL.md` concise and move long capability notes into one-level `references/`
+- keep managed inspect tools under `skills/univer-cli/inspect-tools/`
+- run `npm run validate` before publishing skill package changes
 
 ## License
 
