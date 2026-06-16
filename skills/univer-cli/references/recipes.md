@@ -59,7 +59,7 @@ UNIVERFILE=./orders.univer
 cat > ./range.params.json <<'JSON'
 {
   "localUnitId": "replace-with-localUnitId",
-  "sheetName": "Sheet1",
+  "sheetName": "replace-with-sheetName",
   "rangeA1": "A1:D20",
   "include": ["normalizedValues", "valueDetails", "formulas", "numberFormats", "semanticStyles"]
 }
@@ -68,7 +68,7 @@ univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json
 ```
 
 Prefer normalized values for ordinary text decisions. Opt into exact raw/display/cell data only
-when the task needs that distinction.
+when the task needs that distinction. Use the real `sheetName` from `units`/`sheet-overview`; do not default to `Sheet1`.
 
 ## Locate A Label Then Read Around It
 
@@ -149,6 +149,32 @@ ordinary migration pack; edit `migration.ts`, not `pack.ts`. Keep `pack.ts` as m
 execution order only. Follow the generated `migration.ts` comments for common safe write shapes, and
 check sidecar `types/*.d.ts` before using unfamiliar Facade APIs. In `displayValues` assertions, use
 `""` for blank cells.
+
+## Author And Verify Assertions
+
+Global assertions live under `assertions/**/*.assertions.ts` and are discovered by `verify`, not
+listed in `pack.files`. Import the API by name; do not search the sidecar to find it.
+
+```ts
+// assertions/values.assertions.ts
+import { defineAssertions } from "univer:sac/assertions";
+
+export default defineAssertions(({ sheet, range }) => {
+  sheet("Summary").exists();
+  range("Summary!A2:B2").values([["Widget", 1280]]); // typed values: number stays a number
+  range("Summary!C2").formula("=SUM(B2:B10)");
+  range("Summary!D2:D3").displayValues([["", "12.5%"]]); // display strings; blank = ""
+});
+```
+
+```bash
+UNIVERFILE=./orders.univer
+univer sac verify "$UNIVERFILE" --json
+```
+
+`range()` is sheet-qualified A1. For `values`/`rawValues`, assert dates and numbers as numbers
+(dates are serial numbers like `45344`), not quoted strings; use `displayValues` for formatted text.
+See `references/sac-authoring.md` for the full method/value-type table.
 
 ## Roll Back Latest Applied Boundary
 

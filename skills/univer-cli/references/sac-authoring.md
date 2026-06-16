@@ -104,8 +104,33 @@ Good assertion targets include important labels, headers, totals, formulas, numb
 values, sheet existence, used ranges, filters, tables, key resource semantics, representative rows,
 and aggregate facts. For large tables, prefer stable summaries and representative rows over a full
 cell snapshot.
-For `displayValues`, assert blank cells as empty strings (`""`) because display readback returns
-strings. Use raw/value assertions when null-like storage identity is the contract.
+
+A minimal entrypoint (`assertions/values.assertions.ts`) looks like this:
+
+```ts
+import { defineAssertions } from "univer:sac/assertions";
+
+export default defineAssertions(({ sheet, range }) => {
+  sheet("Summary").exists();
+  // values()/rawValues() compare TYPED cell values, not display text:
+  range("Summary!A2:B2").values([["Widget", 1280]]); // a number stays a number
+  range("Summary!C2").formula("=SUM(B2:B10)");        // formula text incl. leading "="
+  range("Summary!D2:D3").displayValues([["", "12.5%"]]); // display readback is strings; blank = ""
+});
+```
+
+`range()` takes a sheet-qualified A1 such as `"Summary!A1:B2"`. Match the assertion method to the
+value type you are gating, or it will fail even when the workbook is correct:
+
+- `values` / `rawValues`: typed cell values. Numbers stay numbers, booleans stay `true`/`false`, and
+  **dates are serial numbers** (e.g. `45344`), not strings. Do not quote a date or number as a
+  string in these matrices.
+- `displayValues`: formatted strings exactly as shown; assert blank cells as `""` because display
+  readback returns strings.
+- `formula` (single A1) / `formulas` (matrix): formula text including the leading `=`.
+- `numberFormats`, `styles`, `backgroundColors`, `conditionalFormats`: format/style/resource facts.
+
+Use raw/value assertions when null-like storage identity is the contract.
 
 Do not use assertions for temporary intermediate migration states, raw `.univer` storage internals,
 generated ids, broad inspect dumps, or runtime implementation details. Use readonly inspect probes
