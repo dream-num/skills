@@ -90,13 +90,23 @@ skills. The CLI help and `templates --json` output are the supported discovery s
 ## Assertions
 
 `assertions/**/*.assertions.ts` entrypoints are useful when correctness matters and target-visible
-final state should be checked repeatably. Assertions are file-level and must route every assertion
-through an explicit typed unit helper:
+final state should be checked repeatably. Assertions are file-level: use `target` for container
+inventory, explicit typed unit helpers for unit-local facts, and `facts` for shared business facts
+that must agree across units.
 
 ```ts
 import { defineAssertions } from "univer:sac/assertions";
 
-export default defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit }) => {
+export default defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUnit, facts }) => {
+  target(({ units }) => {
+    units().contains([
+      { localUnitId: "crm", unitType: "base", name: "CRM" },
+      { localUnitId: "report", unitType: "sheet", name: "Pipeline Report" },
+      { localUnitId: "brief", unitType: "doc", name: "Executive Brief" },
+      { localUnitId: "deck", unitType: "slide", name: "QBR Deck" }
+    ]);
+  });
+
   sheetUnit("replace-with-sheet-localUnitId", ({ sheet, range }) => {
     sheet("Summary").exists();
     range("Summary!A1:C3").displayValues([
@@ -104,27 +114,47 @@ export default defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit }) =>
       ["North", "$12,000", "18%"],
       ["South", "$9,500", "16%"]
     ]);
+    range("Summary!B4").displayValue("$535K");
+    range("Summary!B4").numberFormat("$#,##0");
   });
 
   baseUnit("replace-with-base-localUnitId", ({ table }) => {
     table("Accounts").exists();
     table("Accounts").fields([{ name: "Status", type: "text" }]);
     table("Accounts").records([{ Name: "Acme", Status: "Active" }]);
+    table("Accounts").recordCount(3);
+    table("Accounts").recordsContain([{ Name: "Acme" }]);
+    table("Accounts").recordByKey("Name", "Acme").matches({ Status: "Active" });
     table("Accounts").view("Open Accounts").type("grid");
   });
 
-  slideUnit("replace-with-slide-localUnitId", ({ slide }) => {
+  slideUnit("replace-with-slide-localUnitId", ({ presentation, slide }) => {
+    presentation().pageSize({ width: 1280, height: 720 });
     slide("intro").exists();
+    slide("intro").textContains("Q2 Revenue");
     slide("intro").shape("title").text("Q2 Revenue Review");
   });
 
   docUnit("replace-with-doc-localUnitId", ({ document }) => {
     document().heading("Executive Summary").exists();
     document().paragraphs(["Executive Summary", "Approved forecast"]);
+    document().paragraphsContain(["Approved forecast"]);
+    document().outline([{ text: "Executive Summary", level: 1 }]);
     document().textContains("Approved forecast");
+  });
+
+  facts(({ fact }) => {
+    fact("pipeline-total", "$535K")
+      .sheetDisplayValue("report", "Summary!B4")
+      .docTextContains("brief")
+      .slideTextContains("deck", "intro");
   });
 });
 ```
+
+`defineAssertions` registration is synchronous deterministic code. Do not use async assertions or
+runtime probes inside registration; use readonly inspect scripts for investigation and then encode
+the durable result as assertions.
 
 `localUnitId` is the only top-level assertion unit selector. Do not use remote unit ids, unit
 names, sheet names, or implicit active workbook state to route assertions. Legacy top-level
@@ -140,11 +170,12 @@ to the new final state in the same work. Do not keep old intermediate expectatio
 earlier migration made them true.
 
 Good assertion targets include important labels, headers, totals, formulas, number formats, visible
-values, sheet existence, used ranges, filters, spreadsheet tables, key resource semantics, Base
-tables/fields/records/views, slide/page/shape text and geometry, doc text, headings, paragraphs,
-representative rows, and aggregate facts. For large tables, prefer stable summaries and
-representative rows over a full cell snapshot. For Base, slide, and doc assertions, prefer stable
-Facade-visible semantics over raw storage snapshots and generated ids.
+values, sheet existence, used ranges, filters, spreadsheet tables, unit inventory, key resource
+semantics, Base tables/fields/records/views, Base record counts and key lookups, slide/page/shape
+text and geometry, doc text, outline, headings, paragraphs, representative rows, and cross-unit
+business facts. For large tables, prefer stable summaries and representative rows over a full cell
+snapshot. For Base, slide, and doc assertions, prefer stable Facade-visible semantics over raw
+storage snapshots and generated ids.
 
 A minimal entrypoint (`assertions/values.assertions.ts`) looks like this:
 
