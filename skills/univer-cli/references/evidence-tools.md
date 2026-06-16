@@ -42,14 +42,21 @@ Tool roles:
 | `sheet-overview` | You need sheet names, used ranges, bounded samples, formulas, warnings, or candidate non-empty regions. |
 | `sheet-search` | You know visible text or values but not coordinates. |
 | `sheet-neighborhood` | You have an anchor and need nearby headers, labels, totals, or context. |
-| `sheet-range` | You know explicit sheet/range rectangles and need values, formulas, formats, styles, or typed facts. |
+| `sheet-range` | You know explicit sheet/range rectangles and need values, formulas, formats, direct static style traits, or typed facts. |
 | `sheet-formulas` | You need to audit formula locations or formula text. |
-| `sheet-conditional-formats` | You need conditional formatting rule resources and target ranges. |
+| `sheet-conditional-formats` | You need conditional formatting rule resources, their target ranges, and rule config. |
 
 Use normalized evidence by default for ordinary labels, copied text, grouping, matching, and write
-planning. Request exact `rawValues`, `displayValues`, `cellData`, or value details only when the
-task depends on exact storage text, display strings, rich cell model data, multi-line content, or
-export/debug details.
+planning. Request exact `rawValues`, `displayValues`, `cellData`, `valueDetails`, `cellFacts`,
+`numberFormats`, formulas, or `semanticStyles` only when the task depends on exact storage text,
+display strings, typed values, formulas, formats, static style traits, rich cell model data,
+multi-line content, or export/debug details. `semanticStyles` is for supported stable traits and
+does not expose raw style ids.
+
+Use `sheet-conditional-formats` when the question is whether conditional formatting rules exist,
+where they apply, and what conditions/styles they encode. It does not prove every cell's final
+rendered appearance; combine it with `sheet-range` value evidence when a rule's outcome depends on
+cell values.
 
 `sheet-overview` regions are candidate non-empty rectangles. They are evidence for possible table
 boundaries, footers, spacer columns, formulas, and blank tails; they are not final business
@@ -78,8 +85,8 @@ Keep custom probes:
 - parameterized through JSON params for variable targets such as `localUnitId`, sheet names, ranges,
   labels, and thresholds
 - focused on the sheets, ranges, and columns needed for the question
-- compact in output, returning facts such as `count`, `total`, `mismatches`, `head`, and `tail`
-- fail-compact: if extraction or matching fails, return `ok: false`, totals such as
+- concise in output, returning facts such as `count`, `total`, `mismatches`, `head`, and `tail`
+- concise on failure: if extraction or matching fails, return `ok: false`, totals such as
   `unknownCount`/`mismatchCount`, field diagnostics, and bounded samples rather than dumping every
   unknown row
 - JSON-oriented when another command or agent will consume the output
