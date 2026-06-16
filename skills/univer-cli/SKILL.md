@@ -119,9 +119,13 @@ SaC is the source-backed authoring path for durable target behavior.
 - `types/` contains generated local Facade/SaC reference material.
 - `inspect-scripts/` is scratch space for readonly probes.
 - `runs/` contains verification reports and sandbox artifacts.
-- `assertions/**/*.assertions.ts` entrypoints express the current target-visible final-state contract
-  when correctness matters. Split them by spreadsheet/unit concern such as values, formulas,
-  formatting, or resources, not by migration pack. Update them as migrations change intended target
+- `assertions/**/*.assertions.ts` entrypoints express the current file-level target-visible
+  final-state contract when correctness matters. Assertions must use explicit typed unit helpers:
+  `sheetUnit(localUnitId, ...)`, `baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`, or
+  `docUnit(localUnitId, ...)`. The `localUnitId` is the only top-level assertion unit selector; do
+  not route assertions by remote unit id, unit name, sheet name, or implicit active workbook state.
+  Split entrypoints by unit or target concern such as values, formulas, formatting, Base records,
+  slide text, or doc content, not by migration pack. Update them as migrations change intended target
   state; do not preserve intermediate migration-specific expectations there.
 - `pack.files` lists migration implementation entrypoints only. Keep global assertions under
   `assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately.
@@ -135,9 +139,12 @@ broad-search the sidecar to discover that the API exists:
   Each `defineUnitMigration({ apply })` receives `context.univerAPI` (Facade `FUniver`); start from
   `context.univerAPI.getWorkbook(localUnitId)`.
 - Assertions: `import { defineAssertions } from "univer:sac/assertions";`
-  `defineAssertions(({ sheet, range }) => { ... })`. `sheet(name)` exposes
+  `defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit }) => { ... })`. Inside
+  `sheetUnit(localUnitId, ({ sheet, range }) => { ... })`, `sheet(name)` exposes
   `exists/usedRange/filter/tables`; `range("Sheet!A1:B2")` (sheet-qualified A1) exposes
   `values/rawValues/displayValues/cellData/formula/formulas/numberFormats/styles/backgroundColors/conditionalFormats`.
+  Base, slide, and doc assertions use `baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`,
+  and `docUnit(localUnitId, ...)`.
 
 Full Facade method signatures live in the sidecar `types/*.d.ts`. Scope lookups narrowly, e.g.
 `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of broad reads of the
@@ -168,14 +175,19 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
   is not proof that target-visible behavior is correct.
 - `univer sac rollback <file.univer>` moves the target back across an applied migration boundary. It
   is not arbitrary spreadsheet undo.
-- `univer sac verify <file.univer> --json` checks global assertions against a sandbox copy. It
-  does not apply pending source. It writes a JSON report at the returned `reportPath`, under
-  `runs/<run-id>/verify-report.json`, and may copy artifacts under `runs/<run-id>/artifacts/`.
+- `univer sac verify <file.univer> --json` checks file-level typed unit assertions against a
+  sandbox copy. It does not apply pending source. It writes a JSON report at the returned
+  `reportPath`, under `runs/<run-id>/verify-report.json`, and may copy artifacts under
+  `runs/<run-id>/artifacts/`. Read unit-aware failure facts: `unitType`, `localUnitId`, assertion
+  kind, unit-local target, expected value, actual value, first difference, and setup error code when
+  present.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
 behavior. When correctness matters, use target-visible evidence and relevant global assertions or
 readback before handoff. Treat failed assertions as a decision point: either the target final state
-is wrong, or the global assertion expectation is wrong.
+is wrong, or the global assertion expectation is wrong. Treat legacy top-level `sheet()` or
+`range()` usage, missing units, unit type mismatches, and unsupported readback surfaces as setup
+repair, not final-state workbook mismatch.
 
 For more detail, read `references/sac-execution.md`.
 
@@ -252,7 +264,7 @@ Do not treat those files as generic scripts to run directly.
   decisions. Request raw/display/cell data only when exact storage or display identity matters.
 - Record non-obvious assumptions somewhere durable when the task is complex, but the product skill
   does not require a specific planning method.
-- Use assertions and `verify` when durable target correctness matters, but choose the planning or
-  TDD method that fits the user and agent runtime.
+- Use explicit typed unit assertions and `verify` when durable target correctness matters, but choose
+  the planning or TDD method that fits the user and agent runtime.
 - `univer doctor collect` is for authorized bug reports or Univer team support; explain why and ask
   before running it.

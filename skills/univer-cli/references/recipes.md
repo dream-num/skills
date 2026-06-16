@@ -153,17 +153,21 @@ check sidecar `types/*.d.ts` before using unfamiliar Facade APIs. In `displayVal
 ## Author And Verify Assertions
 
 Global assertions live under `assertions/**/*.assertions.ts` and are discovered by `verify`, not
-listed in `pack.files`. Import the API by name; do not search the sidecar to find it.
+listed in `pack.files`. Import the API by name; do not search the sidecar to find it. Assertions
+must use explicit typed unit helpers; discover the target `localUnitId` with `inspect --tool units`
+before authoring.
 
 ```ts
 // assertions/values.assertions.ts
 import { defineAssertions } from "univer:sac/assertions";
 
-export default defineAssertions(({ sheet, range }) => {
-  sheet("Summary").exists();
-  range("Summary!A2:B2").values([["Widget", 1280]]); // typed values: number stays a number
-  range("Summary!C2").formula("=SUM(B2:B10)");
-  range("Summary!D2:D3").displayValues([["", "12.5%"]]); // display strings; blank = ""
+export default defineAssertions(({ sheetUnit }) => {
+  sheetUnit("replace-with-sheet-localUnitId", ({ sheet, range }) => {
+    sheet("Summary").exists();
+    range("Summary!A2:B2").values([["Widget", 1280]]); // typed values: number stays a number
+    range("Summary!C2").formula("=SUM(B2:B10)");
+    range("Summary!D2:D3").displayValues([["", "12.5%"]]); // display strings; blank = ""
+  });
 });
 ```
 
@@ -172,9 +176,10 @@ UNIVERFILE=./orders.univer
 univer sac verify "$UNIVERFILE" --json
 ```
 
-`range()` is sheet-qualified A1. For `values`/`rawValues`, assert dates and numbers as numbers
-(dates are serial numbers like `45344`), not quoted strings; use `displayValues` for formatted text.
-See `references/sac-authoring.md` for the full method/value-type table.
+Inside `sheetUnit`, `range()` is sheet-qualified A1. For `values`/`rawValues`, assert dates and
+numbers as numbers (dates are serial numbers like `45344`), not quoted strings; use
+`displayValues` for formatted text. See `references/sac-authoring.md` for the full method/value-type
+table and Base/slide/doc examples.
 
 ## Roll Back Latest Applied Boundary
 

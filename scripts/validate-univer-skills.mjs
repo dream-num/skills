@@ -257,6 +257,57 @@ async function validateStaleContractText() {
   reports.push(`stale-contract: ${contractFiles.length} markdown files checked`);
 }
 
+async function validateTypedUnitAssertionGuidance() {
+  const skillFile = path.join(skillsRoot, "univer-cli", "SKILL.md");
+  const authoringFile = path.join(skillsRoot, "univer-cli", "references", "sac-authoring.md");
+  const executionFile = path.join(skillsRoot, "univer-cli", "references", "sac-execution.md");
+  const skillText = await readText(skillFile);
+  const authoringText = await readText(authoringFile);
+  const executionText = await readText(executionFile);
+
+  const requiredSkillTokens = [
+    "sheetUnit(localUnitId, ...)",
+    "baseUnit(localUnitId, ...)",
+    "slideUnit(localUnitId, ...)",
+    "docUnit(localUnitId, ...)",
+    "`localUnitId` is the only top-level assertion unit selector",
+    "legacy top-level `sheet()` or\n`range()` usage"
+  ];
+  for (const token of requiredSkillTokens) {
+    if (!skillText.includes(token)) {
+      recordError(`${relativeToRoot(skillFile)}: missing typed assertion guidance token ${JSON.stringify(token)}`);
+    }
+  }
+
+  const requiredAuthoringTokens = [
+    "defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit })",
+    "sheetUnit(\"replace-with-sheet-localUnitId\"",
+    "baseUnit(\"replace-with-base-localUnitId\"",
+    "slideUnit(\"replace-with-slide-localUnitId\"",
+    "docUnit(\"replace-with-doc-localUnitId\"",
+    "Legacy top-level\n`sheet()` and `range()` helpers are not current assertion APIs"
+  ];
+  for (const token of requiredAuthoringTokens) {
+    if (!authoringText.includes(token)) {
+      recordError(`${relativeToRoot(authoringFile)}: missing typed assertion example token ${JSON.stringify(token)}`);
+    }
+  }
+
+  const requiredExecutionTokens = [
+    "global typed unit `assertions/**/*.assertions.ts`",
+    "total and per-unit assertion counts",
+    "`unitType`, `localUnitId`, assertion kind",
+    "unknown `localUnitId`, unit type\n  mismatch"
+  ];
+  for (const token of requiredExecutionTokens) {
+    if (!executionText.includes(token)) {
+      recordError(`${relativeToRoot(executionFile)}: missing typed verify guidance token ${JSON.stringify(token)}`);
+    }
+  }
+
+  reports.push("typed-assertions: skill guidance checked");
+}
+
 async function walkFiles(dirPath, baseDir = dirPath) {
   const files = [];
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -387,6 +438,7 @@ async function main() {
   await validateSkillStructure();
   await validateReadmes();
   await validateStaleContractText();
+  await validateTypedUnitAssertionGuidance();
   await validateDrift();
 
   for (const report of reports) console.log(`ok: ${report}`);

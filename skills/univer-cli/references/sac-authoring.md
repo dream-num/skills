@@ -90,37 +90,81 @@ skills. The CLI help and `templates --json` output are the supported discovery s
 ## Assertions
 
 `assertions/**/*.assertions.ts` entrypoints are useful when correctness matters and target-visible
-final state should be checked repeatably. Assertions can cover values, formulas, ranges, styles,
-resources, tables, filters, or other supported spreadsheet/unit facts.
+final state should be checked repeatably. Assertions are file-level and must route every assertion
+through an explicit typed unit helper:
+
+```ts
+import { defineAssertions } from "univer:sac/assertions";
+
+export default defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit }) => {
+  sheetUnit("replace-with-sheet-localUnitId", ({ sheet, range }) => {
+    sheet("Summary").exists();
+    range("Summary!A1:C3").displayValues([
+      ["Region", "Revenue", "Margin"],
+      ["North", "$12,000", "18%"],
+      ["South", "$9,500", "16%"]
+    ]);
+  });
+
+  baseUnit("replace-with-base-localUnitId", ({ table }) => {
+    table("Accounts").exists();
+    table("Accounts").fields([{ name: "Status", type: "text" }]);
+    table("Accounts").records([{ Name: "Acme", Status: "Active" }]);
+    table("Accounts").view("Open Accounts").type("grid");
+  });
+
+  slideUnit("replace-with-slide-localUnitId", ({ slide }) => {
+    slide("intro").exists();
+    slide("intro").shape("title").text("Q2 Revenue Review");
+  });
+
+  docUnit("replace-with-doc-localUnitId", ({ document }) => {
+    document().heading("Executive Summary").exists();
+    document().paragraphs(["Executive Summary", "Approved forecast"]);
+    document().textContains("Approved forecast");
+  });
+});
+```
+
+`localUnitId` is the only top-level assertion unit selector. Do not use remote unit ids, unit
+names, sheet names, or implicit active workbook state to route assertions. Legacy top-level
+`sheet()` and `range()` helpers are not current assertion APIs; spreadsheet assertions belong inside
+`sheetUnit("<localUnitId>", ({ sheet, range }) => { ... })`.
 
 Treat `assertions/**/*.assertions.ts` as the current acceptance contract for the target state.
-Split entrypoints by spreadsheet/unit concern, such as `values.assertions.ts`,
-`formatting.assertions.ts`, or `resources.assertions.ts`, not by migration pack. Other `.ts` files
-under `assertions/` are helpers only when imported by an entrypoint. When a migration changes the
-intended final target state, update the global assertions to the new final state in the same
-work. Do not keep old intermediate expectations just because an earlier migration made them true.
+Split entrypoints by unit or target concern, such as `sheet-values.assertions.ts`,
+`base-records.assertions.ts`, `slide-copy.assertions.ts`, or `doc-content.assertions.ts`, not by
+migration pack. Other `.ts` files under `assertions/` are helpers only when imported by an
+entrypoint. When a migration changes the intended final target state, update the global assertions
+to the new final state in the same work. Do not keep old intermediate expectations just because an
+earlier migration made them true.
 
 Good assertion targets include important labels, headers, totals, formulas, number formats, visible
-values, sheet existence, used ranges, filters, tables, key resource semantics, representative rows,
-and aggregate facts. For large tables, prefer stable summaries and representative rows over a full
-cell snapshot.
+values, sheet existence, used ranges, filters, spreadsheet tables, key resource semantics, Base
+tables/fields/records/views, slide/page/shape text and geometry, doc text, headings, paragraphs,
+representative rows, and aggregate facts. For large tables, prefer stable summaries and
+representative rows over a full cell snapshot. For Base, slide, and doc assertions, prefer stable
+Facade-visible semantics over raw storage snapshots and generated ids.
 
 A minimal entrypoint (`assertions/values.assertions.ts`) looks like this:
 
 ```ts
 import { defineAssertions } from "univer:sac/assertions";
 
-export default defineAssertions(({ sheet, range }) => {
-  sheet("Summary").exists();
-  // values()/rawValues() compare TYPED cell values, not display text:
-  range("Summary!A2:B2").values([["Widget", 1280]]); // a number stays a number
-  range("Summary!C2").formula("=SUM(B2:B10)");        // formula text incl. leading "="
-  range("Summary!D2:D3").displayValues([["", "12.5%"]]); // display readback is strings; blank = ""
+export default defineAssertions(({ sheetUnit }) => {
+  sheetUnit("replace-with-sheet-localUnitId", ({ sheet, range }) => {
+    sheet("Summary").exists();
+    // values()/rawValues() compare TYPED cell values, not display text:
+    range("Summary!A2:B2").values([["Widget", 1280]]); // a number stays a number
+    range("Summary!C2").formula("=SUM(B2:B10)"); // formula text incl. leading "="
+    range("Summary!D2:D3").displayValues([["", "12.5%"]]); // display readback is strings; blank = ""
+  });
 });
 ```
 
-`range()` takes a sheet-qualified A1 such as `"Summary!A1:B2"`. Match the assertion method to the
-value type you are gating, or it will fail even when the workbook is correct:
+Inside `sheetUnit`, `range()` takes a sheet-qualified A1 such as `"Summary!A1:B2"`. Match the
+assertion method to the value type you are gating, or it will fail even when the workbook is
+correct:
 
 - `values` / `rawValues`: typed cell values. Numbers stay numbers, booleans stay `true`/`false`, and
   **dates are serial numbers** (e.g. `45344`), not strings. Do not quote a date or number as a
@@ -131,6 +175,8 @@ value type you are gating, or it will fail even when the workbook is correct:
 - `numberFormats`, `styles`, `backgroundColors`, `conditionalFormats`: format/style/resource facts.
 
 Use raw/value assertions when null-like storage identity is the contract.
+For `displayValues`, assert blank cells as empty strings (`""`) because display readback returns
+strings. Use raw/value assertions when null-like storage identity is the contract.
 
 Do not use assertions for temporary intermediate migration states, raw `.univer` storage internals,
 generated ids, broad inspect dumps, or runtime implementation details. Use readonly inspect probes

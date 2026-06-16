@@ -40,23 +40,27 @@ UNIVERFILE=./orders.univer
 univer sac verify "$UNIVERFILE" --json
 ```
 
-`verify` checks global `assertions/**/*.assertions.ts` entrypoints against a sandbox copy. It does
-not apply pending source. It returns `reportPath`; read that path instead of constructing a hidden
-sidecar path by hand.
+`verify` checks global typed unit `assertions/**/*.assertions.ts` entrypoints against a sandbox copy.
+It does not apply pending source. It returns `reportPath`; read that path instead of constructing a
+hidden sidecar path by hand.
 
 Sidecar `runs/` contains verify evidence:
 
-- `runs/<run-id>/verify-report.json`: `assertionSources[]`, assertion counts, failures,
-  setup errors, and diagnostics.
+- `runs/<run-id>/verify-report.json`: `assertionSources[]`, total and per-unit assertion counts,
+  unit-aware failures, setup errors, and diagnostics.
 - `runs/<run-id>/artifacts/`: sandbox copy artifacts when verify reaches runtime readback.
 
 Interpretation:
 
 - `status: passed` means global assertions matched actual readback.
-- `status: failed` means compare expected/actual, assertion kind, target, diagnostics, and
-  first difference when present. Decide whether the target final state is wrong or the global
-  assertion expectation is wrong before editing either side.
+- `status: failed` means compare `unitType`, `localUnitId`, assertion kind, unit-local target,
+  expected value, actual value, diagnostics, and first difference when present. Decide whether the
+  target final state is wrong or the global assertion expectation is wrong before editing either
+  side.
 - `status: error` means setup failed before target behavior can be judged.
+- setup errors such as legacy top-level `sheet()`/`range()` usage, unknown `localUnitId`, unit type
+  mismatch, missing Facade getters, or unsupported readback surfaces are assertion setup repair
+  issues, not final-state workbook mismatches.
 - missing global assertions are setup errors and are not completion evidence for changed durable
   behavior.
 
