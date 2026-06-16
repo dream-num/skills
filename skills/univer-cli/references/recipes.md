@@ -29,6 +29,28 @@ univer status "$UNIVERFILE" --local-unit-id "replace-with-localUnitId" --json
 Use the actual target `.univer` file path. Do not run bare `univer status`, and do not substitute a
 directory, display name, sheet name, `remoteUnitId`, or `sessionId` for the target path.
 
+## Open Hosted Viewer Handoff
+
+```bash
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --json
+```
+
+Open the returned `url` with agent-browser, Playwright, or another browser tool. `SOURCE_URL` must
+be browser-fetchable with CORS enabled. If you only have `UNIVERFILE=./orders.univer`, do not run
+`univer open "$UNIVERFILE"`; first provide or create an HTTP(S) source URL, or use the viewer file
+picker as a manual human-browser fallback.
+
+Use local fallback only when `file.univer.ai` is unreachable:
+
+```bash
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --local --json
+```
+
+Keep the command process running while using the returned local viewer URL. `--local` serves viewer
+assets only; it still requires an HTTP(S), browser-fetchable, CORS-enabled source URL.
+
 ## Read A Known Range
 
 ```bash

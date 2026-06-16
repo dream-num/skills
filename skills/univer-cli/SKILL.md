@@ -42,7 +42,7 @@ view, export, SaC source, apply, rollback, verify, and versioning commands.
 | Initialize from a remote unit | `univer clone <file.univer> --unit-id <unitId>` |
 | Discover units | `printf '%s' '{}' \| univer inspect <file.univer> --tool units --params -` |
 | Read target/unit evidence | managed `univer inspect --tool`, then custom readonly `univer inspect --script` probes |
-| Understand visual state | `univer view`, then open or share the returned URL |
+| Understand visual state | `univer open <http-or-https-univerfile-url> --json`, then open the returned `url`; use `--local` only when `file.univer.ai` is unreachable |
 | Create SaC authoring sidecar | `univer sac materialize <file.univer> --json` |
 | Create durable source | `univer sac migration create <description> <file.univer>` |
 | Discover migration scaffolds | `univer sac migration templates --json` |
@@ -169,9 +169,39 @@ units, or pass it when checking one unit's binding and cleanliness before writes
 Use `univer commit` to record verified local mutations, `univer restore` or `univer reset` to
 discard local work, and `univer pull` or `univer sync` for remote-bound units.
 
-For visual review, prefer `univer view "$UNIVERFILE" --no-open --json` when an agent browser tool is
-available, then open the returned URL with that tool. Use `univer view "$UNIVERFILE" --open --json` when no
-agent browser tool is available and OS browser opening is appropriate.
+For visual review, prefer hosted viewer handoff when you have a browser-fetchable HTTP(S) `.univer`
+source URL:
+
+```bash
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --json
+```
+
+Open the returned `url` with the available browser tool, such as agent-browser or Playwright. The
+source URL must be fetchable by that browser with CORS enabled. Include the viewer URL in the user
+response when it is useful for handoff or review.
+
+If `file.univer.ai` is not reachable from the current environment, use the explicit local viewer
+fallback:
+
+```bash
+SOURCE_URL=https://cdn.example.com/orders.univer
+univer open "$SOURCE_URL" --local --json
+```
+
+This starts a foreground localhost server that serves viewer assets only. It does not host, proxy,
+download, upload, sign, or cache the source workbook. Keep the command process running while using
+the returned local viewer URL; stopping the process stops the URL. The source URL still must be
+HTTP(S), browser-fetchable, and CORS-enabled.
+
+If you only have a local `.univer` path, do not claim that `univer open "$UNIVERFILE"` will
+automatically host, upload, or serve it. Ask for or create an HTTP(S) source URL before using hosted
+`univer open`. The viewer's local file picker is only a manual fallback when a human browser session
+is appropriate.
+
+In known headless, remote, CI, server, or user-requested no-browser environments, do not run hosted
+`univer open` unless a browser-capable tool or explicit user handoff is available. Visual preview is
+not mandatory SaC TDD completion evidence in those environments.
 
 Use `univer export` for Excel-compatible handoff after verifying the target-visible state that
 matters for the task.
@@ -187,7 +217,7 @@ Open only the reference needed for the current question:
 - `references/sac-authoring.md`: materialize, sidecar structure, migration packs, templates,
   assertions, follow-up migrations.
 - `references/sac-execution.md`: apply, rollback, verify, `runs/`, failure interpretation.
-- `references/versioning-and-handoff.md`: status, commit, restore/reset, pull/sync, view, comments,
+- `references/versioning-and-handoff.md`: status, commit, restore/reset, pull/sync, hosted open, comments,
   export.
 - `references/recipes.md`: copyable command shapes that have been checked against current CLI
   behavior.
