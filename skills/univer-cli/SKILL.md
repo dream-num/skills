@@ -120,13 +120,15 @@ SaC is the source-backed authoring path for durable target behavior.
 - `inspect-scripts/` is scratch space for readonly probes.
 - `runs/` contains verification reports and sandbox artifacts.
 - `assertions/**/*.assertions.ts` entrypoints express the current file-level target-visible
-  final-state contract when correctness matters. Assertions must use explicit typed unit helpers:
-  `sheetUnit(localUnitId, ...)`, `baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`, or
-  `docUnit(localUnitId, ...)`. The `localUnitId` is the only top-level assertion unit selector; do
-  not route assertions by remote unit id, unit name, sheet name, or implicit active workbook state.
-  Split entrypoints by unit or target concern such as values, formulas, formatting, Base records,
-  slide text, or doc content, not by migration pack. Update them as migrations change intended target
-  state; do not preserve intermediate migration-specific expectations there.
+  final-state contract when correctness matters. Use `target(({ units }) => units().contains(...))`
+  for expected unit inventory, explicit typed unit helpers for unit-scoped facts, and
+  `facts(({ fact }) => ...)` when the same business fact must appear across units.
+  `sheetUnit(localUnitId, ...)`, `baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`, and
+  `docUnit(localUnitId, ...)` require the explicit `localUnitId`; do not route assertions by remote
+  unit id, unit name, sheet name, or implicit active workbook state. Split entrypoints by unit or
+  target concern such as unit inventory, values, formulas, formatting, Base records, slide text, doc
+  content, or cross-unit business facts, not by migration pack. Update them as migrations change
+  intended target state; do not preserve intermediate migration-specific expectations there.
 - `pack.files` lists migration implementation entrypoints only. Keep global assertions under
   `assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately.
   Ordinary draft packs include `migration.ts`; keep `pack.ts` as metadata and author target
@@ -139,12 +141,17 @@ broad-search the sidecar to discover that the API exists:
   Each `defineUnitMigration({ apply })` receives `context.univerAPI` (Facade `FUniver`); start from
   `context.univerAPI.getWorkbook(localUnitId)`.
 - Assertions: `import { defineAssertions } from "univer:sac/assertions";`
-  `defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit }) => { ... })`. Inside
+  `defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUnit, facts }) => { ... })` is
+  synchronous deterministic registration; use readonly inspect scripts for async investigation.
+  Inside
   `sheetUnit(localUnitId, ({ sheet, range }) => { ... })`, `sheet(name)` exposes
   `exists/usedRange/filter/tables`; `range("Sheet!A1:B2")` (sheet-qualified A1) exposes
-  `values/rawValues/displayValues/cellData/formula/formulas/numberFormats/styles/backgroundColors/conditionalFormats`.
-  Base, slide, and doc assertions use `baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`,
-  and `docUnit(localUnitId, ...)`.
+  `values/value/rawValues/displayValues/displayValue/cellData/formula/formulas/numberFormats/numberFormat/styles/backgroundColors/conditionalFormats`.
+  Base assertions include representative `recordCount`, `recordsContain`, and
+  `recordByKey(field, value).matches(partialRecord)` checks. Doc assertions include
+  `textContains`, `paragraphsContain`, and `outline`; slide assertions include presentation page
+  size and slide-level `textContains`. Cross-unit facts preserve participant actuals in the verify
+  report.
 
 Full Facade method signatures live in the sidecar `types/*.d.ts`. Scope lookups narrowly, e.g.
 `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of broad reads of the
@@ -178,9 +185,9 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
 - `univer sac verify <file.univer> --json` checks file-level typed unit assertions against a
   sandbox copy. It does not apply pending source. It writes a JSON report at the returned
   `reportPath`, under `runs/<run-id>/verify-report.json`, and may copy artifacts under
-  `runs/<run-id>/artifacts/`. Read unit-aware failure facts: `unitType`, `localUnitId`, assertion
-  kind, unit-local target, expected value, actual value, first difference, and setup error code when
-  present.
+  `runs/<run-id>/artifacts/`. Read scope-aware failure facts: `scope`, `unitType`, `localUnitId`,
+  assertion kind, unit-local target, expected value, actual value, cross-unit participant actuals,
+  first difference, and setup error code when present.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
 behavior. When correctness matters, use target-visible evidence and relevant global assertions or
