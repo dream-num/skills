@@ -41,13 +41,15 @@ univer sac verify "$UNIVERFILE" --json
 ```
 
 `verify` checks global container and typed unit `assertions/**/*.assertions.ts` entrypoints against a sandbox copy.
+The global typed unit `assertions/**/*.assertions.ts` entrypoints are still ordinary assertion
+sources, not migration files.
 It does not apply pending source. It returns `reportPath`; read that path instead of constructing a
 hidden sidecar path by hand.
 
 Sidecar `runs/` contains verify evidence:
 
-- `runs/<run-id>/verify-report.json`: `assertionSources[]`, total, container, and per-unit assertion
-  counts, scope-aware failures, setup errors, participant actuals, and diagnostics.
+- `runs/<run-id>/verify-report.json`: `assertionSources[]`, total and per-unit assertion counts,
+  container counts, scope-aware failures, setup errors, participant actuals, and diagnostics.
 - `runs/<run-id>/artifacts/`: sandbox copy artifacts when verify reaches runtime readback.
 
 Interpretation:

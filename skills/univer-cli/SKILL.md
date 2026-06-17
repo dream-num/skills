@@ -143,6 +143,7 @@ broad-search the sidecar to discover that the API exists:
 - Assertions: `import { defineAssertions } from "univer:sac/assertions";`
   `defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUnit, facts }) => { ... })` is
   synchronous deterministic registration; use readonly inspect scripts for async investigation.
+  `localUnitId` is the only top-level assertion unit selector.
   Inside
   `sheetUnit(localUnitId, ({ sheet, range }) => { ... })`, `sheet(name)` exposes
   `exists/usedRange/filter/tables`; `range("Sheet!A1:B2")` (sheet-qualified A1) exposes

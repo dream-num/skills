@@ -152,6 +152,10 @@ export default defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUn
 });
 ```
 
+For a unit-only assertion source, `defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit })`
+is enough; include `target` or `facts` only when that source checks container inventory or shared
+business facts.
+
 `defineAssertions` registration is synchronous deterministic code. Do not use async assertions or
 runtime probes inside registration; use readonly inspect scripts for investigation and then encode
 the durable result as assertions.
