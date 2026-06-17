@@ -80,7 +80,7 @@ Common tools:
 - `sheet-overview`: sheets, used ranges, bounded samples, formulas, candidate regions, warnings.
 - `sheet-search`: find visible text or values when coordinates are unknown.
 - `sheet-neighborhood`: read context around a known anchor.
-- `sheet-range`: read known rectangular ranges and optional value/formula/format/style facts.
+- `sheet-range`: read known rectangles and optional value/formula/format/static-style facts.
 - `sheet-formulas`: audit formula cells.
 - `sheet-conditional-formats`: inspect conditional formatting rule resources.
 
@@ -92,6 +92,11 @@ readonly custom inspect script that returns those facts as compact JSON. That su
 full source-table dumps for that same evidence question; do not also dump the same large source
 tables unless exact row-level evidence is needed for a named ambiguity. Increase `sheet-range` limits
 only when raw cells are genuinely needed and the output will remain reviewable.
+
+When typed values, formulas, number formats, or static style traits affect the decision, request
+focused `sheet-range` fields such as `valueDetails`, `cellFacts`, `formulas`, `numberFormats`, or
+`semanticStyles`. Use `sheet-conditional-formats` for conditional formatting rule resources; combine
+it with value evidence when a value-dependent rule is part of the task.
 
 Use custom inspect scripts only when managed tools do not answer a bounded evidence question:
 
@@ -197,6 +202,10 @@ is wrong, or the global assertion expectation is wrong. Treat legacy top-level `
 `range()` usage, missing units, unit type mismatches, and unsupported readback surfaces as setup
 repair, not final-state workbook mismatch.
 
+`SAC_UNIT_STATE_DRIFT` means the committed target state and the sidecar active applied state no
+longer match. Treat it as a recovery branch and read the diagnostic before materializing or applying
+again.
+
 For more detail, read `references/sac-execution.md`.
 
 ## Versioning, Preview, And Handoff
@@ -270,6 +279,8 @@ Do not treat those files as generic scripts to run directly.
 - Prefer managed inspect tools before custom readonly probes.
 - Use normalized inspect evidence for ordinary labels, copied text, matching, grouping, and write
   decisions. Request raw/display/cell data only when exact storage or display identity matters.
+- Use semantic style evidence and assertion helpers for style contracts; avoid turning raw style ids
+  or raw `cellData.s` snapshots into task expectations.
 - Record non-obvious assumptions somewhere durable when the task is complex, but the product skill
   does not require a specific planning method.
 - Use explicit typed unit assertions and `verify` when durable target correctness matters, but choose

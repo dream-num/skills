@@ -70,6 +70,27 @@ univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json
 Prefer normalized values for ordinary text decisions. Opt into exact raw/display/cell data only
 when the task needs that distinction. Use the real `sheetName` from `units`/`sheet-overview`; do not default to `Sheet1`.
 
+## Read Related Ranges
+
+Use `ranges` when one evidence question spans multiple rectangles. Put `sheetName` on each range
+entry; do not rely on a top-level sheet name for multi-range params.
+
+```bash
+UNIVERFILE=./orders.univer
+
+cat > ./related-ranges.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-localUnitId",
+  "ranges": [
+    { "label": "keys", "sheetName": "Sheet1", "rangeA1": "A1:A20" },
+    { "label": "status", "sheetName": "Sheet1", "rangeA1": "K1:K20" }
+  ],
+  "include": ["values", "valueDetails", "numberFormats"]
+}
+JSON
+univer inspect "$UNIVERFILE" --tool sheet-range --params ./related-ranges.params.json
+```
+
 ## Locate A Label Then Read Around It
 
 ```bash
@@ -91,6 +112,27 @@ univer inspect "$UNIVERFILE" --tool sheet-search --params ./search.params.json
 
 Use the returned coordinate as input to `sheet-neighborhood` or `sheet-range` when context is
 needed.
+
+## Inspect Conditional Formatting Rules
+
+Use this when the question is about conditional formatting resources, status-color rules, or
+value-dependent style rules. Pair it with `sheet-range` value evidence when the rendered outcome
+depends on cell values.
+
+```bash
+UNIVERFILE=./orders.univer
+
+cat > ./conditional-formats.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-localUnitId",
+  "sheetName": "Sheet1",
+  "rangeA1": "K2:K100"
+}
+JSON
+univer inspect "$UNIVERFILE" --tool sheet-conditional-formats --params ./conditional-formats.params.json
+```
+
+This reports rule facts and target ranges. It is not a final rendered-style proof for every cell.
 
 ## Custom Readonly Probe
 
@@ -186,6 +228,11 @@ Inside `sheetUnit`, `range()` is sheet-qualified A1. For `values`/`rawValues`, a
 numbers as numbers (dates are serial numbers like `45344`), not quoted strings; use
 `displayValues` or `displayValue` for formatted text. See `references/sac-authoring.md` for the full
 method/value-type table and Base/slide/doc/cross-unit examples.
+
+`sheet-keyed-write` is useful after inspecting a stable key column and the target column to update.
+It creates ordinary TODO TypeScript source; it does not interpret `--params` as workbook mutation
+data. Fill placeholders such as `localUnitId`, `sheetName`, `keyColumn`, `targetColumn`, row scope,
+and `valuesByKey` from inspected evidence before applying.
 
 ## Roll Back Latest Applied Boundary
 

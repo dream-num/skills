@@ -69,6 +69,22 @@ Interpretation:
 Use assertions and verify when durable target correctness matters. The skill does not require a
 specific RED/GREEN workflow.
 
+## State Drift
+
+`SAC_UNIT_STATE_DRIFT` means the committed target state differs from the sidecar active applied
+state. Read the diagnostic before choosing a recovery action:
+
+- clean target with no un-applied packs: materialize the current target state, then retry the
+  intended apply or verify path
+- dirty target: commit or restore local mutations before materializing
+- un-applied packs present: review, apply, or remove them first; use `--preserve-drafts` only when
+  you intentionally want the CLI to move them into sidecar recovery for later review
+
+When `--preserve-drafts` is used, inspect
+`materialize-recovery/<recovery-id>/draft-recovery-manifest.json` before reattaching or recreating
+preserved source. Treat `materialize-recovery/` as draft recovery state, separate from
+`archives/materialize/` active-history archives.
+
 Materialize archives replaced active migrations under `archives/materialize/<archive-id>/migrations/`.
 Those archived migrations are review/audit source only; apply, verify, source hashes, and migration
 tail selection use active `migrations/`. Draft preservation remains separate under

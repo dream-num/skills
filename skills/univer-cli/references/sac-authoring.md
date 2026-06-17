@@ -212,6 +212,9 @@ correct:
 Use raw/value assertions when null-like storage identity is the contract.
 For `displayValues`, assert blank cells as empty strings (`""`) because display readback returns
 strings. Use raw/value assertions when null-like storage identity is the contract.
+For style contracts, prefer semantic assertion helpers such as `styles` or `backgroundColors`.
+Avoid raw style ids, `styleId`, `style.id`, generated resource ids, or raw `cellData.s` snapshots as
+the expected contract unless a lower-level implementation test specifically needs storage identity.
 
 Do not use assertions for temporary intermediate migration states, raw `.univer` storage internals,
 generated ids, broad inspect dumps, or runtime implementation details. Use readonly inspect probes
