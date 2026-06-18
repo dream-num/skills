@@ -60,15 +60,18 @@ cat > ./range.params.json <<'JSON'
 {
   "localUnitId": "replace-with-localUnitId",
   "sheetName": "replace-with-sheetName",
-  "rangeA1": "A1:D20",
-  "include": ["normalizedValues", "valueDetails", "formulas", "numberFormats", "semanticStyles"]
+  "rangeA1": "A1:D20"
 }
 JSON
 univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json
 ```
 
-Prefer normalized values for ordinary text decisions. Opt into exact raw/display/cell data only
-when the task needs that distinction. Use the real `sheetName` from `units`/`sheet-overview`; do not default to `Sheet1`.
+Default output returns slim cell facts for ordinary text and value decisions. Add exact include
+fields such as `values`, `displayValues`, `valueDetails`, `cellFacts`, `formulas`,
+`numberFormats`, `semanticStyles`, or `cellData` only when the task depends on those distinctions.
+Use `--md` only when the same evidence should be easier to review as Markdown; keep JSON for
+machine parsing. Use the real `sheetName` from `units`/`sheet-overview`; do not default to
+`Sheet1`.
 
 ## Read Related Ranges
 
@@ -84,8 +87,7 @@ cat > ./related-ranges.params.json <<'JSON'
   "ranges": [
     { "label": "keys", "sheetName": "Sheet1", "rangeA1": "A1:A20" },
     { "label": "status", "sheetName": "Sheet1", "rangeA1": "K1:K20" }
-  ],
-  "include": ["values", "valueDetails", "numberFormats"]
+  ]
 }
 JSON
 univer inspect "$UNIVERFILE" --tool sheet-range --params ./related-ranges.params.json

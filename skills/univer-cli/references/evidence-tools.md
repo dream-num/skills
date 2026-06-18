@@ -13,6 +13,7 @@ Start with managed tools:
 UNIVERFILE=./orders.univer
 
 univer inspect tools list --json
+univer inspect tools list --json --all-candidates  # resolver diagnostics only
 univer inspect tools resolve sheet-overview --json
 ```
 
@@ -42,16 +43,17 @@ Tool roles:
 | `sheet-overview` | You need sheet names, used ranges, bounded samples, formulas, warnings, or candidate non-empty regions. |
 | `sheet-search` | You know visible text or values but not coordinates. |
 | `sheet-neighborhood` | You have an anchor and need nearby headers, labels, totals, or context. |
-| `sheet-range` | You know explicit sheet/range rectangles and need values, formulas, formats, direct static style traits, or typed facts. |
+| `sheet-range` | You know explicit bounded sheet/range rectangles and need default slim cell facts or exact values, formulas, formats, direct static style traits, or typed facts. |
 | `sheet-formulas` | You need to audit formula locations or formula text. |
 | `sheet-conditional-formats` | You need conditional formatting rule resources, their target ranges, and rule config. |
 
-Use normalized evidence by default for ordinary labels, copied text, grouping, matching, and write
-planning. Request exact `rawValues`, `displayValues`, `cellData`, `valueDetails`, `cellFacts`,
-`numberFormats`, formulas, or `semanticStyles` only when the task depends on exact storage text,
-display strings, typed values, formulas, formats, static style traits, rich cell model data,
-multi-line content, or export/debug details. `semanticStyles` is for supported stable traits and
-does not expose raw style ids.
+Use default slim evidence for ordinary labels, copied text, grouping, matching, and write
+planning. For review, add `--md` to render the same evidence as Markdown; Markdown is an
+agent-readable view, not a JSON pointer codec or roundtrip machine format. Request exact
+`values`, `displayValues`, `cellData`, `valueDetails`, `cellFacts`, `numberFormats`, formulas,
+or `semanticStyles` only when the task depends on exact display strings, typed values, formulas,
+formats, static style traits, rich cell model data, multi-line content, or export/debug details.
+`semanticStyles` is for supported stable traits and does not expose raw style ids.
 
 Use `sheet-conditional-formats` when the question is whether conditional formatting rules exist,
 where they apply, and what conditions/styles they encode. It does not prove every cell's final
@@ -67,7 +69,7 @@ semantics.
 Use a custom script when managed tools cannot answer a bounded readonly evidence question. Before
 writing migration source for large-table aggregate, rebuild, split, or reconciliation tasks, prefer
 a custom summary probe over repeated `sheet-range` calls when the useful evidence is an aggregate
-rather than the raw grid: grouped totals, counts, missing labels, mismatches, formula coverage, or
+rather than the full grid: grouped totals, counts, missing labels, mismatches, formula coverage, or
 head/tail samples. A managed overview that only reports used ranges and bounded samples is not a
 substitute for source-derived aggregate facts. The summary probe should replace full source-table
 dumps for that same evidence question; do not also dump the same large source tables unless exact

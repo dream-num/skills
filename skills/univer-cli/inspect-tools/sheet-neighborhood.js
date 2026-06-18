@@ -1,5 +1,5 @@
 // Managed Univer inspect tool: sheet-neighborhood
-// Run with: univer inspect <file.univer> --tool sheet-neighborhood --params <params.json>
+// Run with: univer inspect <file.univer> --tool sheet-neighborhood --params <params.json|->
 const __univerManagedInspectTool = true;
 
 async function inspectSheetNeighborhoodTool({ params, context, univerAPI }) {
@@ -18,7 +18,7 @@ async function inspectSheetNeighborhoodTool({ params, context, univerAPI }) {
   const anchor = parseRangeA1(anchorA1);
   const bounds = expandBounds(anchor, beforeRows, afterRows, beforeColumns, afterColumns, used);
   const rangeA1 = boundsToA1(bounds);
-  const include = readStringArray(params.include, ["normalizedValues", "formulas", "numberFormats"]);
+  const include = readStringArray(params.include, ["cellFacts"]);
   const payload = readRangePayload(sheet, rangeA1, include);
   return envelope("sheet-neighborhood", {
     localUnitId,
@@ -26,7 +26,12 @@ async function inspectSheetNeighborhoodTool({ params, context, univerAPI }) {
     sheetName,
     anchorA1,
     rangeA1
-  }, payload, payload.warnings, payload.truncated);
+  }, {
+    range: {
+      sheetName,
+      ...payload
+    }
+  }, payload.warnings, payload.truncated);
 }
 return await inspectSheetNeighborhoodTool({ params, context, univerAPI });
 
@@ -250,6 +255,7 @@ function normalizeRangeA1(rangeA1) {
   return boundsToA1(parseRangeA1(rangeA1));
 }
 function readRangePayload(sheet, rangeA1, include, styleTraits) {
+  styleTraits = styleTraits ?? defaultSemanticStyleTraits();
   const range = sheet.getRange(rangeA1);
   const cache = {};
   const payload = {
@@ -258,68 +264,127 @@ function readRangePayload(sheet, rangeA1, include, styleTraits) {
     truncated: false
   };
   for (const field of include) {
+    if (isRemovedRawValueField(field)) {
+      throw new Error("Unsupported include field: " + field + ". Managed inspect evidence no longer exposes raw value fields; use value, displayValues, values, valueDetails, or cellData instead.");
+    }
     if (field === "normalizedValues") {
       payload.normalizedValues = readNormalizedValuesForAgent(range, cache);
     } else if (field === "displayValues") {
       payload.displayValues = readCachedRangeMatrix(range, cache, "displayValues", "getDisplayValues");
-    } else if (field === "rawValues") {
-      payload.rawValues = readCachedRangeMatrix(range, cache, "rawValues", "getRawValues");
     } else if (field === "values") {
       payload.values = readCachedRangeMatrix(range, cache, "values", "getValues");
     } else if (field === "formulas") {
-      payload.formulas = readCachedRangeMatrix(range, cache, "formulas", "getFormulas");
+      const formulas = readCachedRangeMatrix(range, cache, "formulas", "getFormulas");
+      if (!isEmptyFormulaMatrix(formulas)) {
+        payload.formulas = formulas;
+      }
     } else if (field === "numberFormats") {
-      payload.numberFormats = readCachedRangeMatrix(range, cache, "numberFormats", "getNumberFormats");
+      const numberFormats = readCachedRangeMatrix(range, cache, "numberFormats", "getNumberFormats");
+      if (!isDefaultNumberFormatMatrix(numberFormats)) {
+        payload.numberFormats = numberFormats;
+      }
     } else if (field === "cellData") {
       payload.cellData = readCachedRangeMatrix(range, cache, "cellData", "getCellDataGrid");
     } else if (field === "valueDetails") {
       payload.valueDetails = readValueDetailsForAgent(range, cache);
     } else if (field === "semanticStyles") {
-      payload.semanticStyles = readSemanticStylesForAgent(sheet, range, cache, styleTraits);
+      const semanticStyles = readSemanticStylesForAgent(sheet, range, cache, styleTraits);
+      if (!isEmptySemanticStyleMatrix(semanticStyles)) {
+        payload.semanticStyles = semanticStyles;
+      }
     } else if (field === "cellFacts") {
       // cellFacts is derived after all requested fields have been read.
     } else {
       payload.warnings.push("Unsupported include field ignored: " + field + ".");
     }
   }
-  const sizeMatrix = payload.normalizedValues ?? payload.displayValues ?? payload.rawValues ?? payload.values ?? payload.formulas ?? payload.valueDetails ?? payload.semanticStyles ?? [];
+  if (include.includes("cellFacts")) {
+    payload.cells = readCellFactsForAgent(sheet, range, cache, rangeA1, styleTraits, include.includes("semanticStyles"));
+  }
+  const sizeMatrix = payload.cells ?? payload.normalizedValues ?? payload.displayValues ?? payload.values ?? payload.formulas ?? payload.valueDetails ?? payload.semanticStyles ?? payload.cellData ?? [];
   payload.rowCount = Array.isArray(sizeMatrix) ? sizeMatrix.length : 0;
   payload.columnCount = payload.rowCount > 0 && Array.isArray(sizeMatrix[0]) ? sizeMatrix[0].length : 0;
   return payload;
 }
-function readCellFacts(payload) {
-  return Array.from({ length: payload.rowCount }, (_, rowIndex) =>
-    Array.from({ length: payload.columnCount }, (_, columnIndex) => {
-      const cell = { a1: offsetA1(payload.rangeA1, rowIndex, columnIndex) };
-      const rawValue = readMatrixCell(payload.rawValues, rowIndex, columnIndex);
-      const displayValue = readMatrixCell(payload.displayValues, rowIndex, columnIndex);
-      const formula = readMatrixCell(payload.formulas, rowIndex, columnIndex);
-      const numberFormat = readMatrixCell(payload.numberFormats, rowIndex, columnIndex);
-      const valueDetail = readMatrixCell(payload.valueDetails, rowIndex, columnIndex);
-      const semanticStyle = readMatrixCell(payload.semanticStyles, rowIndex, columnIndex);
-      if (valueDetail && typeof valueDetail === "object") {
-        Object.assign(cell, valueDetail);
+function readCellFactsForAgent(sheet, range, cache, rangeA1, styleTraits, includeSemanticStyles) {
+  const values = readCachedRangeMatrix(range, cache, "values", "getValues");
+  const storageValues = readCachedRangeMatrix(range, cache, "storageValues", "getRawValues");
+  const displayValues = readCachedRangeMatrix(range, cache, "displayValues", "getDisplayValues");
+  const cellData = readCachedRangeMatrix(range, cache, "cellData", "getCellDataGrid");
+  const formulas = readCachedRangeMatrix(range, cache, "formulas", "getFormulas");
+  const numberFormats = readCachedRangeMatrix(range, cache, "numberFormats", "getNumberFormats");
+  const semanticStyles = includeSemanticStyles ? readSemanticStylesForAgent(sheet, range, cache, styleTraits) : [];
+  const rowCount = readRangeRowCount(range, [values, storageValues, displayValues, cellData, formulas, numberFormats, semanticStyles]);
+  return Array.from({ length: rowCount }, (_, rowIndex) => {
+    const columnCount = readRangeColumnCount(range, rowIndex, [values, storageValues, displayValues, cellData, formulas, numberFormats, semanticStyles]);
+    return Array.from({ length: columnCount }, (_, columnIndex) => {
+      const cell = { a1: offsetA1(rangeA1, rowIndex, columnIndex) };
+      const value = readNormalizedCellValueForAgent(values, storageValues, displayValues, cellData, rowIndex, columnIndex);
+      const displayValue = readMatrixCell(displayValues, rowIndex, columnIndex);
+      const formula = readMatrixCell(formulas, rowIndex, columnIndex);
+      const numberFormat = readMatrixCell(numberFormats, rowIndex, columnIndex);
+      const semanticStyle = compactSemanticStyle(readMatrixCell(semanticStyles, rowIndex, columnIndex));
+      if (isNonEmptyValue(value)) {
+        cell.value = value;
+        cell.valueType = readCellValueType(value);
       }
-      if (rawValue !== null && rawValue !== undefined) {
-        cell.rawValue = rawValue;
-        cell.rawType = readCellValueType(rawValue);
-      }
-      if (displayValue !== null && displayValue !== undefined) {
+      if (displayValue !== null && displayValue !== undefined && displayValue !== "") {
         cell.displayValue = displayValue;
         cell.displayType = readCellValueType(displayValue);
       }
       if (formula !== null && formula !== undefined && formula !== "") {
         cell.formula = formula;
       }
-      if (numberFormat !== null && numberFormat !== undefined && numberFormat !== "") {
+      if (!isDefaultNumberFormat(numberFormat)) {
         cell.numberFormat = numberFormat;
       }
-      if (semanticStyle && typeof semanticStyle === "object" && Object.keys(semanticStyle).length > 0) {
+      if (semanticStyle && Object.keys(semanticStyle).length > 0) {
         cell.semanticStyle = semanticStyle;
       }
       return sortObject(cell);
-    })
-  );
+    });
+  });
+}
+function isRemovedRawValueField(field) {
+  return field === "rawValues" || field === "rawValue" || field === "rawType";
+}
+function readRangeRowCount(range, matrices) {
+  const rangeHeight = typeof range.getHeight === "function" ? range.getHeight() : 0;
+  return Math.max(rangeHeight, ...matrices.map((matrix) => readMatrixRowCount(matrix)));
+}
+function readRangeColumnCount(range, rowIndex, matrices) {
+  const rangeWidth = typeof range.getWidth === "function" ? range.getWidth() : 0;
+  return Math.max(rangeWidth, ...matrices.map((matrix) => readMatrixColumnCount(matrix, rowIndex)));
+}
+function isEmptyFormulaMatrix(matrix) {
+  return !Array.isArray(matrix) || matrix.every((row) => !Array.isArray(row) || row.every((value) => value === null || value === undefined || value === ""));
+}
+function isDefaultNumberFormatMatrix(matrix) {
+  return !Array.isArray(matrix) || matrix.every((row) => !Array.isArray(row) || row.every((value) => isDefaultNumberFormat(value)));
+}
+function isDefaultNumberFormat(value) {
+  return value === null || value === undefined || value === "" || value === "General";
+}
+function isEmptySemanticStyleMatrix(matrix) {
+  return !Array.isArray(matrix) || matrix.every((row) => !Array.isArray(row) || row.every((value) => Object.keys(compactSemanticStyle(value)).length === 0));
+}
+function compactSemanticStyle(value) {
+  if (value == null || typeof value !== "object") {
+    return {};
+  }
+  const compact = {};
+  for (const key of Object.keys(value)) {
+    const entry = value[key];
+    if ((key === "backgroundColor" && (entry === "#FFFFFF" || entry === "#fff" || entry === "#FFF" || entry === "")) ||
+      (key === "fontColor" && (entry === "#000000" || entry === "#000" || entry === "")) ||
+      (key === "horizontalAlignment" && (entry === "general" || entry === "")) ||
+      (key === "verticalAlignment" && (entry === "middle" || entry === "")) ||
+      (key === "wrapStrategy" && (entry === 0 || entry === ""))) {
+      continue;
+    }
+    compact[key] = entry;
+  }
+  return sortObject(compact);
 }
 function offsetA1(rangeA1, rowOffset, columnOffset) {
   const bounds = parseRangeA1(rangeA1);
@@ -476,35 +541,35 @@ function sortObject(value) {
 }
 function readNormalizedValuesForAgent(range, cache) {
   const values = readCachedRangeMatrix(range, cache, "values", "getValues");
-  const rawValues = readCachedRangeMatrix(range, cache, "rawValues", "getRawValues");
+  const storageValues = readCachedRangeMatrix(range, cache, "storageValues", "getRawValues");
   const displayValues = readCachedRangeMatrix(range, cache, "displayValues", "getDisplayValues");
   const cellData = readCachedRangeMatrix(range, cache, "cellData", "getCellDataGrid");
   const rowCount = Math.max(
     readMatrixRowCount(values),
-    readMatrixRowCount(rawValues),
+    readMatrixRowCount(storageValues),
     readMatrixRowCount(displayValues),
     readMatrixRowCount(cellData)
   );
   return Array.from({ length: rowCount }, (_, rowIndex) => {
     const columnCount = Math.max(
       readMatrixColumnCount(values, rowIndex),
-      readMatrixColumnCount(rawValues, rowIndex),
+      readMatrixColumnCount(storageValues, rowIndex),
       readMatrixColumnCount(displayValues, rowIndex),
       readMatrixColumnCount(cellData, rowIndex)
     );
     return Array.from({ length: columnCount }, (_, columnIndex) =>
-      readNormalizedCellValueForAgent(values, rawValues, displayValues, cellData, rowIndex, columnIndex)
+      readNormalizedCellValueForAgent(values, storageValues, displayValues, cellData, rowIndex, columnIndex)
     );
   });
 }
-function readNormalizedCellValueForAgent(values, rawValues, displayValues, cellData, rowIndex, columnIndex) {
+function readNormalizedCellValueForAgent(values, storageValues, displayValues, cellData, rowIndex, columnIndex) {
   const value = readMatrixCell(values, rowIndex, columnIndex);
   if (value !== null && value !== undefined) {
     return normalizeValueForAgent(value);
   }
-  const rawValue = normalizeValueForAgent(readMatrixCell(rawValues, rowIndex, columnIndex));
-  if (isNonEmptyValue(rawValue)) {
-    return rawValue;
+  const storageValue = normalizeValueForAgent(readMatrixCell(storageValues, rowIndex, columnIndex));
+  if (isNonEmptyValue(storageValue)) {
+    return storageValue;
   }
   const displayValue = normalizeValueForAgent(readMatrixCell(displayValues, rowIndex, columnIndex));
   if (isNonEmptyValue(displayValue)) {
@@ -519,14 +584,14 @@ function readNormalizedCellValueForAgent(values, rawValues, displayValues, cellD
 }
 function readValueDetailsForAgent(range, cache) {
   const values = readCachedRangeMatrix(range, cache, "values", "getValues");
-  const rawValues = readCachedRangeMatrix(range, cache, "rawValues", "getRawValues");
+  const storageValues = readCachedRangeMatrix(range, cache, "storageValues", "getRawValues");
   const displayValues = readCachedRangeMatrix(range, cache, "displayValues", "getDisplayValues");
   const cellData = readCachedRangeMatrix(range, cache, "cellData", "getCellDataGrid");
   const formulas = readCachedRangeMatrix(range, cache, "formulas", "getFormulas");
   const numberFormats = readCachedRangeMatrix(range, cache, "numberFormats", "getNumberFormats");
   const rowCount = Math.max(
     readMatrixRowCount(values),
-    readMatrixRowCount(rawValues),
+    readMatrixRowCount(storageValues),
     readMatrixRowCount(displayValues),
     readMatrixRowCount(cellData),
     readMatrixRowCount(formulas),
@@ -535,7 +600,7 @@ function readValueDetailsForAgent(range, cache) {
   return Array.from({ length: rowCount }, (_, rowIndex) => {
     const columnCount = Math.max(
       readMatrixColumnCount(values, rowIndex),
-      readMatrixColumnCount(rawValues, rowIndex),
+      readMatrixColumnCount(storageValues, rowIndex),
       readMatrixColumnCount(displayValues, rowIndex),
       readMatrixColumnCount(cellData, rowIndex),
       readMatrixColumnCount(formulas, rowIndex),
@@ -544,7 +609,7 @@ function readValueDetailsForAgent(range, cache) {
     return Array.from({ length: columnCount }, (_, columnIndex) =>
       readCellValueDetailsForAgent(
         values,
-        rawValues,
+        storageValues,
         displayValues,
         cellData,
         formulas,
@@ -555,22 +620,20 @@ function readValueDetailsForAgent(range, cache) {
     );
   });
 }
-function readCellValueDetailsForAgent(values, rawValues, displayValues, cellData, formulas, numberFormats, rowIndex, columnIndex) {
+function readCellValueDetailsForAgent(values, storageValues, displayValues, cellData, formulas, numberFormats, rowIndex, columnIndex) {
   const cell = readMatrixCell(cellData, rowIndex, columnIndex);
   const cellDataValue = extractCellDataValue(cell);
-  const rawValue = readMatrixCell(rawValues, rowIndex, columnIndex);
+  const storageValue = readMatrixCell(storageValues, rowIndex, columnIndex);
   const displayValue = readMatrixCell(displayValues, rowIndex, columnIndex);
   const value = cellDataValue !== null && cellDataValue !== undefined
     ? cellDataValue
-    : rawValue !== null && rawValue !== undefined
-      ? rawValue
+    : storageValue !== null && storageValue !== undefined
+      ? storageValue
       : readMatrixCell(values, rowIndex, columnIndex);
   const formula = readMatrixCell(formulas, rowIndex, columnIndex);
   const detail = {
     value: normalizeValueForAgent(value),
     valueType: readCellValueType(value),
-    rawValue: normalizeValueForAgent(rawValue),
-    rawType: readCellValueType(rawValue),
     displayValue: normalizeValueForAgent(displayValue),
     displayType: readCellValueType(displayValue),
     numberFormat: readMatrixCell(numberFormats, rowIndex, columnIndex)

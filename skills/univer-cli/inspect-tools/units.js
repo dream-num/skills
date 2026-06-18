@@ -1,5 +1,5 @@
 // Managed Univer inspect tool: units
-// Run with: univer inspect <file.univer> --tool units --params <params.json>
+// Run with: univer inspect <file.univer> --tool units --params <params.json|->
 const __univerManagedInspectTool = true;
 
 async function inspectUnitsTool({ params, context }) {
