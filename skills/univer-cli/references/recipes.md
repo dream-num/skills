@@ -69,6 +69,9 @@ univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json
 Default output returns slim cell facts for ordinary text and value decisions. Add exact include
 fields such as `values`, `displayValues`, `valueDetails`, `cellFacts`, `formulas`,
 `numberFormats`, `semanticStyles`, or `cellData` only when the task depends on those distinctions.
+In these cell facts, `value` uses `cellData.v`/raw readback for typed cell content and
+`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize `value` from
+display text.
 Use `--md` only when the same evidence should be easier to review as Markdown; keep JSON for
 machine parsing. Use the real `sheetName` from `units`/`sheet-overview`; do not default to
 `Sheet1`.
