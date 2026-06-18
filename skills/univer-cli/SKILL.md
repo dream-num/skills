@@ -78,8 +78,9 @@ option value; `--params '{}'` is interpreted as a file path named `{}`.
 Default managed inspect output is slim JSON evidence. For review, add `--md` to render the same evidence as Markdown; Markdown is an agent-readable view, not a JSON pointer codec or roundtrip machine format. Use default JSON or `--json` for programmatic parsing.
 
 In slim cell facts and value details, `value` uses `cellData.v`/raw readback for typed cell content
-and `displayValue` mirrors Facade `getDisplayValues()`. Inspect tools do not synthesize `value`
-from display text or agent-oriented normalization.
+and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
+`getDisplayValues()`. Inspect tools do not synthesize `value` from display text or agent-oriented
+normalization.
 
 Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, or cell model details.
 

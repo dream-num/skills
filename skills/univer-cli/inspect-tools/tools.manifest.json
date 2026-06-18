@@ -84,7 +84,7 @@
         "hints": [
           "ranges groups evidence per caller-specified rectangle and preserves matrix dimensions.",
           "cell facts include A1 coordinates and selected value/display/formula/format/style fields.",
-          "cell fact value fields use cellData.v/raw readback for typed values; displayValue mirrors Facade getDisplayValues().",
+          "cell fact value fields use cellData.v/raw readback for typed values; valueType prefers cellData.t when available; displayValue mirrors Facade getDisplayValues().",
           "semanticStyles exposes supported stable traits only and never uses raw style ids."
         ]
       }

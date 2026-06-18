@@ -56,9 +56,9 @@ formats, static style traits, rich cell model data, multi-line content, or expor
 `semanticStyles` is for supported stable traits and does not expose raw style ids.
 
 For `sheet-range` and range-like cell facts, `value` uses `cellData.v`/raw readback for typed cell
-content and `displayValue` mirrors Facade `getDisplayValues()`. Inspect tools do not synthesize
-`value` from display text; request `cellData` explicitly when the full cell model itself is the
-evidence.
+content and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
+`getDisplayValues()`. Inspect tools do not synthesize `value` from display text; request `cellData`
+explicitly when the full cell model itself is the evidence.
 
 Use `sheet-conditional-formats` when the question is whether conditional formatting rules exist,
 where they apply, and what conditions/styles they encode. It does not prove every cell's final
