@@ -1,69 +1,53 @@
 ---
 name: univer-cli
-description: "Use when working with spreadsheets, workbooks, Excel-compatible files, `.univer` targets, Univer CLI commands, SaC sidecars, managed inspect tools, migration packs, formulas, formatting, charts, shapes, preview, versioning, import, export, or handoff."
+description: "Use when working with `.univer` targets, Univer CLI commands, SaC sidecars, managed inspect tools, migration packs, spreadsheet formulas/formatting/charts, preview, versioning, import/export, or Excel-compatible handoff."
 ---
 
 # Univer CLI
 
-`univer` is a terminal-native univerfile engine. Use this skill to understand the public CLI and SaC
-surfaces for target evidence, durable .univer changes, verification, preview, versioning, and
-handoff.
-
-Install with `npm i -g univer-cli`. Update with `univer update`. The executable is `univer`.
-Use `univer help` and `univer help <command...>` for exact syntax.
+`univer` is a terminal-native univerfile engine. Use this skill to choose the public CLI and SaC
+surfaces for target evidence, durable `.univer` changes, verification, preview, versioning, and
+handoff. Use `univer help` and `univer help <command...>` for exact command syntax.
 
 ## Core Model
 
-Treat target-visible spreadsheet/unit state as the source of truth. Command success, metadata, or local notes do
-not prove that sheets, values, formulas, formatting, charts, resources, or exported handoff files
-are correct.
+Treat target-visible unit state as the source of truth. Command success, metadata, local notes, or
+generated source do not prove that sheets, values, formulas, formatting, charts, resources, or
+handoff files are correct.
 
 The target `.univer` path is the local CLI target identity. Pick one explicit path such as
-`./Budget.univer` and pass that path to commands, including `status`. Do not target local work by `remoteUnitId`, `sessionId`, runtime id, display name, sheet name, or the current
-directory.
+`./Budget.univer` and pass that path to commands, including `status`. Do not target local work by
+`remoteUnitId`, `sessionId`, runtime id, display name, sheet name, or the current directory.
 
-Use `UNIVERFILE=./Budget.univer` in shell examples when you want a reusable target variable.
-A `.univer` file is a CLI target container with top-level units. `localUnitId` identifies a unit
-inside that target. `remoteUnitId` is binding metadata. Spreadsheet sheet names, A1 ranges, values,
-formulas, styles, tables, filters, charts, shapes, and images are coordinates or resources inside a
-selected spreadsheet unit.
+A `.univer` file is a target container with top-level units. `localUnitId` identifies a unit inside
+that target. `remoteUnitId` is binding metadata. Sheet names, A1 ranges, values, formulas, styles,
+tables, filters, charts, shapes, and images are coordinates or resources inside a selected unit.
 
 Use public surfaces for target reads and writes. A `.univer` target is not an agent-handwritten
-source file. Do not bypass the CLI/SaC surfaces to hand-patch the target container. Use inspect,
-view, export, SaC source, apply, rollback, verify, and versioning commands.
+source file. Do not bypass the CLI/SaC surfaces to patch the target container by hand.
 
 ## Public Surfaces
 
 | Need | Use |
 | --- | --- |
-| Create a blank target | `univer new <file.univer>` |
-| Import spreadsheet data | `univer import --file <input.xlsx\|csv\|url> <file.univer>` |
-| Append a remote unit | `univer import --remote-unit-id <unitId> <file.univer>` |
-| Initialize from a remote unit | `univer clone <file.univer> --unit-id <unitId>` |
-| Discover units | `printf '%s' '{}' \| univer inspect <file.univer> --tool units --params -` |
-| Read target/unit evidence | managed `univer inspect --tool`, then custom readonly `univer inspect --script` probes |
-| Understand visual state | `univer open <http-or-https-univerfile-url> --json`, then open the returned `url`; use `--local` only when `file.univer.ai` is unreachable |
-| Create SaC authoring sidecar | `univer sac materialize <file.univer> --json` |
-| Create durable source | `univer sac migration create <description> <file.univer>` |
-| Discover migration scaffolds | `univer sac migration templates --json` |
-| Execute pending source | `univer sac apply <file.univer>` |
-| Revert applied boundary | `univer sac rollback <file.univer>` |
-| Verify applied behavior | `univer sac verify <file.univer> --json` |
-| Check local state | `univer status <file.univer> [--local-unit-id <localUnitId>]` |
-| Record or discard local mutations | `univer commit`, `univer restore`, or `univer reset` with `<file.univer> --local-unit-id <localUnitId>` |
-| Sync remote-bound units | `univer pull` or `univer sync` with `<file.univer> --local-unit-id <localUnitId>` |
-| Read review comments | `univer view comments <file.univer> --json` |
-| Produce handoff file | `univer export <file.univer> <handoff.xlsx|handoff.csv>` |
+| Create or import targets | `new`, `import`, `clone` |
+| Read target evidence | managed `inspect --tool` first; custom readonly `inspect --script` only for bounded gaps |
+| Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
+| Recover an applied SaC boundary | `sac rollback` |
+| Check or reconcile local state | `status`, `commit`, `restore`, `reset`, `pull`, `sync` |
+| Review or hand off visually | `open`, `view comments`, browser tools |
+| Produce Excel-compatible output | `export` after verifying the relevant target-visible state |
 
 ## Evidence Tools
 
-Managed inspect tools are the preferred readonly evidence surface. Use:
+Managed inspect tools are the preferred readonly evidence surface. Discover units before
+unit-scoped reads, and resolve tool params when a tool shape is unclear:
 
 ```bash
 UNIVERFILE=./Budget.univer
 univer inspect tools list --json
-univer inspect tools list --json --all-candidates  # resolver diagnostics only
 univer inspect tools resolve sheet-range --json
+printf '%s' '{}' | univer inspect "$UNIVERFILE" --tool units --params -
 printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' \
   | univer inspect "$UNIVERFILE" --tool sheet-range --params -
 ```
@@ -75,33 +59,21 @@ targets.
 `--params` accepts either a real JSON file path or `-` for stdin. Do not pass inline JSON as the
 option value; `--params '{}'` is interpreted as a file path named `{}`.
 
-Default managed inspect output is slim JSON evidence. For review, add `--md` to render the same evidence as Markdown; Markdown is an agent-readable view, not a JSON pointer codec or roundtrip machine format. Use default JSON or `--json` for programmatic parsing.
+Default managed inspect output is slim JSON evidence. For review, add `--md` to render the same
+evidence as Markdown; Markdown is an agent-readable view, not a roundtrip machine format. Use
+default JSON or `--json` for programmatic parsing and ambiguity checks.
 
 In slim cell facts and value details, `value` uses `cellData.v`/raw readback for typed cell content
 and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
 `getDisplayValues()`. Inspect tools do not synthesize `value` from display text or agent-oriented
 normalization.
 
-Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, or cell model details.
+Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, or cell model details. Use `sheet-formulas` for formula audits and `sheet-conditional-formats` for conditional formatting rule resources.
 
-Common tools:
-
-- `units`: unit inventory, `localUnitId`, unit type, names, capabilities, remote binding metadata.
-- `sheet-overview`: sheets, used ranges, bounded samples, formulas, candidate regions, warnings.
-- `sheet-search`: find visible text or values when coordinates are unknown.
-- `sheet-neighborhood`: read context around a known anchor.
-- `sheet-range`: read known bounded rectangles; default slim cell facts plus optional exact value/formula/format/static-style facts.
-- `sheet-formulas`: audit formula cells.
-- `sheet-conditional-formats`: inspect conditional formatting rule resources.
-
-For large tables, do not use `sheet-range` as a table dump. Use `sheet-overview` first to learn
-used ranges and table shape. Before writing migration source for aggregate, rebuild, split, or
-reconciliation tasks, obtain concise source/target summary facts such as counts, grouped totals,
-mismatches, and head/tail samples. If managed tools only provide samples or bounded ranges, write a
-readonly custom inspect script that returns those facts as JSON. That summary should replace full
-source-table dumps for that same evidence question; do not also dump the same large source tables
-unless exact row-level evidence is needed for a named ambiguity. Increase `sheet-range` limits only
-when exact cells are genuinely needed and the output will remain reviewable.
+For large tables, do not use `sheet-range` as a table dump. Use overview/search first, then obtain
+concise source/target facts such as counts, grouped totals, mismatches, and head/tail samples. If
+managed tools cannot answer that bounded readonly question, write a small sidecar-local custom
+inspect script that returns those facts as JSON instead of dumping every source row.
 
 When typed values, display strings, formulas, number formats, cell model details, or static style
 traits affect the decision, request focused `sheet-range` fields such as `values`,
@@ -109,81 +81,39 @@ traits affect the decision, request focused `sheet-range` fields such as `values
 `semanticStyles`. Use `sheet-conditional-formats` for conditional formatting rule resources;
 combine it with value evidence when a value-dependent rule is part of the task.
 
-Use custom inspect scripts only when managed tools do not answer a bounded evidence question:
-
-```bash
-printf '%s' '{"reason":"bounded-readonly-evidence"}' \
-  | univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --params -
-```
-
-Custom inspect scripts are readonly probes. Keep them small, parameterized, sidecar-local, and JSON
-oriented. Make probe failures concise: return error counts, field diagnostics, and a few head/tail
-samples, not every unmatched row or source record. Do not use them for durable target mutations.
-
 For more detail, read `references/evidence-tools.md`.
 
 ## SaC Authoring
 
-SaC is the source-backed authoring path for durable target behavior.
+SaC is the source-backed authoring path for durable target behavior. `materialize` creates or
+refreshes the sidecar from committed target state and returns `sidecarPath`; do not guess hidden
+paths. `migrations/` holds Facade Migration Pack source, `types/` holds local API references,
+`inspect-scripts/` holds scratch readonly probes, `runs/` holds verification reports, and
+`archives/materialize/` is review-only history.
 
-- `materialize` creates or refreshes the hidden sidecar for an existing target from committed target
-  state, preserves global `assertions/`, archives replaced active migrations under
-  `archives/materialize/`, and returns `sidecarPath`.
-- `migrations/` contains Facade Migration Pack source.
-- `archives/materialize/<archive-id>/migrations/` contains previous active migration source archived
-  by materialize for review only; archived migrations are not applied or verified by default.
-- `types/` contains generated local Facade/SaC reference material.
-- `inspect-scripts/` is scratch space for readonly probes.
-- `runs/` contains verification reports and sandbox artifacts.
-- `assertions/**/*.assertions.ts` entrypoints express the current file-level target-visible
-  final-state contract when correctness matters. Use `target(({ units }) => units().contains(...))`
-  for expected unit inventory, explicit typed unit helpers for unit-scoped facts, and
-  `facts(({ fact }) => ...)` when the same business fact must appear across units.
-  `sheetUnit(localUnitId, ...)`, `baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`, and
-  `docUnit(localUnitId, ...)` require the explicit `localUnitId`; do not route assertions by remote
-  unit id, unit name, sheet name, or implicit active workbook state. Split entrypoints by unit or
-  target concern such as unit inventory, values, formulas, formatting, Base records, slide text, doc
-  content, or cross-unit business facts, not by migration pack. Update them as migrations change
-  intended target state; do not preserve intermediate migration-specific expectations there.
-- `pack.files` lists migration implementation entrypoints only. Keep global assertions under
-  `assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately.
-  Ordinary draft packs include `migration.ts`; keep `pack.ts` as metadata and author target
-  mutations in listed entrypoint files.
+`pack.files` lists migration implementation entrypoints only. Keep global assertions under
+`assertions/**/*.assertions.ts`; `univer sac verify` discovers them separately. Ordinary draft
+packs include `migration.ts`; keep `pack.ts` as metadata and author target mutations in listed
+entrypoint files.
 
-SaC source uses two generated ambient modules. Import the API from these names directly; do not
-broad-search the sidecar to discover that the API exists:
+`assertions/**/*.assertions.ts` entrypoints express the current file-level target-visible final-state
+contract when correctness matters. Use `target` for unit inventory, typed unit helpers for
+unit-scoped facts, and `facts` for shared business facts. `sheetUnit(localUnitId, ...)`,
+`baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`, and `docUnit(localUnitId, ...)`
+require the explicit `localUnitId`. `localUnitId` is the only top-level assertion unit selector; do
+not route assertions by remote unit id, unit name, sheet name, or implicit active workbook state.
+Split entrypoints by unit or target concern, not by migration pack, and update them to the intended
+final state as migrations change behavior.
 
-- Migrations: `import { defineFacadeMigrationPack, defineUnitMigration } from "univer:sac/facade-migration-pack";`
-  Each `defineUnitMigration({ apply })` receives `context.univerAPI` (Facade `FUniver`); start from
-  `context.univerAPI.getWorkbook(localUnitId)`.
-- Assertions: `import { defineAssertions } from "univer:sac/assertions";`
-  `defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUnit, facts }) => { ... })` is
-  synchronous deterministic registration; use readonly inspect scripts for async investigation.
-  `localUnitId` is the only top-level assertion unit selector.
-  Inside
-  `sheetUnit(localUnitId, ({ sheet, range }) => { ... })`, `sheet(name)` exposes
-  `exists/usedRange/filter/tables`; `range("Sheet!A1:B2")` (sheet-qualified A1) exposes
-  `values/value/rawValues/displayValues/displayValue/cellData/formula/formulas/numberFormats/numberFormat/styles/backgroundColors/conditionalFormats`.
-  Base assertions include representative `recordCount`, `recordsContain`, and
-  `recordByKey(field, value).matches(partialRecord)` checks. Doc assertions include
-  `textContains`, `paragraphsContain`, and `outline`; slide assertions include presentation page
-  size and slide-level `textContains`. Cross-unit facts preserve participant actuals in the verify
-  report.
-
-Full Facade method signatures live in the sidecar `types/*.d.ts`. Scope lookups narrowly, e.g.
+SaC source imports generated ambient modules for migration packs and assertions. Full Facade method
+signatures live in the sidecar `types/*.d.ts`; scope lookups narrowly, e.g.
 `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of broad reads of the
-sidecar or CLI install. See `references/sac-authoring.md` for a copyable assertion entrypoint.
+sidecar or CLI install. See `references/sac-authoring.md` for import names and copyable examples.
 
-Migration templates are source scaffolds, not a DSL. Discover them with:
-
-```bash
-univer sac migration templates --json
-univer help sac migration create
-```
-
-Choose a template only when its `useWhen` matches target-visible evidence. Generated template
-files are ordinary SaC source with TODOs: read them, fill them from evidence, apply, and verify. If
-no template fits, create an ordinary migration pack.
+Migration templates are source scaffolds, not a DSL. Discover them with
+`univer sac migration templates --json`, choose one only when its `useWhen` matches target-visible
+evidence, then fill the generated ordinary SaC source from evidence. If no template fits, create an
+ordinary migration pack.
 
 If behavior changes after a pack has been applied, prefer a follow-up migration over editing
 already-applied source into hash/applied-state drift.
@@ -200,16 +130,13 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
 - `univer sac rollback <file.univer>` moves the target back across an applied migration boundary. It
   is not arbitrary spreadsheet undo.
 - `univer sac verify <file.univer> --json` checks file-level typed unit assertions against a
-  sandbox copy. It does not apply pending source. It writes a JSON report at the returned
-  `reportPath`, under `runs/<run-id>/verify-report.json`, and may copy artifacts under
-  `runs/<run-id>/artifacts/`. Read scope-aware failure facts: `scope`, `unitType`, `localUnitId`,
-  assertion kind, unit-local target, expected value, actual value, cross-unit participant actuals,
-  first difference, and setup error code when present.
+  sandbox copy. It does not apply pending source. It returns a `reportPath`; read the report for
+  scope-aware failure facts such as `scope`, `unitType`, `localUnitId`, assertion kind, target,
+  expected value, actual value, participant actuals, first difference, and setup error code.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
-behavior. When correctness matters, use target-visible evidence and relevant global assertions or
-readback before handoff. Treat failed assertions as a decision point: either the target final state
-is wrong, or the global assertion expectation is wrong. Treat legacy top-level `sheet()` or
+behavior. Treat failed assertions as a decision point: either the target final state is wrong, or
+the assertion expectation is wrong. Treat legacy top-level `sheet()` or
 `range()` usage, missing units, unit type mismatches, and unsupported readback surfaces as setup
 repair, not final-state workbook mismatch.
 
@@ -223,47 +150,17 @@ For more detail, read `references/sac-execution.md`.
 
 Use `univer status <file.univer>` before SaC commands when target cleanliness matters. `status`
 always requires the actual target `.univer` file; it is not a current-directory, daemon, viewer,
-git, remote unit name, or sheet-name status command. Omit `--local-unit-id` to list all local
-units, or pass it when checking one unit's binding and cleanliness before writes, pull, or sync.
-Use `univer commit` to record verified local mutations, `univer restore` or `univer reset` to
-discard local work, and `univer pull` or `univer sync` for remote-bound units.
+git, remote unit name, or sheet-name status command. Use `commit` for verified local mutations,
+`restore` or `reset` to discard local work, and `pull` or `sync` for remote-bound units.
 
-For visual review, prefer hosted viewer handoff when you have a browser-fetchable HTTP(S) `.univer`
-source URL:
+For visual review, prefer hosted viewer handoff only when you have a browser-fetchable HTTP(S)
+`.univer` source URL. If `file.univer.ai` is unreachable, `univer open <source-url> --local --json`
+starts a foreground localhost viewer asset server; it does not host, proxy, upload, or cache a local
+`.univer` file. If you only have a local `.univer` path, ask for or create an HTTP(S) source URL
+before claiming automatic viewer handoff. In headless, CI, server, or user-requested no-browser
+environments, visual preview is optional unless a browser-capable tool or explicit handoff exists.
 
-```bash
-SOURCE_URL=https://cdn.example.com/orders.univer
-univer open "$SOURCE_URL" --json
-```
-
-Open the returned `url` with the available browser tool, such as agent-browser or Playwright. The
-source URL must be fetchable by that browser with CORS enabled. Include the viewer URL in the user
-response when it is useful for handoff or review.
-
-If `file.univer.ai` is not reachable from the current environment, use the explicit local viewer
-fallback:
-
-```bash
-SOURCE_URL=https://cdn.example.com/orders.univer
-univer open "$SOURCE_URL" --local --json
-```
-
-This starts a foreground localhost server that serves viewer assets only. It does not host, proxy,
-download, upload, sign, or cache the source workbook. Keep the command process running while using
-the returned local viewer URL; stopping the process stops the URL. The source URL still must be
-HTTP(S), browser-fetchable, and CORS-enabled.
-
-If you only have a local `.univer` path, do not claim that `univer open "$UNIVERFILE"` will
-automatically host, upload, or serve it. Ask for or create an HTTP(S) source URL before using hosted
-`univer open`. The viewer's local file picker is only a manual fallback when a human browser session
-is appropriate.
-
-In known headless, remote, CI, server, or user-requested no-browser environments, do not run hosted
-`univer open` unless a browser-capable tool or explicit user handoff is available. Visual preview is
-not mandatory SaC TDD completion evidence in those environments.
-
-Use `univer export` for Excel-compatible handoff after verifying the target-visible state that
-matters for the task.
+Use `univer export` for Excel-compatible handoff after verifying the target-visible state that matters.
 
 For more detail, read `references/versioning-and-handoff.md`.
 
@@ -276,26 +173,11 @@ Open only the reference needed for the current question:
 - `references/sac-authoring.md`: materialize, sidecar structure, migration packs, templates,
   assertions, follow-up migrations.
 - `references/sac-execution.md`: apply, rollback, verify, `runs/`, failure interpretation.
-- `references/versioning-and-handoff.md`: status, commit, restore/reset, pull/sync, hosted open, comments,
-  export.
+- `references/versioning-and-handoff.md`: status, commit, restore/reset, pull/sync, hosted open,
+  comments, export.
 - `references/recipes.md`: copyable command shapes that have been checked against current CLI
   behavior.
 
-`inspect-tools/` is an executable managed-tool resource directory used by `univer inspect --tool`.
-Do not treat those files as generic scripts to run directly.
-
-## Keep In Mind
-
-- Discover `localUnitId` before unit-specific reads or mutations.
-- Prefer managed inspect tools before custom readonly probes.
-- Use default slim inspect evidence for ordinary labels, copied text, matching, grouping, and write
-  decisions. Request exact display, matrix, formula, format, style, or cell model data only when the
-  task depends on those distinctions.
-- Use semantic style evidence and assertion helpers for style contracts; avoid turning raw style ids
-  or raw `cellData.s` snapshots into task expectations.
-- Record non-obvious assumptions somewhere durable when the task is complex, but the product skill
-  does not require a specific planning method.
-- Use explicit typed unit assertions and `verify` when durable target correctness matters, but choose
-  the planning or TDD method that fits the user and agent runtime.
-- `univer doctor collect` is for authorized bug reports or Univer team support; explain why and ask
-  before running it.
+`inspect-tools/` is a managed-tool resource directory used by `univer inspect --tool`; do not treat
+those files as generic scripts to run directly. `univer doctor collect` is for authorized bug reports
+or Univer team support; explain why and ask before running it.
