@@ -399,7 +399,6 @@ function readCellFactsForAgent(sheet, range, cache, rangeA1, styleTraits, includ
       }
       if (displayValue !== null && displayValue !== undefined && displayValue !== "") {
         cell.displayValue = displayValue;
-        cell.displayType = readCellValueType(displayValue);
       }
       if (formula !== null && formula !== undefined && formula !== "") {
         cell.formula = formula;
@@ -728,7 +727,6 @@ function readCellValueDetailsForAgent(values, storageValues, displayValues, cell
     value,
     valueType: readCellValueType(value),
     displayValue,
-    displayType: readCellValueType(displayValue),
     numberFormat: readMatrixCell(numberFormats, rowIndex, columnIndex)
   };
   if (typeof formula === "string" && formula.length > 0) {
