@@ -286,7 +286,7 @@ function readRangePayload(sheet, rangeA1, include, styleTraits) {
     } else if (field === "displayValues") {
       payload.displayValues = readCachedRangeMatrix(range, cache, "displayValues", "getDisplayValues");
     } else if (field === "values") {
-      payload.values = readCachedRangeMatrix(range, cache, "values", "getValues");
+      payload.values = readLogicalValuesForAgent(range, cache);
     } else if (field === "formulas") {
       const formulas = readCachedRangeMatrix(range, cache, "formulas", "getFormulas");
       if (!isEmptyFormulaMatrix(formulas)) {
@@ -333,7 +333,7 @@ function readCellFactsForAgent(sheet, range, cache, rangeA1, styleTraits, includ
     const columnCount = readRangeColumnCount(range, rowIndex, [values, storageValues, displayValues, cellData, formulas, numberFormats, semanticStyles]);
     return Array.from({ length: columnCount }, (_, columnIndex) => {
       const cell = { a1: offsetA1(rangeA1, rowIndex, columnIndex) };
-      const value = readNormalizedCellValueForAgent(values, storageValues, displayValues, cellData, rowIndex, columnIndex);
+      const value = readLogicalCellValueForAgent(values, storageValues, cellData, rowIndex, columnIndex);
       const displayValue = readMatrixCell(displayValues, rowIndex, columnIndex);
       const formula = readMatrixCell(formulas, rowIndex, columnIndex);
       const numberFormat = readMatrixCell(numberFormats, rowIndex, columnIndex);
@@ -553,6 +553,37 @@ function sortObject(value) {
   }
   return sorted;
 }
+function readLogicalValuesForAgent(range, cache) {
+  const values = readCachedRangeMatrix(range, cache, "values", "getValues");
+  const storageValues = readCachedRangeMatrix(range, cache, "storageValues", "getRawValues");
+  const cellData = readCachedRangeMatrix(range, cache, "cellData", "getCellDataGrid");
+  const rowCount = Math.max(
+    readMatrixRowCount(values),
+    readMatrixRowCount(storageValues),
+    readMatrixRowCount(cellData)
+  );
+  return Array.from({ length: rowCount }, (_, rowIndex) => {
+    const columnCount = Math.max(
+      readMatrixColumnCount(values, rowIndex),
+      readMatrixColumnCount(storageValues, rowIndex),
+      readMatrixColumnCount(cellData, rowIndex)
+    );
+    return Array.from({ length: columnCount }, (_, columnIndex) =>
+      readLogicalCellValueForAgent(values, storageValues, cellData, rowIndex, columnIndex)
+    );
+  });
+}
+function readLogicalCellValueForAgent(values, storageValues, cellData, rowIndex, columnIndex) {
+  const cell = readMatrixCell(cellData, rowIndex, columnIndex);
+  if (cell != null && typeof cell === "object" && "v" in cell) {
+    return cell.v ?? null;
+  }
+  const storageValue = readMatrixCell(storageValues, rowIndex, columnIndex);
+  if (storageValue !== null && storageValue !== undefined) {
+    return storageValue;
+  }
+  return readMatrixCell(values, rowIndex, columnIndex);
+}
 function readNormalizedValuesForAgent(range, cache) {
   const values = readCachedRangeMatrix(range, cache, "values", "getValues");
   const storageValues = readCachedRangeMatrix(range, cache, "storageValues", "getRawValues");
@@ -635,20 +666,13 @@ function readValueDetailsForAgent(range, cache) {
   });
 }
 function readCellValueDetailsForAgent(values, storageValues, displayValues, cellData, formulas, numberFormats, rowIndex, columnIndex) {
-  const cell = readMatrixCell(cellData, rowIndex, columnIndex);
-  const cellDataValue = extractCellDataValue(cell);
-  const storageValue = readMatrixCell(storageValues, rowIndex, columnIndex);
   const displayValue = readMatrixCell(displayValues, rowIndex, columnIndex);
-  const value = cellDataValue !== null && cellDataValue !== undefined
-    ? cellDataValue
-    : storageValue !== null && storageValue !== undefined
-      ? storageValue
-      : readMatrixCell(values, rowIndex, columnIndex);
+  const value = readLogicalCellValueForAgent(values, storageValues, cellData, rowIndex, columnIndex);
   const formula = readMatrixCell(formulas, rowIndex, columnIndex);
   const detail = {
-    value: normalizeValueForAgent(value),
+    value,
     valueType: readCellValueType(value),
-    displayValue: normalizeValueForAgent(displayValue),
+    displayValue,
     displayType: readCellValueType(displayValue),
     numberFormat: readMatrixCell(numberFormats, rowIndex, columnIndex)
   };
