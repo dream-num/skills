@@ -327,12 +327,13 @@ function readCellFactsForAgent(sheet, range, cache, rangeA1, styleTraits, includ
       const cell = { a1: offsetA1(rangeA1, rowIndex, columnIndex) };
       const value = readLogicalCellValueForAgent(values, storageValues, cellData, rowIndex, columnIndex);
       const displayValue = readMatrixCell(displayValues, rowIndex, columnIndex);
+      const sourceCellData = readMatrixCell(cellData, rowIndex, columnIndex);
       const formula = readMatrixCell(formulas, rowIndex, columnIndex);
       const numberFormat = readMatrixCell(numberFormats, rowIndex, columnIndex);
       const semanticStyle = compactSemanticStyle(readMatrixCell(semanticStyles, rowIndex, columnIndex));
       if (isNonEmptyValue(value)) {
         cell.value = value;
-        cell.valueType = readCellValueType(value);
+        cell.valueType = readCellValueTypeForAgent(value, sourceCellData);
       }
       if (displayValue !== null && displayValue !== undefined && displayValue !== "") {
         cell.displayValue = displayValue;
@@ -658,11 +659,12 @@ function readValueDetailsForAgent(range, cache) {
 }
 function readCellValueDetailsForAgent(values, storageValues, displayValues, cellData, formulas, numberFormats, rowIndex, columnIndex) {
   const displayValue = readMatrixCell(displayValues, rowIndex, columnIndex);
+  const sourceCellData = readMatrixCell(cellData, rowIndex, columnIndex);
   const value = readLogicalCellValueForAgent(values, storageValues, cellData, rowIndex, columnIndex);
   const formula = readMatrixCell(formulas, rowIndex, columnIndex);
   const detail = {
     value,
-    valueType: readCellValueType(value),
+    valueType: readCellValueTypeForAgent(value, sourceCellData),
     displayValue,
     numberFormat: readMatrixCell(numberFormats, rowIndex, columnIndex)
   };
@@ -670,6 +672,28 @@ function readCellValueDetailsForAgent(values, storageValues, displayValues, cell
     detail.formula = formula;
   }
   return detail;
+}
+function readCellValueTypeForAgent(value, cellData) {
+  const cellDataType = readCellDataValueTypeForAgent(cellData);
+  return cellDataType ?? readCellValueType(value);
+}
+function readCellDataValueTypeForAgent(cellData) {
+  if (cellData == null || typeof cellData !== "object" || !("t" in cellData)) {
+    return null;
+  }
+  if (cellData.t === 1) {
+    return "string";
+  }
+  if (cellData.t === 2) {
+    return "number";
+  }
+  if (cellData.t === 3) {
+    return "boolean";
+  }
+  if (cellData.t === 4) {
+    return "force-string";
+  }
+  return "cell-type-" + String(cellData.t);
 }
 function extractCellDataRichTextValue(cellData) {
   if (cellData == null || typeof cellData !== "object") {
@@ -858,4 +882,3 @@ function listFormulaCells(formulas, bounds, limit) {
 function readMatrixCell(matrix, row, column) {
   return Array.isArray(matrix) && Array.isArray(matrix[row]) ? matrix[row][column] ?? null : null;
 }
-
