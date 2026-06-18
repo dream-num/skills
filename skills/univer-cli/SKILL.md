@@ -62,6 +62,7 @@ Managed inspect tools are the preferred readonly evidence surface. Use:
 ```bash
 UNIVERFILE=./Budget.univer
 univer inspect tools list --json
+univer inspect tools list --json --all-candidates  # resolver diagnostics only
 univer inspect tools resolve sheet-range --json
 printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' \
   | univer inspect "$UNIVERFILE" --tool sheet-range --params -
@@ -74,29 +75,34 @@ targets.
 `--params` accepts either a real JSON file path or `-` for stdin. Do not pass inline JSON as the
 option value; `--params '{}'` is interpreted as a file path named `{}`.
 
+Default managed inspect output is slim JSON evidence. For review, add `--md` to render the same evidence as Markdown; Markdown is an agent-readable view, not a JSON pointer codec or roundtrip machine format. Use default JSON or `--json` for programmatic parsing.
+
+Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, or cell model details.
+
 Common tools:
 
 - `units`: unit inventory, `localUnitId`, unit type, names, capabilities, remote binding metadata.
 - `sheet-overview`: sheets, used ranges, bounded samples, formulas, candidate regions, warnings.
 - `sheet-search`: find visible text or values when coordinates are unknown.
 - `sheet-neighborhood`: read context around a known anchor.
-- `sheet-range`: read known rectangles and optional value/formula/format/static-style facts.
+- `sheet-range`: read known bounded rectangles; default slim cell facts plus optional exact value/formula/format/static-style facts.
 - `sheet-formulas`: audit formula cells.
 - `sheet-conditional-formats`: inspect conditional formatting rule resources.
 
 For large tables, do not use `sheet-range` as a table dump. Use `sheet-overview` first to learn
 used ranges and table shape. Before writing migration source for aggregate, rebuild, split, or
-reconciliation tasks, obtain compact source/target summary facts such as counts, grouped totals,
-mismatches, and head/tail samples. If managed tools only provide samples or raw grid ranges, write a
-readonly custom inspect script that returns those facts as compact JSON. That summary should replace
-full source-table dumps for that same evidence question; do not also dump the same large source
-tables unless exact row-level evidence is needed for a named ambiguity. Increase `sheet-range` limits
-only when raw cells are genuinely needed and the output will remain reviewable.
+reconciliation tasks, obtain concise source/target summary facts such as counts, grouped totals,
+mismatches, and head/tail samples. If managed tools only provide samples or bounded ranges, write a
+readonly custom inspect script that returns those facts as JSON. That summary should replace full
+source-table dumps for that same evidence question; do not also dump the same large source tables
+unless exact row-level evidence is needed for a named ambiguity. Increase `sheet-range` limits only
+when exact cells are genuinely needed and the output will remain reviewable.
 
-When typed values, formulas, number formats, or static style traits affect the decision, request
-focused `sheet-range` fields such as `valueDetails`, `cellFacts`, `formulas`, `numberFormats`, or
-`semanticStyles`. Use `sheet-conditional-formats` for conditional formatting rule resources; combine
-it with value evidence when a value-dependent rule is part of the task.
+When typed values, display strings, formulas, number formats, cell model details, or static style
+traits affect the decision, request focused `sheet-range` fields such as `values`,
+`displayValues`, `valueDetails`, `cellFacts`, `cellData`, `formulas`, `numberFormats`, or
+`semanticStyles`. Use `sheet-conditional-formats` for conditional formatting rule resources;
+combine it with value evidence when a value-dependent rule is part of the task.
 
 Use custom inspect scripts only when managed tools do not answer a bounded evidence question:
 
@@ -106,8 +112,8 @@ printf '%s' '{"reason":"bounded-readonly-evidence"}' \
 ```
 
 Custom inspect scripts are readonly probes. Keep them small, parameterized, sidecar-local, and JSON
-oriented. Make probe failures compact: return error counts, field diagnostics, and a few head/tail
-samples, not every unmatched row or raw source record. Do not use them for durable target mutations.
+oriented. Make probe failures concise: return error counts, field diagnostics, and a few head/tail
+samples, not every unmatched row or source record. Do not use them for durable target mutations.
 
 For more detail, read `references/evidence-tools.md`.
 
@@ -260,8 +266,8 @@ For more detail, read `references/versioning-and-handoff.md`.
 
 Open only the reference needed for the current question:
 
-- `references/evidence-tools.md`: managed inspect tools, custom inspect scripts, params, normalized
-  versus exact evidence.
+- `references/evidence-tools.md`: managed inspect tools, custom inspect scripts, params, default
+  slim evidence versus exact evidence.
 - `references/sac-authoring.md`: materialize, sidecar structure, migration packs, templates,
   assertions, follow-up migrations.
 - `references/sac-execution.md`: apply, rollback, verify, `runs/`, failure interpretation.
@@ -277,8 +283,9 @@ Do not treat those files as generic scripts to run directly.
 
 - Discover `localUnitId` before unit-specific reads or mutations.
 - Prefer managed inspect tools before custom readonly probes.
-- Use normalized inspect evidence for ordinary labels, copied text, matching, grouping, and write
-  decisions. Request raw/display/cell data only when exact storage or display identity matters.
+- Use default slim inspect evidence for ordinary labels, copied text, matching, grouping, and write
+  decisions. Request exact display, matrix, formula, format, style, or cell model data only when the
+  task depends on those distinctions.
 - Use semantic style evidence and assertion helpers for style contracts; avoid turning raw style ids
   or raw `cellData.s` snapshots into task expectations.
 - Record non-obvious assumptions somewhere durable when the task is complex, but the product skill

@@ -80,11 +80,11 @@
         ]
       },
       "outputContract": {
-        "description": "Known-rectangle contract evidence. Normalized agent values by default; optional exact values, displayValues, rawValues, formulas, numberFormats, semanticStyles, cellData, valueDetails, and cell-level typed facts for one or more explicit ranges.",
+        "description": "Known-rectangle evidence. Slim cell facts by default; optional exact values, displayValues, formulas, numberFormats, semanticStyles, cellData, valueDetails, and cell-level facts for one or more explicit ranges.",
         "hints": [
           "ranges groups evidence per caller-specified rectangle and preserves matrix dimensions.",
-          "cellFacts includes A1 coordinates and selected raw/display/value/formula/format/style fields.",
-          "normalizedValues removes control characters for agent-facing decisions.",
+          "cell facts include A1 coordinates and selected value/display/formula/format/style fields.",
+          "default values remove control characters for agent-facing decisions.",
           "semanticStyles exposes supported stable traits only and never uses raw style ids."
         ]
       }
