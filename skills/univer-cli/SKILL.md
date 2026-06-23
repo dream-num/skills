@@ -38,6 +38,39 @@ source file. Do not bypass the CLI/SaC surfaces to patch the target container by
 | Review or hand off visually | `open`, `view comments`, browser tools |
 | Produce Excel-compatible output | `export` after verifying the relevant target-visible state |
 
+## Lookup Protocol
+
+Use `univer lookup` for CLI-owned API/type/manual discovery, not workbook-visible facts. Workbook
+facts still belong to managed `univer inspect` tools.
+
+Prefer short primitive lookup queries with 2-3 words:
+
+```bash
+univer lookup "range read"
+univer lookup "range write"
+univer lookup "range clear"
+univer lookup "range address"
+```
+
+Use exact-symbol lookup when you need a precise declaration:
+
+```bash
+univer lookup "FRange.getValues"
+univer lookup "FRange.setValues"
+```
+
+Do not paste a whole task prompt into lookup. Bad queries include
+`range set values clear content spreadsheet facade` or long worksheet instructions that mix read,
+write, clear, format, assertion, and workbook evidence in one search. Split complex tasks into
+primitive lookups, then follow the returned `readHints`.
+
+For JSON lookup output, if `mode` is `decompose`, do not treat empty `results` as no match. Follow
+`decomposition.suggestedQueries` and do not parse warning text for suggested queries.
+
+Lookup read hints are designed to work with shell tools. Use the returned `sed -n` command or exact
+location to read the declaration lines you need; avoid broad `rg` over all `types/*.d.ts` or full
+type-file reads when short lookup or exact-symbol lookup can bound the context.
+
 ## Evidence Tools
 
 Managed inspect tools are the preferred readonly evidence surface. Discover units before
@@ -106,11 +139,12 @@ Split entrypoints by unit or target concern, not by migration pack, and update t
 final state as migrations change behavior.
 
 SaC source imports generated ambient modules for migration packs and assertions. Full Facade method
-signatures live in the sidecar `types/*.d.ts`; use `univer lookup "<query>"` for concise API
-navigation and follow its read hints when you need exact declarations. For sidecar-local checks,
-scope lookups narrowly, e.g. `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`,
-instead of broad reads of the sidecar or CLI install. See `references/sac-authoring.md` for import
-names and copyable examples.
+signatures live in the sidecar `types/*.d.ts`; use short `univer lookup` queries such as
+`range read`, `range write`, or exact symbols such as `FRange.getValues` for concise API
+navigation, then follow read hints when you need exact declarations. For sidecar-local checks, scope
+lookups narrowly, e.g. `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of
+broad reads of the sidecar or CLI install. See `references/sac-authoring.md` for import names and
+copyable examples.
 
 Migration templates are source scaffolds, not a DSL. Discover them with
 `univer sac migration templates --json`, choose one only when its `useWhen` matches target-visible
