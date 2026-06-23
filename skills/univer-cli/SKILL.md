@@ -106,9 +106,11 @@ Split entrypoints by unit or target concern, not by migration pack, and update t
 final state as migrations change behavior.
 
 SaC source imports generated ambient modules for migration packs and assertions. Full Facade method
-signatures live in the sidecar `types/*.d.ts`; scope lookups narrowly, e.g.
-`rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of broad reads of the
-sidecar or CLI install. See `references/sac-authoring.md` for import names and copyable examples.
+signatures live in the sidecar `types/*.d.ts`; use `univer lookup "<query>"` for concise API
+navigation and follow its read hints when you need exact declarations. For sidecar-local checks,
+scope lookups narrowly, e.g. `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`,
+instead of broad reads of the sidecar or CLI install. See `references/sac-authoring.md` for import
+names and copyable examples.
 
 Migration templates are source scaffolds, not a DSL. Discover them with
 `univer sac migration templates --json`, choose one only when its `useWhen` matches target-visible
