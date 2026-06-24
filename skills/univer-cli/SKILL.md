@@ -63,12 +63,12 @@ Default managed inspect output is slim JSON evidence. For review, add `--md` to 
 evidence as Markdown; Markdown is an agent-readable view, not a roundtrip machine format. Use
 default JSON or `--json` for programmatic parsing and ambiguity checks.
 
-In slim cell facts and value details, `value` uses `cellData.v`/raw readback for typed cell content
-and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
-`getDisplayValues()`. Inspect tools do not synthesize `value` from display text or agent-oriented
-normalization.
+In slim cell facts and value details, `logicalCellValue`/`value` uses `cellData.v`/raw readback for
+typed cell content, `storageValueType`/`valueType` prefers `cellData.t` when available, and
+`displayCellValue`/`displayValue` mirrors Facade `getDisplayValues()`. Inspect tools do not
+synthesize logical values from display text or agent-oriented normalization.
 
-Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, or cell model details. Use `sheet-formulas` for formula audits and `sheet-conditional-formats` for conditional formatting rule resources.
+Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, rich text runs, or cell model details. Use `sheet-formulas` for formula audits and `sheet-conditional-formats` for conditional formatting rule resources.
 
 For large tables, do not use `sheet-range` as a table dump. Use overview/search first, then obtain
 concise source/target facts such as counts, grouped totals, mismatches, and head/tail samples. If
@@ -77,9 +77,9 @@ inspect script that returns those facts as JSON instead of dumping every source 
 
 When typed values, display strings, formulas, number formats, cell model details, or static style
 traits affect the decision, request focused `sheet-range` fields such as `values`,
-`displayValues`, `valueDetails`, `cellFacts`, `cellData`, `formulas`, `numberFormats`, or
-`semanticStyles`. Use `sheet-conditional-formats` for conditional formatting rule resources;
-combine it with value evidence when a value-dependent rule is part of the task.
+`displayValues`, `valueDetails`, `richTextRuns`, `cellFacts`, `cellData`, `formulas`,
+`numberFormats`, or `semanticStyles`. Use `sheet-conditional-formats` for conditional formatting
+rule resources; combine it with value evidence when a value-dependent rule is part of the task.
 
 For more detail, read `references/evidence-tools.md`.
 
@@ -106,9 +106,11 @@ Split entrypoints by unit or target concern, not by migration pack, and update t
 final state as migrations change behavior.
 
 SaC source imports generated ambient modules for migration packs and assertions. Full Facade method
-signatures live in the sidecar `types/*.d.ts`; scope lookups narrowly, e.g.
-`rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of broad reads of the
-sidecar or CLI install. See `references/sac-authoring.md` for import names and copyable examples.
+signatures live in the sidecar `types/*.d.ts`; use `univer lookup "<query>"` for concise API
+navigation and follow its `sed` locations when you need exact declarations. For sidecar-local
+checks, scope lookups narrowly, e.g. `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`,
+instead of broad reads of the sidecar or CLI install. See `references/sac-authoring.md` for import
+names and copyable examples.
 
 Migration templates are source scaffolds, not a DSL. Discover them with
 `univer sac migration templates --json`, choose one only when its `useWhen` matches target-visible
@@ -132,7 +134,8 @@ SaC commands require a clean target. Commit or restore uncommitted local mutatio
 - `univer sac verify <file.univer> --json` checks file-level typed unit assertions against a
   sandbox copy. It does not apply pending source. It returns a `reportPath`; read the report for
   scope-aware failure facts such as `scope`, `unitType`, `localUnitId`, assertion kind, target,
-  expected value, actual value, participant actuals, first difference, and setup error code.
+  expected value, actual value, participant actuals, `valueSemantics`, `actualDiagnostics`, first
+  difference, and setup error code.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
 behavior. Treat failed assertions as a decision point: either the target final state is wrong, or

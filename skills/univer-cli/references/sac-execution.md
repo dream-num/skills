@@ -59,6 +59,10 @@ Interpretation:
   target, expected value, actual value, cross-unit participant actuals, diagnostics, and first
   difference when present. Decide whether the target final state is wrong or the global assertion
   expectation is wrong before editing either side.
+- For range value failures, use `valueSemantics` to identify the compared surface:
+  `logicalCellValue`, `displayCellValue`, or `storageCellData`. Typed logical equality is not
+  relaxed; if a number and a visible string differ, inspect the suggested next evidence such as
+  `displayValues`, `valueDetails`, or `cellData` before changing source or assertions.
 - `status: error` means setup failed before target behavior can be judged.
 - setup errors such as legacy top-level `sheet()`/`range()` usage, unknown `localUnitId`, unit type
   mismatch, missing Facade getters, or unsupported readback surfaces are assertion setup repair

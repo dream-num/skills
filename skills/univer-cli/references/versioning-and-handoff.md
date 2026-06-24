@@ -97,5 +97,9 @@ UNIVERFILE=./orders.univer
 univer export "$UNIVERFILE" ./handoff.xlsx
 ```
 
+The output path is positional. Do not use `--output`; rewrite that shape as
+`univer export "$UNIVERFILE" ./handoff.xlsx`. `--overwrite` is accepted only as a compatibility
+no-op and does not replace the positional output path.
+
 Verify the target-visible state that matters before export. If export compatibility is itself the
 task, inspect or reopen the exported handoff through a supported read surface.

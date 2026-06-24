@@ -67,11 +67,12 @@ univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json
 ```
 
 Default output returns slim cell facts for ordinary text and value decisions. Add exact include
-fields such as `values`, `displayValues`, `valueDetails`, `cellFacts`, `formulas`,
+fields such as `values`, `displayValues`, `valueDetails`, `richTextRuns`, `cellFacts`, `formulas`,
 `numberFormats`, `semanticStyles`, or `cellData` only when the task depends on those distinctions.
-In these cell facts, `value` uses `cellData.v`/raw readback for typed cell content and
-`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize `value` from
-display text.
+In these cell facts, `logicalCellValue`/`value` uses `cellData.v`/raw readback for typed cell
+content, `storageValueType`/`valueType` prefers `cellData.t` when available, and
+`displayCellValue`/`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize
+logical values from display text.
 Use `--md` only when the same evidence should be easier to review as Markdown; keep JSON for
 machine parsing. Use the real `sheetName` from `units`/`sheet-overview`; do not default to
 `Sheet1`.
@@ -194,8 +195,10 @@ univer sac verify "$UNIVERFILE" --json
 Choose a template only after target-visible evidence shows it fits. If no template fits, create an
 ordinary migration pack; edit `migration.ts`, not `pack.ts`. Keep `pack.ts` as metadata and
 execution order only. Follow the generated `migration.ts` comments for common safe write shapes, and
-check sidecar `types/*.d.ts` before using unfamiliar Facade APIs. In `displayValues` assertions, use
-`""` for blank cells.
+use `univer lookup "range write"`, `univer lookup "range style"`, or
+`univer lookup "force string"` before using unfamiliar Facade APIs. Follow lookup `sed` hints into
+sidecar `types/*.d.ts` for exact signatures. In `displayValues` assertions, use `""` for blank
+cells.
 
 ## Author And Verify Assertions
 
@@ -233,6 +236,10 @@ Inside `sheetUnit`, `range()` is sheet-qualified A1. For `values`/`rawValues`, a
 numbers as numbers (dates are serial numbers like `45344`), not quoted strings; use
 `displayValues` or `displayValue` for formatted text. See `references/sac-authoring.md` for the full
 method/value-type table and Base/slide/doc/cross-unit examples.
+
+When a value assertion fails, inspect `valueSemantics`, `actualDiagnostics`, and `firstDifference`
+in the verify report. A number and a same-looking string are different logical values; request
+`displayValues`, `valueDetails`, or `cellData` only when that evidence surface matches the contract.
 
 `sheet-keyed-write` is useful after inspecting a stable key column and the target column to update.
 It creates ordinary TODO TypeScript source; it does not interpret `--params` as workbook mutation

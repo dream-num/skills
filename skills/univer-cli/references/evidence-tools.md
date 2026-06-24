@@ -50,15 +50,18 @@ Tool roles:
 Use default slim evidence for ordinary labels, copied text, grouping, matching, and write
 planning. For review, add `--md` to render the same evidence as Markdown; Markdown is an
 agent-readable view, not a JSON pointer codec or roundtrip machine format. Request exact
-`values`, `displayValues`, `cellData`, `valueDetails`, `cellFacts`, `numberFormats`, formulas,
-or `semanticStyles` only when the task depends on exact display strings, typed values, formulas,
-formats, static style traits, rich cell model data, multi-line content, or export/debug details.
-`semanticStyles` is for supported stable traits and does not expose raw style ids.
+`values`, `displayValues`, `cellData`, `valueDetails`, `richTextRuns`, `cellFacts`,
+`numberFormats`, formulas, or `semanticStyles` only when the task depends on exact display strings,
+typed values, formulas, formats, static style traits, rich text runs, rich cell model data,
+multi-line content, or export/debug details. `semanticStyles` is for supported stable traits and
+does not expose raw style ids.
 
-For `sheet-range` and range-like cell facts, `value` uses `cellData.v`/raw readback for typed cell
-content and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
-`getDisplayValues()`. Inspect tools do not synthesize `value` from display text; request `cellData`
-explicitly when the full cell model itself is the evidence.
+For `sheet-range` and range-like cell facts, `logicalCellValue`/`value` uses `cellData.v`/raw
+readback for typed cell content, `storageValueType`/`valueType` prefers `cellData.t` when
+available, and `displayCellValue`/`displayValue` mirrors Facade `getDisplayValues()`. Inspect tools
+do not synthesize logical values from display text; request `valueDetails` or `cellData` explicitly
+when the full value surface or cell model itself is the evidence. Request `richTextRuns` only when
+run-level text evidence matters.
 
 Use `sheet-conditional-formats` when the question is whether conditional formatting rules exist,
 where they apply, and what conditions/styles they encode. It does not prove every cell's final
