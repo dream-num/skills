@@ -60,6 +60,11 @@ typed values, formulas, formats, static style traits, rich text runs, rich cell 
 multi-line content, or export/debug details. `semanticStyles` is for supported stable traits and
 does not expose raw style ids.
 
+Before rerunning an equivalent inspect command, check whether the existing `--out` artifact answers
+the same sheet/range/evidence question. Reuse artifact paths and Agent Index Output read hints until
+the target changes through `sac apply`, rollback, restore, reset, import/export roundtrip, or a new
+range/sheet question. Do not treat an old artifact as current evidence after mutation.
+
 For `sheet-range` and range-like cell facts, `value` uses `cellData.v`/raw readback for typed cell
 content and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
 `getDisplayValues()`. Inspect tools do not synthesize `value` from display text; request `cellData`
@@ -69,6 +74,11 @@ Use `sheet-conditional-formats` when the question is whether conditional formatt
 where they apply, and what conditions/styles they encode. It does not prove every cell's final
 rendered appearance; combine it with `sheet-range` value evidence when a rule's outcome depends on
 cell values.
+
+Sheet names are exact workbook identifiers. Copy them from `units`, `sheet-overview`, or a
+managed-tool diagnostic exactly as returned. Do not title-case, lowercase, translate, trim internal
+spacing, or replace punctuation. If a diagnostic reports `didYouMean`, rerun the same bounded
+request with that exact sheet name; do not try another guessed spelling first.
 
 `sheet-overview` regions are candidate non-empty rectangles. They are evidence for possible table
 boundaries, footers, spacer columns, formulas, and blank tails; they are not final business
@@ -97,6 +107,16 @@ substitute for source-derived aggregate facts. The summary probe should replace 
 dumps for that same evidence question; do not also dump the same large source tables unless exact
 row-level evidence is needed for a named ambiguity.
 
+Design each custom aggregation around the next authoring or verification decision:
+
+- return candidate ranges and dimensions before deciding write scope
+- return counts or grouped totals before deciding whether a transformation covers all source rows
+- return mismatch count plus the first few diffs before deciding whether to revise source or
+  assertion
+- return head/tail samples and truncation notes when omitting rows from a large range
+- return `ok: false` with field diagnostics when params, sheet names, or range assumptions are
+  wrong
+
 ```bash
 printf '%s' '{"reason":"bounded-readonly-evidence","sampleLimit":5}' \
   > ./probe.params.json
@@ -116,4 +136,6 @@ Keep custom probes:
   unknown row
 - JSON-oriented when another command or agent will consume the output
 
-Do not use inspect scripts for durable target changes.
+Do not use inspect scripts for durable target changes, source edits, external answer keys, or
+`.univer` internals. If the same aggregation becomes generally useful across unrelated workbooks,
+propose a managed inspect tool separately instead of growing task-local probes into product logic.

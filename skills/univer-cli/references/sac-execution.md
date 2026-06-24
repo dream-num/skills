@@ -61,7 +61,10 @@ Interpretation:
   expectation is wrong before editing either side.
 - Value-surface hints mean the assertion compared a different surface than the task may require:
   choose `values()`/`value()` for logical typed cell values, `displayValues()`/`displayValue()` for
-  formatted output, and `valueDetails`/`cellData` evidence for storage-oriented facts.
+  formatted output, and `valueDetails`/`cellData` evidence for storage-oriented facts. A mismatch
+  such as `"123"` versus `123`, or `"-"` versus `0`, is not automatically a migration bug; first
+  decide whether the task asks for text identity, typed logical semantics, or rendered display.
+  Change stored values only when the final contract truly requires that stored surface.
 - Source-preservation or non-output guard hints mean the assertion may be broader than the requested
   final contract. Keep those assertions only when source preservation is required; otherwise focus
   verification on the user-requested output before broadening preservation checks.

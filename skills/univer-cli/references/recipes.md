@@ -76,8 +76,8 @@ content, `storageValueType`/`valueType` prefers `cellData.t` when available, and
 `displayCellValue`/`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize
 logical values from display text.
 Use `--md` only when the same evidence should be easier to review as Markdown; keep JSON for
-machine parsing. Use the real `sheetName` from `units`/`sheet-overview`; do not default to
-`Sheet1`.
+machine parsing. Use the real `sheetName` from `units`/`sheet-overview` exactly as returned; do not
+default to `Sheet1` or normalize casing/spaces.
 
 ## Read Related Ranges
 
@@ -91,13 +91,16 @@ cat > ./related-ranges.params.json <<'JSON'
 {
   "localUnitId": "replace-with-localUnitId",
   "ranges": [
-    { "label": "keys", "sheetName": "Sheet1", "rangeA1": "A1:A20" },
-    { "label": "status", "sheetName": "Sheet1", "rangeA1": "K1:K20" }
+    { "label": "keys", "sheetName": "replace-with-sheetName", "rangeA1": "A1:A20" },
+    { "label": "status", "sheetName": "replace-with-sheetName", "rangeA1": "K1:K20" }
   ]
 }
 JSON
 univer inspect "$UNIVERFILE" --tool sheet-range --params ./related-ranges.params.json
 ```
+
+If an inspect diagnostic says `didYouMean`, rerun the same request with that exact sheet name.
+Do not try title-case, lowercase, or translated variants first.
 
 ## Locate A Label Then Read Around It
 
@@ -142,45 +145,112 @@ univer inspect "$UNIVERFILE" --tool sheet-conditional-formats --params ./conditi
 
 This reports rule facts and target ranges. It is not a final rendered-style proof for every cell.
 
-## Custom Readonly Probe
+## Custom Readonly Aggregation Probe
 
 ```bash
 UNIVERFILE=./orders.univer
 SIDECAR=$(node -e 'const fs=require("fs"); const j=JSON.parse(fs.readFileSync("./materialize.json","utf8")); console.log(j.sidecarPath)')
-cat > "$SIDECAR/inspect-scripts/probe.js" <<'JS'
+cat > "$SIDECAR/inspect-scripts/aggregate-range.js" <<'JS'
 ({ params, univerAPI }) => {
   const workbook = univerAPI.getWorkbook(params.localUnitId);
-  const sampleLimit = Math.max(1, Math.min(Number(params.sampleLimit ?? 5), 20));
-  const diagnostics = [];
-
   if (!workbook) {
     return {
       ok: false,
       error: "WORKBOOK_NOT_FOUND",
-      diagnostics: [{ field: "localUnitId", value: params.localUnitId }],
+      diagnostics: [{ field: "localUnitId", value: params.localUnitId }]
     };
   }
 
+  const sheet = workbook.getSheetByName(params.sheetName);
+  if (!sheet) {
+    return {
+      ok: false,
+      error: "SHEET_NOT_FOUND",
+      diagnostics: [{ field: "sheetName", value: params.sheetName }]
+    };
+  }
+
+  const sampleLimit = Math.max(1, Math.min(Number(params.sampleLimit ?? 5), 20));
+  const range = sheet.getRange(params.rangeA1);
+  const values = range.getValues();
+  const displayValues = range.getDisplayValues();
+  const groupColumnOffset = Number(params.groupColumnOffset ?? -1);
+  const valueColumnOffset = Number(params.valueColumnOffset ?? -1);
+  const expectedByKey = params.expectedByKey ?? {};
+  const groups = {};
+  const mismatches = [];
+  let nonBlankCellCount = 0;
+
+  values.forEach((row, rowIndex) => {
+    row.forEach((value) => {
+      if (value !== null && value !== undefined && value !== "") nonBlankCellCount += 1;
+    });
+
+    const key = groupColumnOffset >= 0 ? displayValues[rowIndex]?.[groupColumnOffset] : "";
+    if (key) {
+      const numericValue = valueColumnOffset >= 0 ? Number(values[rowIndex]?.[valueColumnOffset] ?? 0) : 1;
+      groups[key] = {
+        count: (groups[key]?.count ?? 0) + 1,
+        total: (groups[key]?.total ?? 0) + (Number.isFinite(numericValue) ? numericValue : 0)
+      };
+    }
+
+    if (Object.prototype.hasOwnProperty.call(expectedByKey, key)) {
+      const actual = valueColumnOffset >= 0 ? values[rowIndex]?.[valueColumnOffset] : row;
+      if (actual !== expectedByKey[key] && mismatches.length < sampleLimit) {
+        mismatches.push({ rowOffset: rowIndex, key, expected: expectedByKey[key], actual });
+      }
+    }
+  });
+
   return {
     ok: true,
-    workbookName: workbook.getName(),
-    facts: {
-      checkedSheets: params.sheetNames ?? [],
-      sampleLimit,
+    target: {
+      localUnitId: params.localUnitId,
+      sheetName: params.sheetName,
+      rangeA1: params.rangeA1
     },
-    diagnostics,
+    dimensions: {
+      rows: values.length,
+      columns: values[0]?.length ?? 0
+    },
+    nonBlankCellCount,
+    groups,
+    mismatches: {
+      count: mismatches.length,
+      first: mismatches
+    },
+    samples: {
+      head: displayValues.slice(0, sampleLimit),
+      tail: displayValues.slice(Math.max(0, displayValues.length - sampleLimit))
+    },
+    truncation: {
+      sampleLimit,
+      omittedRows: Math.max(0, displayValues.length - sampleLimit * 2)
+    }
   };
 }
 JS
-printf '%s' '{"reason":"bounded-readonly-evidence","sampleLimit":5}' \
-  | univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --params -
+cat > ./aggregate-range.params.json <<'JSON'
+{
+  "localUnitId": "replace-with-localUnitId",
+  "sheetName": "replace-with-sheetName",
+  "rangeA1": "A1:D200",
+  "groupColumnOffset": 0,
+  "valueColumnOffset": 3,
+  "sampleLimit": 5
+}
+JSON
+univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/aggregate-range.js" --params ./aggregate-range.params.json --out ./aggregate-range.result.json
 ```
 
 Scratch probes are function expressions, not ESM or CommonJS modules; do not use `export default` or
-`module.exports`. Keep custom probes readonly and task-local. Keep output bounded: return aggregate
-facts and a few samples; if matching fails, return `ok: false`, counts, field diagnostics, and
-bounded samples instead of dumping every unknown row. Promote repeated useful probes to managed tools
-in a separate product change.
+`module.exports`. Keep custom probes readonly and task-local. Prefer this pattern when a bounded
+aggregate fact would otherwise require several `sheet-range` dumps plus shell slices. Keep output
+bounded: return aggregate facts, mismatch counts with first diffs, candidate dimensions, and a few
+samples; if matching fails, return `ok: false`, counts, field diagnostics, and bounded samples
+instead of dumping every unknown row. Promote repeated useful probes to managed tools in a separate
+product change.
 
 ## Template Migration, Apply, Verify
 
