@@ -63,15 +63,18 @@ cat > ./range.params.json <<'JSON'
   "rangeA1": "A1:D20"
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json
+univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json --out ./range.result.json
 ```
 
-Default output returns slim cell facts for ordinary text and value decisions. Add exact include
-fields such as `values`, `displayValues`, `valueDetails`, `cellFacts`, `formulas`,
-`numberFormats`, `semanticStyles`, or `cellData` only when the task depends on those distinctions.
-In these cell facts, `value` uses `cellData.v`/raw readback for typed cell content and
-`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize `value` from
-display text.
+The command writes reusable pretty JSON to `range.result.json` and prints a short index with `jq`
+read hints. Without `--out`, stdout returns compact slim cell facts for ordinary text and value
+decisions. Add exact include fields such as `values`, `displayValues`, `valueDetails`,
+`richTextRuns`, `cellFacts`, `formulas`, `numberFormats`, `semanticStyles`, or `cellData` only when
+the task depends on those distinctions.
+In these cell facts, `logicalCellValue`/`value` uses `cellData.v`/raw readback for typed cell
+content, `storageValueType`/`valueType` prefers `cellData.t` when available, and
+`displayCellValue`/`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize
+logical values from display text.
 Use `--md` only when the same evidence should be easier to review as Markdown; keep JSON for
 machine parsing. Use the real `sheetName` from `units`/`sheet-overview`; do not default to
 `Sheet1`.
