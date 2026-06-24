@@ -236,6 +236,10 @@ Inside `sheetUnit`, `range()` is sheet-qualified A1. For `values`/`rawValues`, a
 numbers as numbers (dates are serial numbers like `45344`), not quoted strings; use
 `displayValues` or `displayValue` for formatted text. See `references/sac-authoring.md` for the full
 method/value-type table and Base/slide/doc/cross-unit examples.
+For numeric display requirements such as currency, percent, date formatting, or dash-for-zero, keep
+logical values typed, apply number/date formatting, and assert both `values` and `displayValues`
+when both semantics and presentation matter. Use literal strings or `CellValueType.FORCE_STRING`
+only when text identity is the contract, such as SKU, ZIP, ID, code, or preserved leading zeros.
 
 `sheet-keyed-write` is useful after inspecting a stable key column and the target column to update.
 It creates ordinary TODO TypeScript source; it does not interpret `--params` as workbook mutation
