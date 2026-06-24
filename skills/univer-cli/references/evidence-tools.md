@@ -12,9 +12,9 @@ Start with managed tools:
 ```bash
 UNIVERFILE=./orders.univer
 
-univer inspect tools list --json
-univer inspect tools list --json --all-candidates  # resolver diagnostics only
-univer inspect tools resolve sheet-overview --json
+univer inspect tools list
+univer inspect tools list --json --all-candidates  # machine-readable resolver diagnostics only
+univer inspect tools resolve sheet-overview
 ```
 
 Pass params as either a JSON file path or one JSON object on stdin:
@@ -25,7 +25,7 @@ cat > ./overview.params.json <<'JSON'
   "localUnitId": "replace-with-localUnitId"
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-overview --params ./overview.params.json
+univer inspect "$UNIVERFILE" --tool sheet-overview --params ./overview.params.json --out ./overview.result.json
 
 printf '%s' '{"localUnitId":"replace-with-localUnitId"}' \
   | univer inspect "$UNIVERFILE" --tool sheet-overview --params -
@@ -48,12 +48,17 @@ Tool roles:
 | `sheet-conditional-formats` | You need conditional formatting rule resources, their target ranges, and rule config. |
 
 Use default slim evidence for ordinary labels, copied text, grouping, matching, and write
-planning. For review, add `--md` to render the same evidence as Markdown; Markdown is an
-agent-readable view, not a JSON pointer codec or roundtrip machine format. Request exact
-`values`, `displayValues`, `cellData`, `valueDetails`, `cellFacts`, `numberFormats`, formulas,
-or `semanticStyles` only when the task depends on exact display strings, typed values, formulas,
-formats, static style traits, rich cell model data, multi-line content, or export/debug details.
-`semanticStyles` is for supported stable traits and does not expose raw style ids.
+planning. For reusable or large evidence, pass `--out ./name.result.json`; stdout becomes a short
+Agent Index Output and the full pretty JSON artifact can be reused with `jq` or bounded `sed`
+without rerunning inspect. Use paired names such as `overview.params.json` and
+`overview.result.json`. Without `--out`, stdout stays compact JSON. For review, add `--md` to
+render the same evidence as Markdown; Markdown is an agent-readable view, not a JSON pointer codec
+or roundtrip machine format. Request exact
+`values`, `displayValues`, `cellData`, `valueDetails`, `richTextRuns`, `cellFacts`,
+`numberFormats`, formulas, or `semanticStyles` only when the task depends on exact display strings,
+typed values, formulas, formats, static style traits, rich text runs, rich cell model data,
+multi-line content, or export/debug details. `semanticStyles` is for supported stable traits and
+does not expose raw style ids.
 
 For `sheet-range` and range-like cell facts, `value` uses `cellData.v`/raw readback for typed cell
 content and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
@@ -82,7 +87,8 @@ row-level evidence is needed for a named ambiguity.
 
 ```bash
 printf '%s' '{"reason":"bounded-readonly-evidence","sampleLimit":5}' \
-  | univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --params -
+  > ./probe.params.json
+univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --params ./probe.params.json --out ./probe.result.json
 ```
 
 Keep custom probes:

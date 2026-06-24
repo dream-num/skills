@@ -63,15 +63,18 @@ cat > ./range.params.json <<'JSON'
   "rangeA1": "A1:D20"
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json
+univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json --out ./range.result.json
 ```
 
-Default output returns slim cell facts for ordinary text and value decisions. Add exact include
-fields such as `values`, `displayValues`, `valueDetails`, `cellFacts`, `formulas`,
-`numberFormats`, `semanticStyles`, or `cellData` only when the task depends on those distinctions.
-In these cell facts, `value` uses `cellData.v`/raw readback for typed cell content and
-`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize `value` from
-display text.
+The command writes reusable pretty JSON to `range.result.json` and prints a short index with `jq`
+read hints. Without `--out`, stdout returns compact slim cell facts for ordinary text and value
+decisions. Add exact include fields such as `values`, `displayValues`, `valueDetails`,
+`richTextRuns`, `cellFacts`, `formulas`, `numberFormats`, `semanticStyles`, or `cellData` only when
+the task depends on those distinctions.
+In these cell facts, `logicalCellValue`/`value` uses `cellData.v`/raw readback for typed cell
+content, `storageValueType`/`valueType` prefers `cellData.t` when available, and
+`displayCellValue`/`displayValue` mirrors Facade `getDisplayValues()`; inspect does not synthesize
+logical values from display text.
 Use `--md` only when the same evidence should be easier to review as Markdown; keep JSON for
 machine parsing. Use the real `sheetName` from `units`/`sheet-overview`; do not default to
 `Sheet1`.
@@ -233,6 +236,10 @@ Inside `sheetUnit`, `range()` is sheet-qualified A1. For `values`/`rawValues`, a
 numbers as numbers (dates are serial numbers like `45344`), not quoted strings; use
 `displayValues` or `displayValue` for formatted text. See `references/sac-authoring.md` for the full
 method/value-type table and Base/slide/doc/cross-unit examples.
+For numeric display requirements such as currency, percent, date formatting, or dash-for-zero, keep
+logical values typed, apply number/date formatting, and assert both `values` and `displayValues`
+when both semantics and presentation matter. Use literal strings or `CellValueType.FORCE_STRING`
+only when text identity is the contract, such as SKU, ZIP, ID, code, or preserved leading zeros.
 
 `sheet-keyed-write` is useful after inspecting a stable key column and the target column to update.
 It creates ordinary TODO TypeScript source; it does not interpret `--params` as workbook mutation

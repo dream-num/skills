@@ -78,11 +78,12 @@ unit-scoped reads, and resolve tool params when a tool shape is unclear:
 
 ```bash
 UNIVERFILE=./Budget.univer
-univer inspect tools list --json
-univer inspect tools resolve sheet-range --json
-printf '%s' '{}' | univer inspect "$UNIVERFILE" --tool units --params -
-printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' \
-  | univer inspect "$UNIVERFILE" --tool sheet-range --params -
+univer inspect tools list
+univer inspect tools resolve sheet-range
+printf '%s' '{}' > ./units.params.json
+univer inspect "$UNIVERFILE" --tool units --params ./units.params.json --out ./units.result.json
+printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' > ./range.params.json
+univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json --out ./range.result.json
 ```
 
 Do not assume a default sheet name such as `Sheet1`. Read the actual sheet names from `units` or
@@ -92,9 +93,16 @@ targets.
 `--params` accepts either a real JSON file path or `-` for stdin. Do not pass inline JSON as the
 option value; `--params '{}'` is interpreted as a file path named `{}`.
 
-Default managed inspect output is slim JSON evidence. For review, add `--md` to render the same
-evidence as Markdown; Markdown is an agent-readable view, not a roundtrip machine format. Use
-default JSON or `--json` for programmatic parsing and ambiguity checks.
+For reusable or large evidence, use `--out ./name.result.json`. The CLI writes the complete result
+as pretty JSON and prints a short Agent Index Output with the artifact path, warning/truncation
+status, and stable `jq` read hints. Reuse that result file with `jq` or bounded `sed` instead of
+rerunning inspect. Name paired files as `*.params.json` and `*.result.json`.
+
+Without `--out`, default managed inspect output is compact slim JSON evidence. For review, add
+`--md` to render the same evidence as Markdown; Markdown is an agent-readable view, not a roundtrip
+machine format. Use default JSON or `--json` for small programmatic parsing and ambiguity checks.
+Use `univer inspect tools list`/`resolve` text output by default; reserve registry `--json` for
+machine-readable diagnostics.
 
 In slim cell facts and value details, `value` uses `cellData.v`/raw readback for typed cell content
 and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Facade
