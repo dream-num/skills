@@ -59,6 +59,12 @@ Interpretation:
   target, expected value, actual value, cross-unit participant actuals, diagnostics, and first
   difference when present. Decide whether the target final state is wrong or the global assertion
   expectation is wrong before editing either side.
+- Value-surface hints mean the assertion compared a different surface than the task may require:
+  choose `values()`/`value()` for logical typed cell values, `displayValues()`/`displayValue()` for
+  formatted output, and `valueDetails`/`cellData` evidence for storage-oriented facts.
+- Source-preservation or non-output guard hints mean the assertion may be broader than the requested
+  final contract. Keep those assertions only when source preservation is required; otherwise focus
+  verification on the user-requested output before broadening preservation checks.
 - `status: error` means setup failed before target behavior can be judged.
 - setup errors such as legacy top-level `sheet()`/`range()` usage, unknown `localUnitId`, unit type
   mismatch, missing Facade getters, or unsupported readback surfaces are assertion setup repair

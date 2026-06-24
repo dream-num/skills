@@ -74,6 +74,18 @@ cell values.
 boundaries, footers, spacer columns, formulas, and blank tails; they are not final business
 semantics.
 
+Recover from managed inspect diagnostics by fixing the evidence request, not by dumping more data by
+default:
+
+- `maxCells` exceeded: use `sheet-overview` or used-range evidence first, then split the target into
+  smaller `sheet-range` requests. Raise `maxCells` only when the task truly requires broad range
+  evidence.
+- unsupported `include`: choose one of the supported include fields listed by the diagnostic, or use
+  a dedicated managed tool for that evidence surface.
+- unsupported semantic style trait: choose a supported trait, request `semanticStyles`/`cellData`
+  when those evidence fields answer the question, or use the managed style/resource tool. Do not
+  inspect workbook internals as the recovery path.
+
 ## Custom Inspect Scripts
 
 Use a custom script when managed tools cannot answer a bounded readonly evidence question. Before

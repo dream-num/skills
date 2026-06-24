@@ -62,10 +62,21 @@ univer lookup "FRange.setValues"
 Do not paste a whole task prompt into lookup. Bad queries include
 `range set values clear content spreadsheet facade` or long worksheet instructions that mix read,
 write, clear, format, assertion, and workbook evidence in one search. Split complex tasks into
-primitive lookups, then follow the returned `readHints`.
+primitive lookups, then follow the returned `Read` hints.
 
-For JSON lookup output, if `mode` is `decompose`, do not treat empty `results` as no match. Follow
-`decomposition.suggestedQueries` and do not parse warning text for suggested queries.
+Lookup text output is the public agent-facing contract. It includes `Query`, `Mode`, optional
+`Suggested queries`, and `Read` sections. Do not use `univer lookup ... --json` or request another
+machine-readable lookup format.
+
+Correct lookup flow:
+
+1. Start with one short primitive query for the immediate API/evidence need, such as
+   `univer lookup "range values"`, `univer lookup "display values"`, or
+   `univer lookup "set number format"`.
+2. Read the text sections. Use `Read` commands for exact declaration lines, and use `Suggested
+   queries` only when lookup reports `Mode: decompose`.
+3. For compound spreadsheet tasks, rerun the shorter suggested primitive lookups instead of trying
+   to make one broad lookup cover reading, writing, formatting, and assertions.
 
 Lookup read hints are designed to work with shell tools. Use the returned `sed -n` command or exact
 location to read the declaration lines you need; avoid broad `rg` over all `types/*.d.ts` or full
@@ -115,6 +126,13 @@ For large tables, do not use `sheet-range` as a table dump. Use overview/search 
 concise source/target facts such as counts, grouped totals, mismatches, and head/tail samples. If
 managed tools cannot answer that bounded readonly question, write a small sidecar-local custom
 inspect script that returns those facts as JSON instead of dumping every source row.
+
+Handle recoverable inspect diagnostics by narrowing first. If `sheet-range` reports `maxCells`
+exceeded, use `sheet-overview` or used-range evidence, then split into smaller scored ranges; only
+raise `maxCells` deliberately when the broad read is truly required. If inspect reports an
+unsupported include or semantic style trait, choose one of the supported include fields/traits in
+the diagnostic, or switch to the dedicated managed evidence tool. Do not inspect workbook internals
+to recover unsupported style evidence.
 
 When typed values, display strings, formulas, number formats, cell model details, or static style
 traits affect the decision, request focused `sheet-range` fields such as `values`,
@@ -183,6 +201,13 @@ behavior. Treat failed assertions as a decision point: either the target final s
 the assertion expectation is wrong. Treat legacy top-level `sheet()` or
 `range()` usage, missing units, unit type mismatches, and unsupported readback surfaces as setup
 repair, not final-state workbook mismatch.
+
+When verify reports a value-surface hint, choose the intended assertion surface explicitly:
+`values()`/`value()` for logical typed cell values, `displayValues()`/`displayValue()` for formatted
+output, and `valueDetails`/`cellData` evidence for storage-oriented facts. If verify reports that a
+source-preservation or non-output guard assertion failed, keep it only when preserving that source
+state is part of the requested final contract; otherwise focus assertions on the user-requested
+output before adding broad preservation checks.
 
 `SAC_UNIT_STATE_DRIFT` means the committed target state and the sidecar active applied state no
 longer match. Treat it as a recovery branch and read the diagnostic before materializing or applying
