@@ -249,8 +249,9 @@ Scratch probes are function expressions, not ESM or CommonJS modules; do not use
 aggregate fact would otherwise require several `sheet-range` dumps plus shell slices. Keep output
 bounded: return aggregate facts, mismatch counts with first diffs, candidate dimensions, and a few
 samples; if matching fails, return `ok: false`, counts, field diagnostics, and bounded samples
-instead of dumping every unknown row. Promote repeated useful probes to managed tools in a separate
-product change.
+instead of dumping every unknown row. Treat a second broad range read or repeated shell slice for the
+same question as the point to switch to this probe. Promote repeated useful probes to managed tools
+in a separate product change.
 
 ## Template Migration, Apply, Verify
 

@@ -105,7 +105,9 @@ rather than the full grid: grouped totals, counts, missing labels, mismatches, f
 head/tail samples. A managed overview that only reports used ranges and bounded samples is not a
 substitute for source-derived aggregate facts. The summary probe should replace full source-table
 dumps for that same evidence question; do not also dump the same large source tables unless exact
-row-level evidence is needed for a named ambiguity.
+row-level evidence is needed for a named ambiguity. A second broad `sheet-range`, repeated `jq`
+slice, or expanded range read for the same large-table/cross-range question is the stop point for
+switching to one readonly aggregation probe.
 
 Design each custom aggregation around the next authoring or verification decision:
 

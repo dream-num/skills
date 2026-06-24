@@ -55,7 +55,9 @@ For large-table or cross-range facts, use a custom readonly inspect script once 
 directly answer the bounded question. One sidecar-local probe should return compact facts such as
 counts, grouped totals, mismatches, candidate ranges, and head/tail samples. Do not use a custom
 probe to mutate workbook state, read `.univer` internals, encode external answer keys or external
-scoring data, or write durable migration/assertion source.
+scoring data, or write durable migration/assertion source. If you are about to run a second broad
+`sheet-range`, `jq` slice, or expanded range read for the same table/cross-range question, stop and
+write one readonly aggregation probe instead.
 
 ## Lookup Protocol
 
