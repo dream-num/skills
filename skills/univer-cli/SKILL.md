@@ -46,10 +46,12 @@ artifact with bounded `jq`/`sed` before rerunning the same discovery command. Re
 after target state changes such as `sac apply`, rollback, restore, reset, import/export roundtrip,
 or an explicitly new range/sheet question.
 
-Use lookup and references to close one immediate gap, then stop. If a primitive lookup result gives
-the API, minimal source shape, and read hint you need, author or verify next. Read a declaration or
-reference file only when a new failure, unfamiliar command surface, or missing API detail names that
-specific gap.
+Do not begin common range read/write/format/assertion tasks with lookup when the needed command or
+API pattern is already known. Use lookup and references as bounded fallback for one diagnostic-driven
+gap such as a missing API, unknown helper, argument shape, or specific unresolved symbol. If a
+primitive lookup result gives the API, minimal source shape, and read hint you need, author or verify
+next. Read a declaration or reference file only when a new failure, unfamiliar command surface, or
+missing API detail names that specific gap.
 
 For large-table or cross-range facts, use a custom readonly inspect script once managed tools cannot
 directly answer the bounded question. One sidecar-local probe should return compact facts such as
@@ -62,7 +64,8 @@ write one readonly aggregation probe instead.
 ## Lookup Protocol
 
 Use `univer lookup` for CLI-owned API/type/manual discovery, not workbook-visible facts. Workbook
-facts still belong to managed `univer inspect` tools.
+facts still belong to managed `univer inspect` tools. Lookup is a fallback, not the default first
+step for ordinary range read/write/format/assertion work when the known pattern is sufficient.
 
 Prefer short primitive lookup queries with 2-3 words:
 
@@ -89,15 +92,18 @@ Lookup text output is the public agent-facing contract. It includes `Query`, `Mo
 `Suggested queries`, and `Read` sections. Do not use `univer lookup ... --json` or request another
 machine-readable lookup format.
 
-Correct lookup flow:
+Fallback lookup flow:
 
-1. Start with one short primitive query for the immediate API/evidence need, such as
-   `univer lookup "range values"`, `univer lookup "display values"`, or
-   `univer lookup "set number format"`.
-2. Read the text sections. Use `Read` commands for exact declaration lines, and use `Suggested
+1. Start lookup only after a typecheck/apply/verify/command diagnostic or genuinely unfamiliar
+   command surface names the immediate API/detail gap. If the common pattern is already known, skip
+   lookup and author or verify.
+2. Use one short primitive query for that gap, such as `univer lookup "range values"`,
+   `univer lookup "display values"`, or `univer lookup "set number format"`.
+3. Read the text sections. Use `Read` commands for exact declaration lines, and use `Suggested
    queries` only when lookup reports `Mode: decompose`.
-3. For compound spreadsheet tasks, rerun the shorter suggested primitive lookups instead of trying
-   to make one broad lookup cover reading, writing, formatting, and assertions.
+4. For compound spreadsheet tasks, follow shorter suggested primitive lookups only for still-open
+   API gaps instead of trying to make one broad lookup cover reading, writing, formatting, and
+   assertions.
 
 Stop lookup once the immediate API gap is closed. A successful primitive lookup such as
 `range write`, `range clear`, `number format`, or `range style` should usually be followed by
