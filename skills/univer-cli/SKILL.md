@@ -31,17 +31,41 @@ source file. Do not bypass the CLI/SaC surfaces to patch the target container by
 | Need | Use |
 | --- | --- |
 | Create or import targets | `new`, `import`, `clone` |
-| Read target evidence | managed `inspect --tool` first; custom readonly `inspect --script` only for bounded gaps |
+| Read target evidence | task-local route contract when present; otherwise focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
 | Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
 | Recover an applied SaC boundary | `sac rollback` |
 | Check or reconcile local state | `status`, `commit`, `restore`, `reset`, `pull`, `sync` |
 | Review or hand off visually | `open`, `view comments`, browser tools |
 | Produce Excel-compatible output | `export` after verifying the relevant target-visible state |
 
+## Tool Loop Budget
+
+Prefer one reusable evidence artifact over repeated equivalent commands. After `units`,
+`sheet-overview`, `sheet-range --out`, materialize, or verify writes an artifact path, read that
+artifact with bounded `jq`/`sed` before rerunning the same discovery command. Refresh evidence only
+after target state changes such as `sac apply`, rollback, restore, reset, import/export roundtrip,
+or an explicitly new range/sheet question.
+
+Do not begin common range read/write/format/assertion tasks with lookup when the needed command or
+API pattern is already known. Use lookup and references as bounded fallback for one diagnostic-driven
+gap such as a missing API, unknown helper, argument shape, or specific unresolved symbol. If a
+primitive lookup result gives the API, minimal source shape, and read hint you need, author or verify
+next. Read a declaration or reference file only when a new failure, unfamiliar command surface, or
+missing API detail names that specific gap.
+
+For large-table or cross-range facts, use a custom readonly inspect script once managed tools cannot
+directly answer the bounded question. One sidecar-local probe should return compact facts such as
+counts, grouped totals, mismatches, candidate ranges, and head/tail samples. Do not use a custom
+probe to mutate workbook state, read `.univer` internals, encode out-of-band correctness data or
+external expected answers, or write durable migration/assertion source. If you are about to run a second
+broad `sheet-range`, `jq` slice, or expanded range read for the same table/cross-range question,
+stop and write one readonly aggregation probe instead.
+
 ## Lookup Protocol
 
 Use `univer lookup` for CLI-owned API/type/manual discovery, not workbook-visible facts. Workbook
-facts still belong to managed `univer inspect` tools.
+facts still belong to managed `univer inspect` tools. Lookup is a fallback, not the default first
+step for ordinary range read/write/format/assertion work when the known pattern is sufficient.
 
 Prefer short primitive lookup queries with 2-3 words:
 
@@ -62,19 +86,76 @@ univer lookup "FRange.setValues"
 Do not paste a whole task prompt into lookup. Bad queries include
 `range set values clear content spreadsheet facade` or long worksheet instructions that mix read,
 write, clear, format, assertion, and workbook evidence in one search. Split complex tasks into
-primitive lookups, then follow the returned `readHints`.
+primitive lookups, then follow the returned `Read` hints.
 
-For JSON lookup output, if `mode` is `decompose`, do not treat empty `results` as no match. Follow
-`decomposition.suggestedQueries` and do not parse warning text for suggested queries.
+Lookup text output is the public agent-facing contract. It includes `Query`, `Mode`, optional
+`Suggested queries`, and `Read` sections. Do not use `univer lookup ... --json` or request another
+machine-readable lookup format.
+
+Fallback lookup flow:
+
+1. Start lookup only after a typecheck/apply/verify/command diagnostic or genuinely unfamiliar
+   command surface names the immediate API/detail gap. If the common pattern is already known, skip
+   lookup and author or verify.
+2. Use one short primitive query for that gap, such as `univer lookup "range values"`,
+   `univer lookup "display values"`, or `univer lookup "set number format"`.
+3. Read the text sections. Use `Read` commands for exact declaration lines, and use `Suggested
+   queries` only when lookup reports `Mode: decompose`.
+4. For compound spreadsheet tasks, follow shorter suggested primitive lookups only for still-open
+   API gaps instead of trying to make one broad lookup cover reading, writing, formatting, and
+   assertions.
+
+Stop lookup once the immediate API gap is closed. A successful primitive lookup such as
+`range write`, `range clear`, `number format`, or `range style` should usually be followed by
+authoring or evidence work, not adjacent lookup expansion. Use exact-symbol lookup only when a
+specific declaration is still ambiguous or a typecheck/apply failure points at that API.
 
 Lookup read hints are designed to work with shell tools. Use the returned `sed -n` command or exact
 location to read the declaration lines you need; avoid broad `rg` over all `types/*.d.ts` or full
 type-file reads when short lookup or exact-symbol lookup can bound the context.
 
+## Task-Local Route Contracts
+
+Some harnesses or task workspaces provide a local route contract, classifier, first-tool policy,
+fallback gates, or hard stops. Treat that task-local contract as the route owner. This skill supplies
+reusable Univer CLI surfaces, product invariants, and diagnostic fallback guidance; do not turn it
+into an additional route checklist to satisfy alongside the task-local contract.
+
+When no task-local route owner exists, choose the least expensive product evidence for the unknown
+fact:
+
+- Small bounded edits should start with unit/sheet discovery and one focused target-visible read.
+- Large table, grouped, dedupe, aggregate, matching, summary, or cross-range transforms may use
+  materialized source, migration source, TSV/table previews, or sidecar docs to form a bounded
+  hypothesis, but those sources are not target truth.
+- Rich text, merge, semantic style, conditional format, active sheet, unsupported include, or similar
+  capability ambiguity should use one focused target evidence read and one capability/API check, then
+  choose a supported representation or report the gap.
+- API discovery belongs after typecheck, apply, verify, or command diagnostics name a missing method,
+  unknown helper, argument shape, overload, enum, assertion helper shape, or unfamiliar command
+  surface.
+
+For large transforms, use source evidence only to answer a bounded question that would otherwise
+require broad target reads or repeated artifact probing. Confirm decision-relevant facts with
+target-visible evidence before handoff. If the transform spans more than one small range or more than
+50 candidate cells, write one readonly sidecar-local custom inspect aggregation script before the
+second broad managed range read. Return compact JSON facts such as source shape, target shape,
+operation type, candidate count, output count, write range, head/tail samples, preservation samples,
+and assertion plan.
+
+First-pass assertions should prioritize the requested output cells/ranges. Add at
+most one or two preservation invariants directly tied to the mutation risk. Keep source rationale,
+active sheet, broad style preservation, and non-output facts as readback notes unless the task
+explicitly requires them.
+
 ## Evidence Tools
 
-Managed inspect tools are the preferred readonly evidence surface. Discover units before
-unit-scoped reads, and resolve tool params when a tool shape is unclear:
+Managed inspect tools are the preferred target-visible confirmation and fallback surface. Use them
+for target inventory, sheet names, used ranges, focused range readback, search/neighborhood
+confirmation, formulas, display/logical value differences, number formats, and stable style traits.
+Avoid broad managed range dumps as first discovery for small bounded edits, and switch to custom
+aggregation before repeated broad reads for large transforms. Discover units before unit-scoped
+reads, and resolve tool params when a tool shape is unclear:
 
 ```bash
 UNIVERFILE=./Budget.univer
@@ -87,8 +168,11 @@ univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json --o
 ```
 
 Do not assume a default sheet name such as `Sheet1`. Read the actual sheet names from `units` or
-`sheet-overview` first, then use the exact returned name in `sheetName` and in assertion `range()`
-targets.
+`sheet-overview` first, then copy the exact returned name in `sheetName`, `getSheetByName(...)`,
+and assertion `range()` targets. Sheet names are exact identifiers: do not title-case, lowercase,
+trim internal spaces, translate, or otherwise normalize them. If an inspect diagnostic includes a
+`didYouMean` sheet name, rerun the same bounded evidence request with that exact name instead of
+continuing to guess.
 
 `--params` accepts either a real JSON file path or `-` for stdin. Do not pass inline JSON as the
 option value; `--params '{}'` is interpreted as a file path named `{}`.
@@ -109,12 +193,32 @@ and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Faca
 `getDisplayValues()`. Inspect tools do not synthesize `value` from display text or agent-oriented
 normalization.
 
-Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, or cell model details. Use `sheet-formulas` for formula audits and `sheet-conditional-formats` for conditional formatting rule resources.
+Use the evidence ladder selected by the task-local route contract when one exists. Without a local
+route owner, small bounded edits usually start
+`units -> focused sheet-overview or sheet-search -> focused sheet-range slim -> exact include`.
+Large transforms may start with materialized source or TSV orientation, then must confirm with
+target-visible custom aggregation or focused managed inspect. Escalate to exact include fields only
+for named ambiguities or assertion contracts that depend on display strings, formulas, formats,
+styles, or cell model details. Use `sheet-formulas` for formula audits and
+`sheet-conditional-formats` for conditional formatting rule resources.
 
-For large tables, do not use `sheet-range` as a table dump. Use overview/search first, then obtain
-concise source/target facts such as counts, grouped totals, mismatches, and head/tail samples. If
-managed tools cannot answer that bounded readonly question, write a small sidecar-local custom
-inspect script that returns those facts as JSON instead of dumping every source row.
+For large tables, do not use `sheet-range` as a table dump. Use source orientation plus
+overview/search only to bound the question, then obtain concise source/target facts such as counts,
+grouped totals, dedupe facts, mismatches, expected/current shape comparisons, head/tail samples, or
+cross-range alignment. If managed tools would require repeated broad reads for that same bounded
+aggregation/comparison question, write one small sidecar-local custom inspect script that returns
+compact JSON facts instead of dumping every source row or running multiple `sheet-range` plus `jq`
+slices. Do not use custom scripts as a universal first step or to replace simple unit, sheet, search,
+one-cell, or small-range confirmation reads. Keep the script under the target sidecar
+`inspect-scripts/`, pass variables through params JSON, and keep durable workbook changes in SaC
+migration source.
+
+Handle recoverable inspect diagnostics by narrowing first. If `sheet-range` reports `maxCells`
+exceeded, use `sheet-overview` or used-range evidence, then split into smaller target ranges; only
+raise `maxCells` deliberately when the broad read is truly required. If inspect reports an
+unsupported include or semantic style trait, choose one of the supported include fields/traits in
+the diagnostic, or switch to the dedicated managed evidence tool. Do not inspect workbook internals
+to recover unsupported style evidence.
 
 When typed values, display strings, formulas, number formats, cell model details, or static style
 traits affect the decision, request focused `sheet-range` fields such as `values`,
@@ -122,7 +226,29 @@ traits affect the decision, request focused `sheet-range` fields such as `values
 `semanticStyles`. Use `sheet-conditional-formats` for conditional formatting rule resources;
 combine it with value evidence when a value-dependent rule is part of the task.
 
-For more detail, read `references/evidence-tools.md`.
+Read `references/evidence-tools.md` only when inspect params, include fields, custom script shape,
+or recoverable inspect diagnostics are unclear.
+
+## SaC Common API Pocket Guide
+
+Use these stable primitives before lookup when the task is ordinary range read/write/format or
+assertion work. If a diagnostic names a missing overload, enum, helper, or unsupported surface not
+covered here, use one short lookup or exact declaration read, then return to authoring.
+
+- Read values: `range.getValues()` for logical values, `range.getDisplayValues()` for displayed
+  strings, and cell-data APIs only when storage type, formula, rich text, or style details matter.
+- Write values: use rectangular `range.setValues(matrix)` only with concrete values. Normalize
+  nullable readback first; do not pass `null` or `undefined` inside `setValues()` matrices.
+- Write sparse cells: prefer single-cell writes or skip blank writes instead of rewriting a large
+  grid of blanks when only a few cells change.
+- Clear content: use the Facade clear-content surface for old output bodies before writing a shorter
+  final output; verify blank display tails only when the requested output window requires them.
+- Formats and styles: set number format or supported style traits only when the task or target
+  pattern requires them. If rich text, merge, or semantic style support is absent, use a bounded
+  capability check and choose a supported representation or report the gap instead of adjacent
+  exploration.
+- Assertions: use logical value assertions for typed semantics and display assertions for formatted
+  output. Style assertions should cover only output cells or necessary preservation invariants.
 
 ## SaC Authoring
 
@@ -162,7 +288,8 @@ ordinary migration pack.
 If behavior changes after a pack has been applied, prefer a follow-up migration over editing
 already-applied source into hash/applied-state drift.
 
-For more detail, read `references/sac-authoring.md`.
+Read `references/sac-authoring.md` only when migration/assertion imports, sidecar source layout,
+templates, or typecheck failures require more detail.
 
 ## SaC Execution
 
@@ -184,11 +311,23 @@ the assertion expectation is wrong. Treat legacy top-level `sheet()` or
 `range()` usage, missing units, unit type mismatches, and unsupported readback surfaces as setup
 repair, not final-state workbook mismatch.
 
+When verify reports a value-surface hint, choose the intended assertion surface explicitly:
+`values()`/`value()` for logical typed cell values, `displayValues()`/`displayValue()` for formatted
+output, and `valueDetails`/`cellData` evidence for storage-oriented facts. A mismatch such as
+`"123"` versus `123`, or `"-"` versus `0`, is a decision point: first decide whether the task asked
+for text identity, logical numeric/date semantics, or displayed formatting. Do not immediately add a
+migration to coerce stored values when changing the assertion helper or adding number-format/display
+evidence is the correct contract. If verify reports that a source-preservation or non-output guard
+assertion failed, keep it only when preserving that source state is part of the requested final
+contract; otherwise focus assertions on the user-requested output before adding broad preservation
+checks.
+
 `SAC_UNIT_STATE_DRIFT` means the committed target state and the sidecar active applied state no
 longer match. Treat it as a recovery branch and read the diagnostic before materializing or applying
 again.
 
-For more detail, read `references/sac-execution.md`.
+Read `references/sac-execution.md` only when apply, rollback, verify report, unit drift, or
+assertion failure interpretation is unclear.
 
 ## Versioning, Preview, And Handoff
 
@@ -206,21 +345,28 @@ environments, visual preview is optional unless a browser-capable tool or explic
 
 Use `univer export` for Excel-compatible handoff after verifying the target-visible state that matters.
 
-For more detail, read `references/versioning-and-handoff.md`.
+Read `references/versioning-and-handoff.md` only when status, commit/restore/reset, pull/sync,
+hosted viewer, comments, or export handoff is the active question.
 
 ## Reference Routing
 
-Open only the reference needed for the current question:
+Open only the reference needed for the current fallback condition. Ordinary range read/write,
+lookup, inspect, author, apply, verify, and export tasks should not require reading every reference
+file.
 
-- `references/evidence-tools.md`: managed inspect tools, custom inspect scripts, params, default
-  slim evidence versus exact evidence.
-- `references/sac-authoring.md`: materialize, sidecar structure, migration packs, templates,
-  assertions, follow-up migrations.
-- `references/sac-execution.md`: apply, rollback, verify, `runs/`, failure interpretation.
-- `references/versioning-and-handoff.md`: status, commit, restore/reset, pull/sync, hosted open,
-  comments, export.
-- `references/recipes.md`: copyable command shapes that have been checked against current CLI
-  behavior.
+- `references/evidence-tools.md`: open for unknown inspect params/include fields, custom inspect
+  script shape, unsupported inspect diagnostics, or exact evidence surface selection.
+- `references/sac-authoring.md`: open for unfamiliar migration/assertion imports, sidecar source
+  layout, template selection, follow-up migrations, or a typecheck failure pointing at source.
+- `references/sac-execution.md`: open for apply/rollback/verify report interpretation, unit drift,
+  setup errors, assertion surface decisions, or target-state recovery.
+- `references/versioning-and-handoff.md`: open for status cleanliness, commit/restore/reset,
+  pull/sync, hosted viewer, comments, or export handoff details.
+- `references/recipes.md`: open after you know the workflow and only need a copyable command shape.
+
+If you already opened the relevant reference in the current task, reuse the rule or command shape
+you read. Reopen a reference only when a new failure or missing detail is outside the already-read
+section.
 
 `inspect-tools/` is a managed-tool resource directory used by `univer inspect --tool`; do not treat
 those files as generic scripts to run directly. `univer doctor collect` is for authorized bug reports
