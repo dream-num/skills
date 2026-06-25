@@ -30,9 +30,14 @@ Typical sidecar roles:
 - `runs/`: verification reports and sandbox artifacts.
 - optional notes, plans, or success criteria if the agent or task uses them.
 
-The sidecar is source and evidence. Canonical target data and applied SaC state belong to the
-target `.univer` container. Archived materialize migrations are not active source and are not
-applied or verified by default.
+The sidecar is source and orientation evidence. Use materialized baseline source, migration pack
+source, TSV/table previews, and sidecar docs to form a hypothesis about the imported workbook
+shape: likely sheets, used regions, formulas, formats, preservation boundaries, and source/target
+candidates. Then choose the smallest target-visible confirmation path that can prove or reject that
+hypothesis. Canonical target data and applied SaC state belong to the target `.univer` container, so
+baseline source and TSV/table previews do not replace managed inspect, assertions, verify reports,
+or bounded export checks when current target-visible facts matter. Archived materialize migrations
+are not active source and are not applied or verified by default.
 
 ## Migration Packs
 

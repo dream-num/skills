@@ -31,7 +31,7 @@ source file. Do not bypass the CLI/SaC surfaces to patch the target container by
 | Need | Use |
 | --- | --- |
 | Create or import targets | `new`, `import`, `clone` |
-| Read target evidence | managed `inspect --tool` first; custom readonly `inspect --script` only for bounded gaps |
+| Read target evidence | baseline/source orientation, then focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
 | Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
 | Recover an applied SaC boundary | `sac rollback` |
 | Check or reconcile local state | `status`, `commit`, `restore`, `reset`, `pull`, `sync` |
@@ -56,7 +56,7 @@ missing API detail names that specific gap.
 For large-table or cross-range facts, use a custom readonly inspect script once managed tools cannot
 directly answer the bounded question. One sidecar-local probe should return compact facts such as
 counts, grouped totals, mismatches, candidate ranges, and head/tail samples. Do not use a custom
-probe to mutate workbook state, read `.univer` internals, encode external answer keys or external
+probe to mutate workbook state, read `.univer` internals, encode out-of-band correctness data or external
 scoring data, or write durable migration/assertion source. If you are about to run a second broad
 `sheet-range`, `jq` slice, or expanded range read for the same table/cross-range question, stop and
 write one readonly aggregation probe instead.
@@ -116,8 +116,23 @@ type-file reads when short lookup or exact-symbol lookup can bound the context.
 
 ## Evidence Tools
 
-Managed inspect tools are the preferred readonly evidence surface. Discover units before
-unit-scoped reads, and resolve tool params when a tool shape is unclear:
+For SaC targets with a materialized baseline, use a baseline-oriented hypothesis path before broad
+workbook inspection. Read materialized baseline source, migration pack source, TSV/table previews,
+and sidecar docs when available to map likely sheets, used regions, formulas, formats, preservation
+boundaries, and candidate source/target areas. The output of this pass is a small target-evidence
+question, not a final answer.
+
+Source evidence is not target truth. Baseline source, migration source, and previews can explain
+where to look and what may matter, but they do not prove current target-visible values, formulas,
+formats, ledger state, hidden rows, merged cells, rich text, recalculation, or export readiness.
+Confirm the decision-relevant facts with target-visible evidence before handoff.
+
+Managed inspect tools are the preferred target-visible confirmation and fallback surface. Use them
+for target inventory, sheet names, used ranges, focused range readback, search/neighborhood
+confirmation, formulas, display/logical value differences, number formats, and stable style traits.
+Avoid using broad managed range dumps as the first discovery step when source evidence can first
+bound the question. Discover units before unit-scoped reads, and resolve tool params when a tool
+shape is unclear:
 
 ```bash
 UNIVERFILE=./Budget.univer
@@ -155,13 +170,20 @@ and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Faca
 `getDisplayValues()`. Inspect tools do not synthesize `value` from display text or agent-oriented
 normalization.
 
-Use this evidence ladder by default: `units -> sheet-overview or sheet-search -> sheet-range slim -> exact include`. Escalate to exact include fields only for named ambiguities or assertion contracts that depend on display strings, formulas, formats, styles, or cell model details. Use `sheet-formulas` for formula audits and `sheet-conditional-formats` for conditional formatting rule resources.
+Use this evidence ladder by default: `materialized baseline orientation -> units -> focused
+sheet-overview or sheet-search -> focused sheet-range slim -> exact include`. Escalate to exact
+include fields only for named ambiguities or assertion contracts that depend on display strings,
+formulas, formats, styles, or cell model details. Use `sheet-formulas` for formula audits and
+`sheet-conditional-formats` for conditional formatting rule resources.
 
-For large tables, do not use `sheet-range` as a table dump. Use overview/search first, then obtain
-concise source/target facts such as counts, grouped totals, mismatches, and head/tail samples. If
-managed tools cannot answer that bounded readonly question, write a small sidecar-local custom
-inspect script that returns those facts as JSON instead of dumping every source row or running
-multiple `sheet-range` plus `jq` slices. Keep the script under the target sidecar
+For large tables, do not use `sheet-range` as a table dump. Use source orientation plus
+overview/search first, then obtain concise source/target facts such as counts, grouped totals,
+dedupe facts, mismatches, expected/current shape comparisons, head/tail samples, or cross-range
+alignment. If managed tools would require repeated broad reads for that same bounded
+aggregation/comparison question, write one small sidecar-local custom inspect script that returns
+compact JSON facts instead of dumping every source row or running multiple `sheet-range` plus `jq`
+slices. Do not use custom scripts as a universal first step or to replace simple unit, sheet,
+search, one-cell, or small-range confirmation reads. Keep the script under the target sidecar
 `inspect-scripts/`, pass variables through params JSON, and keep durable workbook changes in SaC
 migration source.
 

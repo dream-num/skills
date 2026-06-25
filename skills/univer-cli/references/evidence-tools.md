@@ -5,9 +5,36 @@ formulas, styles, resources, or handoff readiness. Evidence tools do not make du
 changes. Examples use `UNIVERFILE=./orders.univer` as a shell variable for the target path; set it
 in the same shell or replace `$UNIVERFILE` with the literal `.univer` path.
 
+## SaC Baseline Orientation
+
+For SaC workspaces that already have a materialized baseline, take a short baseline-oriented
+hypothesis pass before large managed inspect reads. Read source surfaces that already exist in the
+sidecar: materialized baseline source, migration pack source, TSV/table previews, and sidecar docs.
+Use that pass to identify likely sheet names, used regions, data blocks, formulas, formats, copied
+labels, preservation boundaries, source ranges, and target ranges.
+
+This pass should produce a compact target-evidence question: what current workbook fact would
+confirm or reject the hypothesis, which read path will answer it, and what fact is enough to stop
+reading. If source evidence is missing, stale, or does not identify the target inventory, state that
+bounded reason and fall back to the smallest target-visible read that can recover the missing
+orientation.
+
+Treat baseline source, migration source, and TSV/table previews as orientation evidence, not target
+confirmation. They can help you decide where to inspect, but they do not prove current
+target-visible state, applied ledger state, exact storage types, formula recalculation, formatting,
+styles, hidden rows, merged cells, rich text, or export readiness. When those details matter, return
+to managed inspect tools, assertions, verify reports, or bounded export checks.
+
 ## Managed Inspect Tools
 
-Start with managed tools:
+Use managed tools to confirm target-visible facts. Their best role after baseline orientation is
+focused confirmation: target inventory, sheet names, used ranges, small range readback, text search,
+neighborhood context, formulas, display/logical value differences, number formats, and stable style
+traits.
+
+Do not make a broad managed range dump the default first discovery step when source evidence can
+first bound the question. If source evidence is unavailable or target inventory is genuinely
+unknown, start with the smallest inventory/overview/search read that resolves that blocker.
 
 ```bash
 UNIVERFILE=./orders.univer
@@ -98,12 +125,14 @@ default:
 
 ## Custom Inspect Scripts
 
-Use a custom script when managed tools cannot answer a bounded readonly evidence question. Before
-writing migration source for large-table aggregate, rebuild, split, or reconciliation tasks, prefer
-a custom summary probe over repeated `sheet-range` calls when the useful evidence is an aggregate
-rather than the full grid: grouped totals, counts, missing labels, mismatches, formula coverage, or
-head/tail samples. A managed overview that only reports used ranges and bounded samples is not a
-substitute for source-derived aggregate facts. The summary probe should replace full source-table
+Use a custom script when managed tools cannot answer one bounded readonly aggregation or comparison
+question without repeated broad reads. Before writing migration source for large-table aggregate,
+rebuild, split, or reconciliation tasks, prefer a custom summary probe over repeated `sheet-range`
+calls when the useful evidence is an aggregate rather than the full grid: grouped totals, counts,
+dedupe facts, missing labels, mismatches, formula coverage, expected/current shape comparison,
+cross-range alignment, or head/tail samples. A managed overview that only reports used ranges and
+bounded samples is not a substitute for source-derived aggregate facts. The summary probe should
+replace full source-table
 dumps for that same evidence question; do not also dump the same large source tables unless exact
 row-level evidence is needed for a named ambiguity. A second broad `sheet-range`, repeated `jq`
 slice, or expanded range read for the same large-table/cross-range question is the stop point for
@@ -138,6 +167,9 @@ Keep custom probes:
   unknown row
 - JSON-oriented when another command or agent will consume the output
 
-Do not use inspect scripts for durable target changes, source edits, external answer keys, or
-`.univer` internals. If the same aggregation becomes generally useful across unrelated workbooks,
-propose a managed inspect tool separately instead of growing task-local probes into product logic.
+Do not use inspect scripts for durable target changes, source edits, out-of-band correctness data, or
+`.univer` internals. Do not use them as a universal first step, or to replace simple unit
+inventory, sheet identity, search, one-cell, small-range, formula, or format confirmation that
+managed tools already answer directly. If the same aggregation becomes generally useful across
+unrelated workbooks, propose a managed inspect tool separately instead of growing task-local probes
+into product logic.
