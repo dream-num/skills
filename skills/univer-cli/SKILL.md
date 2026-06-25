@@ -31,7 +31,7 @@ source file. Do not bypass the CLI/SaC surfaces to patch the target container by
 | Need | Use |
 | --- | --- |
 | Create or import targets | `new`, `import`, `clone` |
-| Read target evidence | baseline/source orientation, then focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
+| Read target evidence | classify-first evidence routing; focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
 | Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
 | Recover an applied SaC boundary | `sac rollback` |
 | Check or reconcile local state | `status`, `commit`, `restore`, `reset`, `pull`, `sync` |
@@ -56,10 +56,10 @@ missing API detail names that specific gap.
 For large-table or cross-range facts, use a custom readonly inspect script once managed tools cannot
 directly answer the bounded question. One sidecar-local probe should return compact facts such as
 counts, grouped totals, mismatches, candidate ranges, and head/tail samples. Do not use a custom
-probe to mutate workbook state, read `.univer` internals, encode out-of-band correctness data or external
-scoring data, or write durable migration/assertion source. If you are about to run a second broad
-`sheet-range`, `jq` slice, or expanded range read for the same table/cross-range question, stop and
-write one readonly aggregation probe instead.
+probe to mutate workbook state, read `.univer` internals, encode out-of-band correctness data or
+external expected answers, or write durable migration/assertion source. If you are about to run a second
+broad `sheet-range`, `jq` slice, or expanded range read for the same table/cross-range question,
+stop and write one readonly aggregation probe instead.
 
 ## Lookup Protocol
 
@@ -114,25 +114,46 @@ Lookup read hints are designed to work with shell tools. Use the returned `sed -
 location to read the declaration lines you need; avoid broad `rg` over all `types/*.d.ts` or full
 type-file reads when short lookup or exact-symbol lookup can bound the context.
 
+## SaC Evidence Routing
+
+For SaC spreadsheet work, classify the next evidence need before choosing tools. The shortest path
+depends on what fact is still unknown, not on whether a baseline sidecar exists.
+
+- `exact-target`: use when the task names a sheet, cell, range, column, or overview can directly
+  bound the used range for a small edit. Start with `units`, `sheet-overview`, and one exact focused
+  target read. Skip baseline, TSV, and lookup unless a later diagnostic names a bounded reason.
+- `baseline-assisted-transform`: use only for filter, dedupe, group, aggregate, summarize, copy
+  matching rows, compare many rows, unclear source/target regions after overview, imported
+  cell-model preservation, or avoiding a second broad range read. Baseline source, migration source,
+  TSV/table previews, and sidecar docs may form a hypothesis, but they are not target truth.
+- `capability-boundary`: use for rich text, merge, semantic style, conditional format, active sheet,
+  unsupported include, or similar capability ambiguity. Run at most one focused target evidence read
+  and one capability/API check, then choose a supported representation or report the gap.
+- `api-fallback`: use only after typecheck, apply, verify, or command diagnostics name a missing
+  method, unknown helper, argument shape, overload, enum, or assertion helper shape. Close the
+  immediate API gap, then author or verify next.
+
+For `baseline-assisted-transform`, use source evidence only to answer a bounded question that would
+otherwise require broad target reads or repeated artifact probing. Confirm the decision-relevant
+facts with target-visible evidence before handoff. If the transform spans more than one small range
+or more than 50 candidate cells, write one readonly sidecar-local custom inspect aggregation script
+before the second broad managed range read. Return compact JSON facts such as source shape, target
+shape, operation type, candidate count, output count, write range, head/tail samples, preservation
+samples, and assertion plan.
+
+First-pass assertions should prioritize the requested output cells/ranges. Add at
+most one or two preservation invariants directly tied to the mutation risk. Keep source rationale,
+active sheet, broad style preservation, and non-output facts as readback notes unless the task
+explicitly requires them.
+
 ## Evidence Tools
-
-For SaC targets with a materialized baseline, use a baseline-oriented hypothesis path before broad
-workbook inspection. Read materialized baseline source, migration pack source, TSV/table previews,
-and sidecar docs when available to map likely sheets, used regions, formulas, formats, preservation
-boundaries, and candidate source/target areas. The output of this pass is a small target-evidence
-question, not a final answer.
-
-Source evidence is not target truth. Baseline source, migration source, and previews can explain
-where to look and what may matter, but they do not prove current target-visible values, formulas,
-formats, ledger state, hidden rows, merged cells, rich text, recalculation, or export readiness.
-Confirm the decision-relevant facts with target-visible evidence before handoff.
 
 Managed inspect tools are the preferred target-visible confirmation and fallback surface. Use them
 for target inventory, sheet names, used ranges, focused range readback, search/neighborhood
 confirmation, formulas, display/logical value differences, number formats, and stable style traits.
-Avoid using broad managed range dumps as the first discovery step when source evidence can first
-bound the question. Discover units before unit-scoped reads, and resolve tool params when a tool
-shape is unclear:
+Avoid broad managed range dumps as first discovery when the task is `exact-target`, and switch to
+custom aggregation before repeated broad reads in `baseline-assisted-transform`. Discover units
+before unit-scoped reads, and resolve tool params when a tool shape is unclear:
 
 ```bash
 UNIVERFILE=./Budget.univer
@@ -170,25 +191,27 @@ and `valueType` prefers `cellData.t` when available; `displayValue` mirrors Faca
 `getDisplayValues()`. Inspect tools do not synthesize `value` from display text or agent-oriented
 normalization.
 
-Use this evidence ladder by default: `materialized baseline orientation -> units -> focused
-sheet-overview or sheet-search -> focused sheet-range slim -> exact include`. Escalate to exact
-include fields only for named ambiguities or assertion contracts that depend on display strings,
-formulas, formats, styles, or cell model details. Use `sheet-formulas` for formula audits and
+Use the evidence ladder selected by the classification. `exact-target` usually starts
+`units -> focused sheet-overview or sheet-search -> focused sheet-range slim -> exact include`.
+`baseline-assisted-transform` may start with materialized source or TSV orientation, then must
+confirm with target-visible custom aggregation or focused managed inspect. Escalate to exact include
+fields only for named ambiguities or assertion contracts that depend on display strings, formulas,
+formats, styles, or cell model details. Use `sheet-formulas` for formula audits and
 `sheet-conditional-formats` for conditional formatting rule resources.
 
-For large tables, do not use `sheet-range` as a table dump. Use source orientation plus
-overview/search first, then obtain concise source/target facts such as counts, grouped totals,
-dedupe facts, mismatches, expected/current shape comparisons, head/tail samples, or cross-range
-alignment. If managed tools would require repeated broad reads for that same bounded
-aggregation/comparison question, write one small sidecar-local custom inspect script that returns
-compact JSON facts instead of dumping every source row or running multiple `sheet-range` plus `jq`
-slices. Do not use custom scripts as a universal first step or to replace simple unit, sheet,
-search, one-cell, or small-range confirmation reads. Keep the script under the target sidecar
-`inspect-scripts/`, pass variables through params JSON, and keep durable workbook changes in SaC
-migration source.
+For large tables, do not use `sheet-range` as a table dump. If classification is
+`baseline-assisted-transform`, use source orientation plus overview/search only to bound the
+question, then obtain concise source/target facts such as counts, grouped totals, dedupe facts,
+mismatches, expected/current shape comparisons, head/tail samples, or cross-range alignment. If
+managed tools would require repeated broad reads for that same bounded aggregation/comparison
+question, write one small sidecar-local custom inspect script that returns compact JSON facts
+instead of dumping every source row or running multiple `sheet-range` plus `jq` slices. Do not use
+custom scripts as a universal first step or to replace simple unit, sheet, search, one-cell, or
+small-range confirmation reads. Keep the script under the target sidecar `inspect-scripts/`, pass
+variables through params JSON, and keep durable workbook changes in SaC migration source.
 
 Handle recoverable inspect diagnostics by narrowing first. If `sheet-range` reports `maxCells`
-exceeded, use `sheet-overview` or used-range evidence, then split into smaller scored ranges; only
+exceeded, use `sheet-overview` or used-range evidence, then split into smaller target ranges; only
 raise `maxCells` deliberately when the broad read is truly required. If inspect reports an
 unsupported include or semantic style trait, choose one of the supported include fields/traits in
 the diagnostic, or switch to the dedicated managed evidence tool. Do not inspect workbook internals
@@ -202,6 +225,26 @@ combine it with value evidence when a value-dependent rule is part of the task.
 
 Read `references/evidence-tools.md` only when inspect params, include fields, custom script shape,
 or recoverable inspect diagnostics are unclear.
+
+## SaC Common API Pocket Guide
+
+Use these stable primitives before lookup when the task is ordinary range read/write/format or
+assertion work. If a diagnostic names a missing overload, enum, helper, or unsupported surface not
+covered here, use one short lookup or exact declaration read, then return to authoring.
+
+- Read values: `range.getValues()` for logical values, `range.getDisplayValues()` for displayed
+  strings, and cell-data APIs only when storage type, formula, rich text, or style details matter.
+- Write values: use rectangular `range.setValues(matrix)` only with concrete values. Normalize
+  nullable readback first; do not pass `null` or `undefined` inside `setValues()` matrices.
+- Write sparse cells: prefer single-cell writes or skip blank writes instead of rewriting a large
+  grid of blanks when only a few cells change.
+- Clear content: use the Facade clear-content surface for old output bodies before writing a shorter
+  final output; verify blank display tails only when the requested output window requires them.
+- Formats and styles: set number format or supported style traits only when the task or target
+  pattern requires them. If rich text, merge, or semantic style support is absent, follow the
+  `capability-boundary` path instead of adjacent exploration.
+- Assertions: use logical value assertions for typed semantics and display assertions for formatted
+  output. Style assertions should cover only output cells or necessary preservation invariants.
 
 ## SaC Authoring
 
