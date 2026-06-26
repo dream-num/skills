@@ -53,13 +53,12 @@ primitive lookup result gives the API, minimal source shape, and read hint you n
 next. Read a declaration or reference file only when a new failure, unfamiliar command surface, or
 missing API detail names that specific gap.
 
-For large-table or cross-range facts, use a custom readonly inspect script once managed tools cannot
-directly answer the bounded question. One sidecar-local probe should return compact facts such as
-counts, grouped totals, mismatches, candidate ranges, and head/tail samples. Do not use a custom
-probe to mutate workbook state, read `.univer` internals, encode out-of-band correctness data or
-external expected answers, or write durable migration/assertion source. If you are about to run a second
-broad `sheet-range`, `jq` slice, or expanded range read for the same table/cross-range question,
-stop and write one readonly aggregation probe instead.
+For large-table or cross-range facts, prefer one reusable managed artifact plus bounded shell reads
+first. Use a custom readonly inspect script only after that artifact cannot answer a concrete
+aggregation/comparison question without repeated broad reads. One sidecar-local probe should return
+compact facts such as counts, grouped totals, mismatches, candidate ranges, and head/tail samples.
+Do not use a custom probe to mutate workbook state, read `.univer` internals, encode out-of-band
+correctness data or external expected answers, or write durable migration/assertion source.
 
 ## Lookup Protocol
 
@@ -137,11 +136,11 @@ fact:
 
 For large transforms, use source evidence only to answer a bounded question that would otherwise
 require broad target reads or repeated artifact probing. Confirm decision-relevant facts with
-target-visible evidence before handoff. If the transform spans more than one small range or more than
-50 candidate cells, write one readonly sidecar-local custom inspect aggregation script before the
-second broad managed range read. Return compact JSON facts such as source shape, target shape,
-operation type, candidate count, output count, write range, head/tail samples, preservation samples,
-and assertion plan.
+target-visible evidence before handoff. Do not use row count alone to trigger custom scripts. If one
+managed artifact plus bounded shell reads still leaves a concrete aggregation/comparison gap, write
+one readonly sidecar-local custom inspect aggregation script before another broad managed range read.
+Return compact JSON facts such as source shape, target shape, operation type, candidate count,
+output count, write range, head/tail samples, preservation samples, and assertion plan.
 
 First-pass assertions should prioritize the requested output cells/ranges. Add at
 most one or two preservation invariants directly tied to the mutation risk. Keep source rationale,
@@ -174,8 +173,9 @@ trim internal spaces, translate, or otherwise normalize them. If an inspect diag
 `didYouMean` sheet name, rerun the same bounded evidence request with that exact name instead of
 continuing to guess.
 
-`--params` accepts either a real JSON file path or `-` for stdin. Do not pass inline JSON as the
-option value; `--params '{}'` is interpreted as a file path named `{}`.
+`--params` accepts either a real JSON file path or `-` for stdin. Prefer real params files when the
+command will be reused. Do not pass `/dev/stdin`, inline JSON, or a missing temp path as the option
+value; `--params '{}'` is interpreted as a file path named `{}`.
 
 For reusable or large evidence, use `--out ./name.result.json`. The CLI writes the complete result
 as pretty JSON and prints a short Agent Index Output with the artifact path, warning/truncation
@@ -205,13 +205,13 @@ styles, or cell model details. Use `sheet-formulas` for formula audits and
 For large tables, do not use `sheet-range` as a table dump. Use source orientation plus
 overview/search only to bound the question, then obtain concise source/target facts such as counts,
 grouped totals, dedupe facts, mismatches, expected/current shape comparisons, head/tail samples, or
-cross-range alignment. If managed tools would require repeated broad reads for that same bounded
-aggregation/comparison question, write one small sidecar-local custom inspect script that returns
-compact JSON facts instead of dumping every source row or running multiple `sheet-range` plus `jq`
-slices. Do not use custom scripts as a universal first step or to replace simple unit, sheet, search,
-one-cell, or small-range confirmation reads. Keep the script under the target sidecar
-`inspect-scripts/`, pass variables through params JSON, and keep durable workbook changes in SaC
-migration source.
+cross-range alignment. If one managed artifact plus bounded shell reads cannot answer that same
+bounded aggregation/comparison question, write one small sidecar-local custom inspect script that
+returns compact JSON facts instead of dumping every source row or running multiple `sheet-range`
+plus `jq` slices. Do not use custom scripts as a universal first step or to replace simple unit,
+sheet, search, one-cell, or small-range confirmation reads. Keep the script under the target sidecar
+`inspect-scripts/` directory, not under a generic work directory, pass variables through params JSON,
+and keep durable workbook changes in SaC migration source.
 
 Handle recoverable inspect diagnostics by narrowing first. If `sheet-range` reports `maxCells`
 exceeded, use `sheet-overview` or used-range evidence, then split into smaller target ranges; only
