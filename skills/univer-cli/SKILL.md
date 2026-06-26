@@ -33,6 +33,12 @@ to give the user a viewer link. The user reviews and chooses to merge or discard
 page or via `worktree merge` / `worktree discard`. Merging into trunk is normally the user's
 decision, not an automatic agent step.
 
+Before acting on a follow-up, re-check with `worktree list`, because the user may have merged,
+discarded, or only reviewed in the browser. If its `status` is still `open`/`ready` and the message
+refines the same change, keep working there — more SaC returns a `ready` worktree to the `open`
+status; when done, mark it `ready` and hand off a fresh link with `univer open`. Use a new worktree for a
+merged or discarded one, or for a separate task.
+
 A `.univer` file holds top-level units; `localUnitId` identifies a unit inside it. Sheet names, A1
 ranges, values, formulas, styles, tables, filters, charts, shapes, and images are coordinates or
 resources inside a selected unit.
