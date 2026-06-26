@@ -30,6 +30,21 @@ merging again). `discard` removes a worktree entirely and never affects trunk.
 There is no local `commit`, `restore`, `reset`, `pull`, or `sync`. `sac apply` produces a worktree
 commit, and `sac rollback` or `worktree discard` undo work; see `sac-execution.md`.
 
+## Working Across Tasks
+
+After a handoff the user reviews in the browser and may merge it, discard it, or just send a message
+without acting. Before responding, re-check with `worktree list` — the reported `status` is the
+source of truth — and read the message intent:
+
+- `status` `merged` or `discarded` (terminal, not writable): start the next change on a fresh
+  `worktree create` off the current trunk, which now includes that merge and any direct user edits.
+- `status` still `open`/`ready` and the message refines the same change: keep working on the same
+  worktree. More SaC returns a `ready` worktree to the `open` status; when done, mark it `ready` and
+  hand off a fresh link with `univer open`.
+- A distinct new task: use a separate `worktree create` so each task stays independently reviewable.
+
+Never reuse a `merged`/`discarded` worktree, and never assume a worktree's `status` across a handoff.
+
 ## Scope Status
 
 ```bash
