@@ -14,7 +14,7 @@
 
 - [`univer-cli`](./skills/univer-cli/SKILL.md): 说明 public `univer` CLI 和 SaC 能力，包括
   `.univer` target、workbook evidence、managed inspect tools、migration packs、verify、preview、
-  versioning、import、export 和 handoff。
+  worktrees、import、export 和 handoff。
 
 ## 亮点
 
@@ -80,7 +80,7 @@ cp -R skills/univer-cli ~/.cursor/skills/
 
 | Skill | Best for | Status |
 | --- | --- | --- |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | workbook inspection、`.univer` targets、managed inspect tools、SaC authoring、apply/rollback/verify、preview、versioning、import/export 和 handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | workbook inspection、`.univer` targets、managed inspect tools、SaC authoring、apply/rollback/verify、preview、worktrees、import/export 和 handoff | canonical |
 
 ## 示例 Prompts
 
