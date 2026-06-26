@@ -11,13 +11,13 @@ For an existing target, run:
 
 ```bash
 UNIVERFILE=./orders.univer
+WORKTREE_ID=<id>
 
-univer sac materialize "$UNIVERFILE" --json
+univer sac materialize "$UNIVERFILE" --worktree "$WORKTREE_ID" --json
 ```
 
-Read `sidecarPath` from command JSON. Do not guess hidden sidecar paths. Materialize uses committed
-target state: init data, synced changesets, and committed local changesets. Uncommitted local
-mutations are excluded and should be committed or restored before SaC commands.
+Read `sidecarPath` from command JSON. Do not guess hidden sidecar paths. Materialize uses the
+committed worktree scope; `--worktree <id>` is required.
 
 Typical sidecar roles:
 
