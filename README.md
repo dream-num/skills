@@ -14,7 +14,7 @@ This repository exposes one canonical product skill:
 
 - [`univer-cli`](./skills/univer-cli/SKILL.md): public `univer` CLI and SaC capability guidance
   for `.univer` targets, workbook evidence, managed inspect tools, migration packs, verification,
-  preview, versioning, import, export, and handoff.
+  preview, worktrees, import, export, and handoff.
 
 ## Highlights
 
@@ -83,7 +83,7 @@ cp -R skills/univer-cli ~/.cursor/skills/
 
 | Skill | Best for | Status |
 | --- | --- | --- |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | workbook inspection, `.univer` targets, managed inspect tools, SaC authoring, apply/rollback/verify, preview, versioning, import/export, and handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | workbook inspection, `.univer` targets, managed inspect tools, SaC authoring, apply/rollback/verify, preview, worktrees, import/export, and handoff | canonical |
 
 ## Example Prompts
 

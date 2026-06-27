@@ -52,10 +52,10 @@ cat > ./overview.params.json <<'JSON'
   "localUnitId": "replace-with-localUnitId"
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-overview --params ./overview.params.json --out ./overview.result.json
+univer inspect "$UNIVERFILE" --tool sheet-overview --worktree "$WORKTREE_ID" --params ./overview.params.json --out ./overview.result.json
 
 printf '%s' '{"localUnitId":"replace-with-localUnitId"}' \
-  | univer inspect "$UNIVERFILE" --tool sheet-overview --params -
+  | univer inspect "$UNIVERFILE" --tool sheet-overview --worktree "$WORKTREE_ID" --params -
 ```
 
 Do not pass inline JSON as the `--params` value. `--params '{}'` is interpreted as a params file
@@ -66,7 +66,7 @@ Tool roles:
 
 | Tool | Use when |
 | --- | --- |
-| `units` | You need target unit inventory, `localUnitId`, type, name, capabilities, or remote binding metadata. |
+| `units` | You need target unit inventory, `localUnitId`, type, name, or capabilities. |
 | `sheet-overview` | You need sheet names, used ranges, bounded samples, formulas, warnings, or candidate non-empty regions. |
 | `sheet-search` | You know visible text or values but not coordinates. |
 | `sheet-neighborhood` | You have an anchor and need nearby headers, labels, totals, or context. |
@@ -151,7 +151,7 @@ Design each custom aggregation around the next authoring or verification decisio
 ```bash
 printf '%s' '{"reason":"bounded-readonly-evidence","sampleLimit":5}' \
   > ./probe.params.json
-univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --params ./probe.params.json --out ./probe.result.json
+univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/probe.js" --worktree "$WORKTREE_ID" --params ./probe.params.json --out ./probe.result.json
 ```
 
 Keep custom probes:

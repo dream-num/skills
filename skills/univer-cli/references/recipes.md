@@ -2,32 +2,37 @@
 
 These are concise command shapes. Replace paths, unit ids, sheet names, and ranges with inspected
 facts. Use `../SKILL.md` for mandatory product boundaries and command selection. Examples use
-`UNIVERFILE=./orders.univer` as a shell variable for the target path. When copying a command by
-itself, set `UNIVERFILE` in the same shell first or replace `$UNIVERFILE` with the literal
-`.univer` path.
+`UNIVERFILE=./orders.univer` for the target path and `WORKTREE_ID=<id>` for the worktree returned by
+`worktree create`. Scope commands (`inspect`, `status`, `export`, `open`, and the SaC write path)
+require `--worktree "$WORKTREE_ID"`. When copying a command by itself, set both variables in the same
+shell first or replace them with literals.
 
-## Import, Materialize, Discover Units
-
-```bash
-UNIVERFILE=./orders.univer
-univer import --file ./orders.csv "$UNIVERFILE" --json
-univer sac materialize "$UNIVERFILE" --json > ./materialize.json
-printf '%s' '{}' | univer inspect "$UNIVERFILE" --tool units --params -
-```
-
-Read `sidecarPath` from command JSON. Use `localUnitId` from `units` for unit-specific reads.
-
-## Check Univerfile And Unit Versioning State
+## Create, Isolate, Materialize, Discover Units
 
 ```bash
 UNIVERFILE=./orders.univer
-
-univer status "$UNIVERFILE" --json
-univer status "$UNIVERFILE" --local-unit-id "replace-with-localUnitId" --json
+univer import --file ./orders.csv "$UNIVERFILE" --json   # or: univer new "$UNIVERFILE"
+univer worktree create "$UNIVERFILE" --name task-a       # prints the new worktree id; use it below
+WORKTREE_ID=<id-from-create>
+univer sac materialize "$UNIVERFILE" --worktree "$WORKTREE_ID" --json > ./materialize.json
+printf '%s' '{}' | univer inspect "$UNIVERFILE" --tool units --worktree "$WORKTREE_ID" --params -
 ```
 
-Use the actual target `.univer` file path. Do not run bare `univer status`, and do not substitute a
-directory, display name, sheet name, `remoteUnitId`, or `sessionId` for the target path.
+Read `sidecarPath` from command JSON. Use `localUnitId` from `units` for unit-specific reads. Pass
+`--worktree "$WORKTREE_ID"` (or set `$WORKTREE_ID`) on every read and SaC write so all work stays in
+one isolated copy.
+
+## Check Scope State
+
+```bash
+UNIVERFILE=./orders.univer
+
+univer status "$UNIVERFILE" --worktree "$WORKTREE_ID" --json    # lifecycle + commit count
+univer status "$UNIVERFILE" --worktree "$WORKTREE_ID" --unit "replace-with-localUnitId" --json
+```
+
+Use the actual target `.univer` file path. Do not substitute a directory, display name, sheet name,
+or `sessionId` for the target path.
 
 ## Open Hosted Viewer Handoff
 
@@ -37,9 +42,8 @@ univer open "$SOURCE_URL" --json
 ```
 
 Open the returned `url` with agent-browser, Playwright, or another browser tool. `SOURCE_URL` must
-be browser-fetchable with CORS enabled. If you only have `UNIVERFILE=./orders.univer`, do not run
-`univer open "$UNIVERFILE"`; first provide or create an HTTP(S) source URL, or use the viewer file
-picker as a manual human-browser fallback.
+be browser-fetchable with CORS enabled. A local `.univer` path resolves to its own trunk/worktree
+viewer room instead: `univer open "$UNIVERFILE" --worktree "$WORKTREE_ID" --json`.
 
 Use local fallback only when `file.univer.ai` is unreachable:
 
@@ -63,7 +67,7 @@ cat > ./range.params.json <<'JSON'
   "rangeA1": "A1:D20"
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json --out ./range.result.json
+univer inspect "$UNIVERFILE" --tool sheet-range --worktree "$WORKTREE_ID" --params ./range.params.json --out ./range.result.json
 ```
 
 The command writes reusable pretty JSON to `range.result.json` and prints a short index with `jq`
@@ -96,7 +100,7 @@ cat > ./related-ranges.params.json <<'JSON'
   ]
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-range --params ./related-ranges.params.json
+univer inspect "$UNIVERFILE" --tool sheet-range --worktree "$WORKTREE_ID" --params ./related-ranges.params.json
 ```
 
 If an inspect diagnostic says `didYouMean`, rerun the same request with that exact sheet name.
@@ -118,7 +122,7 @@ cat > ./search.params.json <<'JSON'
   "maxResults": 20
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-search --params ./search.params.json
+univer inspect "$UNIVERFILE" --tool sheet-search --worktree "$WORKTREE_ID" --params ./search.params.json
 ```
 
 Use the returned coordinate as input to `sheet-neighborhood` or `sheet-range` when context is
@@ -140,7 +144,7 @@ cat > ./conditional-formats.params.json <<'JSON'
   "rangeA1": "K2:K100"
 }
 JSON
-univer inspect "$UNIVERFILE" --tool sheet-conditional-formats --params ./conditional-formats.params.json
+univer inspect "$UNIVERFILE" --tool sheet-conditional-formats --worktree "$WORKTREE_ID" --params ./conditional-formats.params.json
 ```
 
 This reports rule facts and target ranges. It is not a final rendered-style proof for every cell.
@@ -241,7 +245,7 @@ cat > ./aggregate-range.params.json <<'JSON'
   "sampleLimit": 5
 }
 JSON
-univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/aggregate-range.js" --params ./aggregate-range.params.json --out ./aggregate-range.result.json
+univer inspect "$UNIVERFILE" --script "$SIDECAR/inspect-scripts/aggregate-range.js" --worktree "$WORKTREE_ID" --params ./aggregate-range.params.json --out ./aggregate-range.result.json
 ```
 
 Scratch probes are function expressions, not ESM or CommonJS modules; do not use `export default` or
@@ -261,8 +265,8 @@ UNIVERFILE=./orders.univer
 univer sac migration templates --json
 univer sac migration create "update-by-key" "$UNIVERFILE" --template sheet-keyed-write
 # edit generated TODO source under the returned sidecar migration path
-univer sac apply "$UNIVERFILE"
-univer sac verify "$UNIVERFILE" --json
+univer sac apply "$UNIVERFILE" --worktree "$WORKTREE_ID"
+univer sac verify "$UNIVERFILE" --worktree "$WORKTREE_ID" --json
 ```
 
 Choose a template only after target-visible evidence shows it fits. If no template fits, create an
@@ -300,7 +304,7 @@ export default defineAssertions(({ target, sheetUnit }) => {
 
 ```bash
 UNIVERFILE=./orders.univer
-univer sac verify "$UNIVERFILE" --json
+univer sac verify "$UNIVERFILE" --worktree "$WORKTREE_ID" --json
 ```
 
 Inside `sheetUnit`, `range()` is sheet-qualified A1. For `values`/`rawValues`, assert dates and
@@ -322,10 +326,26 @@ and `valuesByKey` from inspected evidence before applying.
 ```bash
 UNIVERFILE=./orders.univer
 
-univer status "$UNIVERFILE"
-univer sac rollback "$UNIVERFILE"
-univer sac verify "$UNIVERFILE" --json
+univer status "$UNIVERFILE" --worktree "$WORKTREE_ID"
+univer sac rollback "$UNIVERFILE" --worktree "$WORKTREE_ID"
+univer sac verify "$UNIVERFILE" --worktree "$WORKTREE_ID" --json
 ```
 
-Rollback moves across a SaC applied migration boundary. Verify or inspect the resulting target state
+Rollback removes the latest worktree commit (LIFO). Verify or inspect the resulting scope state
 before continuing.
+
+## Hand Off A Worktree For Review
+
+```bash
+UNIVERFILE=./orders.univer
+
+univer worktree ready "$UNIVERFILE" --worktree "$WORKTREE_ID"    # mark ready
+univer open "$UNIVERFILE" --worktree "$WORKTREE_ID" --json       # give the user a viewer link
+univer worktree merge "$UNIVERFILE" --worktree "$WORKTREE_ID"    # user merges (or from the viewer)
+univer worktree discard "$UNIVERFILE" --worktree "$WORKTREE_ID"  # or discards
+```
+
+After the task is done, mark the worktree ready and `open` it for the user; the user reviews and
+decides merge or discard. Merging is normally the user's decision, not an automatic agent step. Merge
+is the only path into trunk; on conflict it leaves trunk unchanged, so re-author on the worktree and
+merge again. See `worktrees-and-handoff.md`.

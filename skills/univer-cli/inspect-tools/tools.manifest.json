@@ -20,10 +20,9 @@
       "compatibleCliVersion": "*",
       "paramsSchema": {},
       "outputContract": {
-        "description": "Target unit inventory with localUnitId, remoteUnitId, type, name, revision, and capability status.",
+        "description": "Target unit inventory with localUnitId, type, name, revision, and capability status.",
         "hints": [
-          "Use localUnitId for subsequent tool params.",
-          "remoteUnitId is binding metadata and is not the runtime selector."
+          "Use localUnitId for subsequent tool params."
         ]
       }
     },

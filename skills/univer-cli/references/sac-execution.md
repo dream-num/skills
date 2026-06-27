@@ -1,21 +1,23 @@
 # SaC Execution
 
-Execution commands operate on the target `.univer` and the resolved sidecar source. SaC commands
-require clean target state; use `univer status <file.univer>` and commit or restore uncommitted
-local mutations before `materialize`, `apply`, `rollback`, or `verify`. Examples use
-`UNIVERFILE=./orders.univer` as a shell variable for the target path; set it in the same shell or
-replace `$UNIVERFILE` with the literal `.univer` path.
+Execution commands require `--worktree "$WORKTREE_ID"` to name the worktree they act on, plus the resolved
+sidecar source. Author durable changes on a worktree so review and merge stay isolated; discard
+unwanted changes with `sac rollback` or `worktree discard` before re-authoring. Check scope state
+first with `status`. Examples use `UNIVERFILE=./orders.univer` for the target path and
+`WORKTREE_ID=<id>` for the worktree id; set them in the same shell or replace the placeholders with
+literals.
 
 ## Apply
 
 ```bash
 UNIVERFILE=./orders.univer
 
-univer sac apply "$UNIVERFILE"
+univer sac apply "$UNIVERFILE" --worktree "$WORKTREE_ID"
 ```
 
-`apply` executes pending migration source into the target. It advances the applied SaC chain. Apply
-success means the source executed; it does not prove that target-visible behavior is correct.
+`apply` executes pending migration source into the worktree as one commit, tagged with its pack id
+and source hash. Apply success means the source executed; it does not prove that target-visible
+behavior is correct.
 
 Use target-visible evidence, view/export readback, or `verify` when correctness matters.
 
@@ -24,23 +26,23 @@ Use target-visible evidence, view/export readback, or `verify` when correctness 
 ```bash
 UNIVERFILE=./orders.univer
 
-univer sac rollback "$UNIVERFILE"
+univer sac rollback "$UNIVERFILE" --worktree "$WORKTREE_ID"
 ```
 
-`rollback` moves the target back across an applied migration boundary. It is appropriate when the
-latest applied source step should be undone or when repair should return to a known SaC boundary.
+`rollback` removes the latest worktree commit (LIFO). Use it to undo the most recent applied source
+step; use `worktree discard` to drop the whole worktree instead.
 
-Rollback is not arbitrary spreadsheet undo. It operates on the applied SaC chain.
+Rollback is not arbitrary spreadsheet undo. It steps back exactly one worktree commit.
 
 ## Verify
 
 ```bash
 UNIVERFILE=./orders.univer
 
-univer sac verify "$UNIVERFILE" --json
+univer sac verify "$UNIVERFILE" --worktree "$WORKTREE_ID" --json
 ```
 
-`verify` checks global container and typed unit `assertions/**/*.assertions.ts` entrypoints against a sandbox copy.
+`verify` checks global container and typed unit `assertions/**/*.assertions.ts` entrypoints against a sandbox copy of the scope.
 The global typed unit `assertions/**/*.assertions.ts` entrypoints are still ordinary assertion
 sources, not migration files.
 It does not apply pending source. It returns `reportPath`; read that path instead of constructing a
@@ -80,12 +82,11 @@ specific RED/GREEN workflow.
 
 ## State Drift
 
-`SAC_UNIT_STATE_DRIFT` means the committed target state differs from the sidecar active applied
+`SAC_UNIT_STATE_DRIFT` means the committed scope state differs from the sidecar active applied
 state. Read the diagnostic before choosing a recovery action:
 
-- clean target with no un-applied packs: materialize the current target state, then retry the
-  intended apply or verify path
-- dirty target: commit or restore local mutations before materializing
+- no un-applied packs: materialize the current scope state, then retry the intended apply or verify
+  path
 - un-applied packs present: review, apply, or remove them first; use `--preserve-drafts` only when
   you intentionally want the CLI to move them into sidecar recovery for later review
 

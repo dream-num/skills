@@ -1,12 +1,12 @@
 ---
 name: univer-cli
-description: "Use when working with `.univer` targets, Univer CLI commands, SaC sidecars, managed inspect tools, migration packs, spreadsheet formulas/formatting/charts, preview, versioning, import/export, or Excel-compatible handoff."
+description: "Use when working with `.univer` targets, Univer CLI commands, worktrees, SaC sidecars, managed inspect tools, migration packs, spreadsheet formulas/formatting/charts, preview, worktree merge, import/export, or Excel-compatible handoff."
 ---
 
 # Univer CLI
 
 `univer` is a terminal-native univerfile engine. Use this skill to choose the public CLI and SaC
-surfaces for target evidence, durable `.univer` changes, verification, preview, versioning, and
+surfaces for target evidence, durable `.univer` changes, verification, preview, worktree review, and
 handoff. Use `univer help` and `univer help <command...>` for exact command syntax.
 
 ## Core Model
@@ -15,26 +15,48 @@ Treat target-visible unit state as the source of truth. Command success, metadat
 generated source do not prove that sheets, values, formulas, formatting, charts, resources, or
 handoff files are correct.
 
-The target `.univer` path is the local CLI target identity. Pick one explicit path such as
-`./Budget.univer` and pass that path to commands, including `status`. Do not target local work by
-`remoteUnitId`, `sessionId`, runtime id, display name, sheet name, or the current directory.
+A `.univer` path is the univerfile you work on: the authoritative store for that file's units. Pick
+one explicit path such as `./Budget.univer` and pass it to commands, including `status`. Do not
+target work by `sessionId`, runtime id, display name, sheet name, or the current directory.
 
-A `.univer` file is a target container with top-level units. `localUnitId` identifies a unit inside
-that target. `remoteUnitId` is binding metadata. Sheet names, A1 ranges, values, formulas, styles,
-tables, filters, charts, shapes, and images are coordinates or resources inside a selected unit.
+Each univerfile has two scopes. `trunk` is the authoritative mainline a person sees and may edit. A
+`worktree` is an isolated copy where agents do work so it can be reviewed before it touches trunk.
+Scope commands — the reads (`inspect`, `status`, `export`, `open`) and the SaC write path (`apply`,
+`rollback`, `verify`, `materialize`) — require `--worktree <id>` to name the worktree. `new` creates
+on trunk and takes no `--worktree`, and `worktree create`/`list` act on the whole univerfile. Scope
+is stateless: there is no "current worktree" checkout, so `--worktree <id>` is mandatory on every
+scope command and parallel agents never cross scopes. A worktree changes only through SaC; its work
+reaches trunk only through `worktree merge`.
 
-Use public surfaces for target reads and writes. A `.univer` target is not an agent-handwritten
-source file. Do not bypass the CLI/SaC surfaces to patch the target container by hand.
+Typical loop: do the user's task on a worktree, mark it ready with `worktree ready`, then `open` it
+to give the user a viewer link. The user reviews and chooses to merge or discard — from that viewer
+page or via `worktree merge` / `worktree discard`. Merging into trunk is normally the user's
+decision, not an automatic agent step.
+
+Before acting on a follow-up, re-check with `worktree list`, because the user may have merged,
+discarded, or only reviewed in the browser. If its `status` is still `open`/`ready` and the message
+refines the same change, keep working there — more SaC returns a `ready` worktree to the `open`
+status; when done, mark it `ready` and hand off a fresh link with `univer open`. Use a new worktree for a
+merged or discarded one, or for a separate task.
+
+A `.univer` file holds top-level units; `localUnitId` identifies a unit inside it. Sheet names, A1
+ranges, values, formulas, styles, tables, filters, charts, shapes, and images are coordinates or
+resources inside a selected unit.
+
+Use public surfaces for reads and writes. A `.univer` univerfile is not an agent-handwritten source
+file; do not bypass the CLI/SaC surfaces to patch it by hand.
 
 ## Public Surfaces
 
 | Need | Use |
 | --- | --- |
-| Create or import targets | `new`, `import`, `clone` |
+| Create or import univerfiles | `new` (trunk), `import` |
+| Isolate work for review | `worktree create`, then work under a required `--worktree <id>` |
 | Read target evidence | task-local route contract when present; otherwise focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
 | Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
 | Recover an applied SaC boundary | `sac rollback` |
-| Check or reconcile local state | `status`, `commit`, `restore`, `reset`, `pull`, `sync` |
+| Check scope state | `status` |
+| Land or drop a worktree | `worktree ready`, `worktree merge`, `worktree discard` |
 | Review or hand off visually | `open`, `view comments`, browser tools |
 | Produce Excel-compatible output | `export` after verifying the relevant target-visible state |
 
@@ -149,21 +171,23 @@ explicitly requires them.
 
 ## Evidence Tools
 
-Managed inspect tools are the preferred target-visible confirmation and fallback surface. Use them
-for target inventory, sheet names, used ranges, focused range readback, search/neighborhood
-confirmation, formulas, display/logical value differences, number formats, and stable style traits.
-Avoid broad managed range dumps as first discovery for small bounded edits, and switch to custom
-aggregation before repeated broad reads for large transforms. Discover units before unit-scoped
-reads, and resolve tool params when a tool shape is unclear:
+Managed inspect tools are the preferred readonly evidence surface. A unit-scoped `inspect` reads the
+worktree named by the required `--worktree <id>`; the `inspect tools` registry commands take no
+scope. Use them for target inventory, sheet names, used ranges, focused range readback,
+search/neighborhood confirmation, formulas, display/logical value differences, number formats, and
+stable style traits. Avoid broad managed range dumps as first discovery for small bounded edits, and
+switch to custom aggregation before repeated broad reads for large transforms. Discover units before
+unit-scoped reads, and resolve tool params when a tool shape is unclear:
 
 ```bash
 UNIVERFILE=./Budget.univer
-univer inspect tools list
-univer inspect tools resolve sheet-range
+univer inspect tools list --json
+univer inspect tools resolve sheet-range --json
 printf '%s' '{}' > ./units.params.json
-univer inspect "$UNIVERFILE" --tool units --params ./units.params.json --out ./units.result.json
-printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' > ./range.params.json
-univer inspect "$UNIVERFILE" --tool sheet-range --params ./range.params.json --out ./range.result.json
+univer inspect "$UNIVERFILE" --tool units --worktree "$WORKTREE_ID" --params ./units.params.json --out ./units.result.json
+printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' \
+  > ./range.params.json
+univer inspect "$UNIVERFILE" --tool sheet-range --worktree "$WORKTREE_ID" --params ./range.params.json --out ./range.result.json
 ```
 
 Do not assume a default sheet name such as `Sheet1`. Read the actual sheet names from `units` or
@@ -252,9 +276,11 @@ covered here, use one short lookup or exact declaration read, then return to aut
 
 ## SaC Authoring
 
-SaC is the source-backed authoring path for durable target behavior. `materialize` creates or
-refreshes the sidecar from committed target state and returns `sidecarPath`; do not guess hidden
-paths. `migrations/` holds Facade Migration Pack source, `types/` holds local API references,
+SaC is the source-backed authoring path for durable target behavior. SaC is the only write path:
+every durable change goes through the migration pipeline (sidecar TS source, typecheck, pack,
+apply), so there is no inline mutation command. `materialize` creates or refreshes the sidecar from
+the committed worktree scope and returns `sidecarPath`; do not guess hidden paths. `migrations/`
+holds Facade Migration Pack source, `types/` holds local API references,
 `inspect-scripts/` holds scratch readonly probes, `runs/` holds verification reports, and
 `archives/materialize/` is review-only history.
 
@@ -268,7 +294,7 @@ contract when correctness matters. Use `target` for unit inventory, typed unit h
 unit-scoped facts, and `facts` for shared business facts. `sheetUnit(localUnitId, ...)`,
 `baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`, and `docUnit(localUnitId, ...)`
 require the explicit `localUnitId`. `localUnitId` is the only top-level assertion unit selector; do
-not route assertions by remote unit id, unit name, sheet name, or implicit active workbook state.
+not route assertions by unit name, sheet name, or implicit active workbook state.
 Split entrypoints by unit or target concern, not by migration pack, and update them to the intended
 final state as migrations change behavior.
 
@@ -293,17 +319,17 @@ templates, or typecheck failures require more detail.
 
 ## SaC Execution
 
-SaC commands require a clean target. Commit or restore uncommitted local mutations before
-`materialize`, `apply`, `rollback`, or `verify`.
+SaC commands require `--worktree <id>` to act on a worktree. Author durable changes on a worktree so
+review and merge stay isolated. Discard unwanted changes with `sac rollback` or `worktree discard`
+before re-authoring; there is no separate commit/restore step.
 
-- `univer sac apply <file.univer>` executes pending migration source into the target. Apply success
-  is not proof that target-visible behavior is correct.
-- `univer sac rollback <file.univer>` moves the target back across an applied migration boundary. It
-  is not arbitrary spreadsheet undo.
-- `univer sac verify <file.univer> --json` checks file-level typed unit assertions against a
-  sandbox copy. It does not apply pending source. It returns a `reportPath`; read the report for
-  scope-aware failure facts such as `scope`, `unitType`, `localUnitId`, assertion kind, target,
-  expected value, actual value, participant actuals, first difference, and setup error code.
+- `sac apply` executes pending migration source into the worktree as one commit. Apply success is
+  not proof that target-visible behavior is correct.
+- `sac rollback` removes the latest worktree commit (LIFO). It is not arbitrary spreadsheet undo.
+- `sac verify` checks file-level typed unit assertions against a sandbox copy of the worktree. It
+  does not apply pending source. It returns a `reportPath`; read the report for scope-aware failure
+  facts such as `scope`, `unitType`, `localUnitId`, assertion kind, target, expected value, actual
+  value, participant actuals, first difference, and setup error code.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
 behavior. Treat failed assertions as a decision point: either the target final state is wrong, or
@@ -322,31 +348,42 @@ assertion failed, keep it only when preserving that source state is part of the 
 contract; otherwise focus assertions on the user-requested output before adding broad preservation
 checks.
 
-`SAC_UNIT_STATE_DRIFT` means the committed target state and the sidecar active applied state no
-longer match. Treat it as a recovery branch and read the diagnostic before materializing or applying
-again.
+Applied SaC state is derived from the worktree commit log: each `apply` writes a commit tagged with
+its pack id and source hash, applied packs are rebuilt from that log, and source-chain tampering is
+caught by hash. `SAC_UNIT_STATE_DRIFT` means the committed scope state and the sidecar active applied
+state no longer match. Treat it as a recovery branch and read the diagnostic before materializing or
+applying again.
 
 Read `references/sac-execution.md` only when apply, rollback, verify report, unit drift, or
 assertion failure interpretation is unclear.
 
-## Versioning, Preview, And Handoff
+## Worktrees, Preview, And Handoff
 
-Use `univer status <file.univer>` before SaC commands when target cleanliness matters. `status`
-always requires the actual target `.univer` file; it is not a current-directory, daemon, viewer,
-git, remote unit name, or sheet-name status command. Use `commit` for verified local mutations,
-`restore` or `reset` to discard local work, and `pull` or `sync` for remote-bound units.
+Use `worktree create` to make an isolated copy, then work under its id as the required
+`--worktree <id>` on reads and the SaC write path. Use `worktree list` to see each worktree's id,
+status, head commit, and name. Use `status` to check a worktree's lifecycle and commit count before
+SaC commands; `status` always requires the actual `.univer` file and is not a current-directory,
+viewer, git, or sheet-name status command.
+
+When the task is done, mark the worktree ready with `worktree ready` and `open` it to hand the user a
+viewer link (see below). The user reviews and then merges or discards — from that page or via
+`worktree merge` / `worktree discard`. `merge` is the only path that reaches trunk and the only place
+OT runs; on conflict it aborts and leaves trunk unchanged. `worktree discard` drops a worktree
+without affecting trunk. There is no local `commit`, `restore`, `reset`, `pull`, or `sync`: the
+univerfile is the authority, `sac apply` produces commits, and `sac rollback` or `worktree discard`
+undo them.
 
 For visual review, prefer hosted viewer handoff only when you have a browser-fetchable HTTP(S)
-`.univer` source URL. If `file.univer.ai` is unreachable, `univer open <source-url> --local --json`
-starts a foreground localhost viewer asset server; it does not host, proxy, upload, or cache a local
-`.univer` file. If you only have a local `.univer` path, ask for or create an HTTP(S) source URL
-before claiming automatic viewer handoff. In headless, CI, server, or user-requested no-browser
-environments, visual preview is optional unless a browser-capable tool or explicit handoff exists.
+`.univer` source URL. A local `.univer` path with `univer open` resolves instead to its trunk/worktree
+viewer room. If `file.univer.ai` is unreachable, `univer open <source-url> --local --json` starts a
+foreground localhost viewer asset server; it does not host, proxy, upload, or cache a local `.univer`
+file. In headless, CI, server, or user-requested no-browser environments, visual preview is optional
+unless a browser-capable tool or explicit handoff exists.
 
 Use `univer export` for Excel-compatible handoff after verifying the target-visible state that matters.
 
-Read `references/versioning-and-handoff.md` only when status, commit/restore/reset, pull/sync,
-hosted viewer, comments, or export handoff is the active question.
+Read `references/worktrees-and-handoff.md` only when worktree lifecycle, scope-aware status, hosted
+viewer, comments, merge/discard, or export handoff is the active question.
 
 ## Reference Routing
 
@@ -360,9 +397,10 @@ file.
   layout, template selection, follow-up migrations, or a typecheck failure pointing at source.
 - `references/sac-execution.md`: open for apply/rollback/verify report interpretation, unit drift,
   setup errors, assertion surface decisions, or target-state recovery.
-- `references/versioning-and-handoff.md`: open for status cleanliness, commit/restore/reset,
-  pull/sync, hosted viewer, comments, or export handoff details.
-- `references/recipes.md`: open after you know the workflow and only need a copyable command shape.
+- `references/worktrees-and-handoff.md`: open for worktree lifecycle (create/list/ready/merge/discard),
+  scope-aware status, hosted open, comments, conflict handoff, or export details.
+- `references/recipes.md`: open after you know the workflow and only need a copyable command shape
+  that has been checked against current CLI behavior.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
 you read. Reopen a reference only when a new failure or missing detail is outside the already-read
