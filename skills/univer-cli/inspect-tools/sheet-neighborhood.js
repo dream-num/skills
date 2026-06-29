@@ -4,15 +4,15 @@ const __univerManagedInspectTool = true;
 
 async function inspectSheetNeighborhoodTool({ params, context, univerAPI }) {
   params = requireObjectParams(params);
-  const localUnitId = requireString(params, "localUnitId");
+  const unitId = requireString(params, "unitId");
   const sheetName = requireString(params, "sheetName");
   const anchorA1 = typeof params.rangeA1 === "string" ? params.rangeA1 : requireString(params, "anchorA1");
   const beforeRows = readLimit(params.beforeRows, 3, 0, 100);
   const afterRows = readLimit(params.afterRows, 3, 0, 100);
   const beforeColumns = readLimit(params.beforeColumns, 2, 0, 50);
   const afterColumns = readLimit(params.afterColumns, 2, 0, 50);
-  const unit = requireSheetUnit(context, localUnitId);
-  const workbook = getWorkbook(univerAPI, localUnitId);
+  const unit = requireSheetUnit(context, unitId);
+  const workbook = getWorkbook(univerAPI, unitId);
   const sheet = getSheet(workbook, sheetName);
   const used = getUsedBounds(sheet);
   const anchor = parseRangeA1(anchorA1);
@@ -21,7 +21,7 @@ async function inspectSheetNeighborhoodTool({ params, context, univerAPI }) {
   const include = readStringArray(params.include, ["cellFacts"]);
   const payload = readRangePayload(sheet, rangeA1, include);
   return envelope("sheet-neighborhood", {
-    localUnitId,
+    unitId,
     unitType: unit.type,
     sheetName,
     anchorA1,
@@ -74,20 +74,20 @@ function readLimit(value, fallback, min, max) {
   }
   return Math.min(max, Math.max(min, Math.trunc(value)));
 }
-function requireSheetUnit(context, localUnitId) {
-  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.localUnitId === localUnitId) : null;
+function requireSheetUnit(context, unitId) {
+  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.unitId === unitId) : null;
   if (unit == null) {
-    throw new Error("Unknown localUnitId: " + localUnitId + ".");
+    throw new Error("Unknown unitId: " + unitId + ".");
   }
   if (unit.type !== "sheet") {
-    throw new Error("Managed sheet inspect tools require a sheet unit. localUnitId " + localUnitId + " is type " + unit.type + ".");
+    throw new Error("Managed sheet inspect tools require a sheet unit. unitId " + unitId + " is type " + unit.type + ".");
   }
   return unit;
 }
-function getWorkbook(univerAPI, localUnitId) {
-  const workbook = univerAPI.getWorkbook(localUnitId);
+function getWorkbook(univerAPI, unitId) {
+  const workbook = univerAPI.getWorkbook(unitId);
   if (workbook == null) {
-    throw new Error("Workbook unit is not loaded: " + localUnitId + ".");
+    throw new Error("Workbook unit is not loaded: " + unitId + ".");
   }
   return workbook;
 }

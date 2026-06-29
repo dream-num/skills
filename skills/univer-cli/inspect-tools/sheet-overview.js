@@ -4,12 +4,12 @@ const __univerManagedInspectTool = true;
 
 async function inspectSheetOverviewTool({ params, context, univerAPI }) {
   params = requireObjectParams(params);
-  const localUnitId = requireString(params, "localUnitId");
+  const unitId = requireString(params, "unitId");
   const maxSheets = readLimit(params.maxSheets, 20, 1, 200);
   const maxRows = readLimit(params.maxRows, 20, 1, 200);
   const maxColumns = readLimit(params.maxColumns, 12, 1, 100);
-  const unit = requireSheetUnit(context, localUnitId);
-  const workbook = getWorkbook(univerAPI, localUnitId);
+  const unit = requireSheetUnit(context, unitId);
+  const workbook = getWorkbook(univerAPI, unitId);
   const sheets = getWorkbookSheets(workbook);
   const selectedSheets = sheets.slice(0, maxSheets);
   const warnings = [];
@@ -18,7 +18,7 @@ async function inspectSheetOverviewTool({ params, context, univerAPI }) {
   }
   const evidence = selectedSheets.map((sheet) => readSheetOverview(sheet, maxRows, maxColumns));
   return envelope("sheet-overview", {
-    localUnitId,
+    unitId,
     unitType: unit.type
   }, {
     sheetCount: sheets.length,
@@ -322,20 +322,20 @@ function readLimit(value, fallback, min, max) {
   }
   return Math.min(max, Math.max(min, Math.trunc(value)));
 }
-function requireSheetUnit(context, localUnitId) {
-  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.localUnitId === localUnitId) : null;
+function requireSheetUnit(context, unitId) {
+  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.unitId === unitId) : null;
   if (unit == null) {
-    throw new Error("Unknown localUnitId: " + localUnitId + ".");
+    throw new Error("Unknown unitId: " + unitId + ".");
   }
   if (unit.type !== "sheet") {
-    throw new Error("Managed sheet inspect tools require a sheet unit. localUnitId " + localUnitId + " is type " + unit.type + ".");
+    throw new Error("Managed sheet inspect tools require a sheet unit. unitId " + unitId + " is type " + unit.type + ".");
   }
   return unit;
 }
-function getWorkbook(univerAPI, localUnitId) {
-  const workbook = univerAPI.getWorkbook(localUnitId);
+function getWorkbook(univerAPI, unitId) {
+  const workbook = univerAPI.getWorkbook(unitId);
   if (workbook == null) {
-    throw new Error("Workbook unit is not loaded: " + localUnitId + ".");
+    throw new Error("Workbook unit is not loaded: " + unitId + ".");
   }
   return workbook;
 }

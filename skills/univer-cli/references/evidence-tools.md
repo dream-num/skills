@@ -49,12 +49,12 @@ Pass params as either a JSON file path or one JSON object on stdin:
 ```bash
 cat > ./overview.params.json <<'JSON'
 {
-  "localUnitId": "replace-with-localUnitId"
+  "unitId": "replace-with-unitId"
 }
 JSON
 univer inspect "$UNIVERFILE" --tool sheet-overview --worktree "$WORKTREE_ID" --params ./overview.params.json --out ./overview.result.json
 
-printf '%s' '{"localUnitId":"replace-with-localUnitId"}' \
+printf '%s' '{"unitId":"replace-with-unitId"}' \
   | univer inspect "$UNIVERFILE" --tool sheet-overview --worktree "$WORKTREE_ID" --params -
 ```
 
@@ -66,7 +66,7 @@ Tool roles:
 
 | Tool | Use when |
 | --- | --- |
-| `units` | You need target unit inventory, `localUnitId`, type, name, or capabilities. |
+| `units` | You need target unit inventory, `unitId`, type, name, or capabilities. |
 | `sheet-overview` | You need sheet names, used ranges, bounded samples, formulas, warnings, or candidate non-empty regions. |
 | `sheet-search` | You know visible text or values but not coordinates. |
 | `sheet-neighborhood` | You have an anchor and need nearby headers, labels, totals, or context. |
@@ -158,7 +158,7 @@ Keep custom probes:
 
 - readonly
 - small and task-local
-- parameterized through JSON params for variable targets such as `localUnitId`, sheet names, ranges,
+- parameterized through JSON params for variable targets such as `unitId`, sheet names, ranges,
   labels, and thresholds
 - focused on the sheets, ranges, and columns needed for the question
 - concise in output, returning facts such as `count`, `total`, `mismatches`, `head`, and `tail`

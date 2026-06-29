@@ -4,17 +4,17 @@ const __univerManagedInspectTool = true;
 
 async function inspectSheetConditionalFormatsTool({ params, context, univerAPI }) {
   params = requireObjectParams(params);
-  const localUnitId = requireString(params, "localUnitId");
+  const unitId = requireString(params, "unitId");
   const sheetName = requireString(params, "sheetName");
   const requestedRangeA1 = typeof params.rangeA1 === "string" ? normalizeRangeA1(params.rangeA1) : null;
   const requestedBounds = requestedRangeA1 === null ? null : parseRangeA1(requestedRangeA1);
   const maxRules = readLimit(params.maxRules, 200, 1, 1000);
-  const unit = requireSheetUnit(context, localUnitId);
-  const workbook = getWorkbook(univerAPI, localUnitId);
+  const unit = requireSheetUnit(context, unitId);
+  const workbook = getWorkbook(univerAPI, unitId);
   const sheet = getSheet(workbook, sheetName);
   if (typeof sheet.getConditionalFormattingRules !== "function") {
     return envelope("sheet-conditional-formats", {
-      localUnitId,
+      unitId,
       unitType: unit.type,
       sheetName,
       ...(requestedRangeA1 === null ? {} : { rangeA1: requestedRangeA1 })
@@ -38,7 +38,7 @@ async function inspectSheetConditionalFormatsTool({ params, context, univerAPI }
     warnings.push("Only the first " + limited.length + " of " + normalized.length + " matching conditional formatting rules were returned.");
   }
   return envelope("sheet-conditional-formats", {
-    localUnitId,
+    unitId,
     unitType: unit.type,
     sheetName,
     ...(requestedRangeA1 === null ? {} : { rangeA1: requestedRangeA1 })
@@ -88,20 +88,20 @@ function readLimit(value, fallback, min, max) {
   }
   return Math.min(max, Math.max(min, Math.trunc(value)));
 }
-function requireSheetUnit(context, localUnitId) {
-  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.localUnitId === localUnitId) : null;
+function requireSheetUnit(context, unitId) {
+  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.unitId === unitId) : null;
   if (unit == null) {
-    throw new Error("Unknown localUnitId: " + localUnitId + ".");
+    throw new Error("Unknown unitId: " + unitId + ".");
   }
   if (unit.type !== "sheet") {
-    throw new Error("Managed sheet inspect tools require a sheet unit. localUnitId " + localUnitId + " is type " + unit.type + ".");
+    throw new Error("Managed sheet inspect tools require a sheet unit. unitId " + unitId + " is type " + unit.type + ".");
   }
   return unit;
 }
-function getWorkbook(univerAPI, localUnitId) {
-  const workbook = univerAPI.getWorkbook(localUnitId);
+function getWorkbook(univerAPI, unitId) {
+  const workbook = univerAPI.getWorkbook(unitId);
   if (workbook == null) {
-    throw new Error("Workbook unit is not loaded: " + localUnitId + ".");
+    throw new Error("Workbook unit is not loaded: " + unitId + ".");
   }
   return workbook;
 }
