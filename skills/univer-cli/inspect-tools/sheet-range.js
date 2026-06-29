@@ -4,13 +4,13 @@ const __univerManagedInspectTool = true;
 
 async function inspectSheetRangeTool({ params, context, univerAPI }) {
   params = requireObjectParams(params);
-  const localUnitId = requireString(params, "localUnitId");
+  const unitId = requireString(params, "unitId");
   const include = readStringArray(params.include, ["cellFacts"]);
   const styleTraits = readStringArray(params.styleTraits, defaultSemanticStyleTraits());
   const maxRanges = readLimit(params.maxRanges, 25, 1, 100);
   const maxCells = readLimit(params.maxCells, 1000, 1, 10000);
-  const unit = requireSheetUnit(context, localUnitId);
-  const workbook = getWorkbook(univerAPI, localUnitId);
+  const unit = requireSheetUnit(context, unitId);
+  const workbook = getWorkbook(univerAPI, unitId);
   const rangeRequests = readSheetRangeRequests(params);
   if (rangeRequests.length > maxRanges) {
     throw new Error("sheet-range requested " + rangeRequests.length + " ranges, exceeding maxRanges " + maxRanges + ".");
@@ -34,7 +34,7 @@ async function inspectSheetRangeTool({ params, context, univerAPI }) {
     : { ranges };
   const warnings = ranges.flatMap((range) => range.warnings);
   return envelope("sheet-range", {
-    localUnitId,
+    unitId,
     unitType: unit.type,
     ...(firstRange === undefined || ranges.length !== 1 ? {} : { sheetName: firstRange.sheetName, rangeA1: firstRange.rangeA1 })
   }, payload, warnings, ranges.some((range) => range.truncated));
@@ -80,20 +80,20 @@ function readLimit(value, fallback, min, max) {
   }
   return Math.min(max, Math.max(min, Math.trunc(value)));
 }
-function requireSheetUnit(context, localUnitId) {
-  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.localUnitId === localUnitId) : null;
+function requireSheetUnit(context, unitId) {
+  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.unitId === unitId) : null;
   if (unit == null) {
-    throw new Error("Unknown localUnitId: " + localUnitId + ".");
+    throw new Error("Unknown unitId: " + unitId + ".");
   }
   if (unit.type !== "sheet") {
-    throw new Error("Managed sheet inspect tools require a sheet unit. localUnitId " + localUnitId + " is type " + unit.type + ".");
+    throw new Error("Managed sheet inspect tools require a sheet unit. unitId " + unitId + " is type " + unit.type + ".");
   }
   return unit;
 }
-function getWorkbook(univerAPI, localUnitId) {
-  const workbook = univerAPI.getWorkbook(localUnitId);
+function getWorkbook(univerAPI, unitId) {
+  const workbook = univerAPI.getWorkbook(unitId);
   if (workbook == null) {
-    throw new Error("Workbook unit is not loaded: " + localUnitId + ".");
+    throw new Error("Workbook unit is not loaded: " + unitId + ".");
   }
   return workbook;
 }

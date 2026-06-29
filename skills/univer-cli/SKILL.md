@@ -39,7 +39,7 @@ refines the same change, keep working there — more SaC returns a `ready` workt
 status; when done, mark it `ready` and hand off a fresh link with `univer open`. Use a new worktree for a
 merged or discarded one, or for a separate task.
 
-A `.univer` file holds top-level units; `localUnitId` identifies a unit inside it. Sheet names, A1
+A `.univer` file holds top-level units; `unitId` identifies a unit inside it. Sheet names, A1
 ranges, values, formulas, styles, tables, filters, charts, shapes, and images are coordinates or
 resources inside a selected unit.
 
@@ -185,7 +185,7 @@ univer inspect tools list --json
 univer inspect tools resolve sheet-range --json
 printf '%s' '{}' > ./units.params.json
 univer inspect "$UNIVERFILE" --tool units --worktree "$WORKTREE_ID" --params ./units.params.json --out ./units.result.json
-printf '%s' '{"localUnitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' \
+printf '%s' '{"unitId":"...","sheetName":"<discovered-sheet-name>","rangeA1":"A1:D20"}' \
   > ./range.params.json
 univer inspect "$UNIVERFILE" --tool sheet-range --worktree "$WORKTREE_ID" --params ./range.params.json --out ./range.result.json
 ```

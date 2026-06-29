@@ -18,7 +18,7 @@ univer sac materialize "$UNIVERFILE" --worktree "$WORKTREE_ID" --json > ./materi
 printf '%s' '{}' | univer inspect "$UNIVERFILE" --tool units --worktree "$WORKTREE_ID" --params -
 ```
 
-Read `sidecarPath` from command JSON. Use `localUnitId` from `units` for unit-specific reads. Pass
+Read `sidecarPath` from command JSON. Use `unitId` from `units` for unit-specific reads. Pass
 `--worktree "$WORKTREE_ID"` (or set `$WORKTREE_ID`) on every read and SaC write so all work stays in
 one isolated copy.
 
@@ -28,7 +28,7 @@ one isolated copy.
 UNIVERFILE=./orders.univer
 
 univer status "$UNIVERFILE" --worktree "$WORKTREE_ID" --json    # lifecycle + commit count
-univer status "$UNIVERFILE" --worktree "$WORKTREE_ID" --unit "replace-with-localUnitId" --json
+univer status "$UNIVERFILE" --worktree "$WORKTREE_ID" --unit "replace-with-unitId" --json
 ```
 
 Use the actual target `.univer` file path. Do not substitute a directory, display name, sheet name,
@@ -62,7 +62,7 @@ UNIVERFILE=./orders.univer
 
 cat > ./range.params.json <<'JSON'
 {
-  "localUnitId": "replace-with-localUnitId",
+  "unitId": "replace-with-unitId",
   "sheetName": "replace-with-sheetName",
   "rangeA1": "A1:D20"
 }
@@ -93,7 +93,7 @@ UNIVERFILE=./orders.univer
 
 cat > ./related-ranges.params.json <<'JSON'
 {
-  "localUnitId": "replace-with-localUnitId",
+  "unitId": "replace-with-unitId",
   "ranges": [
     { "label": "keys", "sheetName": "replace-with-sheetName", "rangeA1": "A1:A20" },
     { "label": "status", "sheetName": "replace-with-sheetName", "rangeA1": "K1:K20" }
@@ -113,7 +113,7 @@ UNIVERFILE=./orders.univer
 
 cat > ./search.params.json <<'JSON'
 {
-  "localUnitId": "replace-with-localUnitId",
+  "unitId": "replace-with-unitId",
   "sheetName": "Orders",
   "rangeA1": "A1:Z200",
   "query": "Total",
@@ -139,7 +139,7 @@ UNIVERFILE=./orders.univer
 
 cat > ./conditional-formats.params.json <<'JSON'
 {
-  "localUnitId": "replace-with-localUnitId",
+  "unitId": "replace-with-unitId",
   "sheetName": "Sheet1",
   "rangeA1": "K2:K100"
 }
@@ -156,12 +156,12 @@ UNIVERFILE=./orders.univer
 SIDECAR=$(node -e 'const fs=require("fs"); const j=JSON.parse(fs.readFileSync("./materialize.json","utf8")); console.log(j.sidecarPath)')
 cat > "$SIDECAR/inspect-scripts/aggregate-range.js" <<'JS'
 ({ params, univerAPI }) => {
-  const workbook = univerAPI.getWorkbook(params.localUnitId);
+  const workbook = univerAPI.getWorkbook(params.unitId);
   if (!workbook) {
     return {
       ok: false,
       error: "WORKBOOK_NOT_FOUND",
-      diagnostics: [{ field: "localUnitId", value: params.localUnitId }]
+      diagnostics: [{ field: "unitId", value: params.unitId }]
     };
   }
 
@@ -210,7 +210,7 @@ cat > "$SIDECAR/inspect-scripts/aggregate-range.js" <<'JS'
   return {
     ok: true,
     target: {
-      localUnitId: params.localUnitId,
+      unitId: params.unitId,
       sheetName: params.sheetName,
       rangeA1: params.rangeA1
     },
@@ -237,7 +237,7 @@ cat > "$SIDECAR/inspect-scripts/aggregate-range.js" <<'JS'
 JS
 cat > ./aggregate-range.params.json <<'JSON'
 {
-  "localUnitId": "replace-with-localUnitId",
+  "unitId": "replace-with-unitId",
   "sheetName": "replace-with-sheetName",
   "rangeA1": "A1:D200",
   "groupColumnOffset": 0,

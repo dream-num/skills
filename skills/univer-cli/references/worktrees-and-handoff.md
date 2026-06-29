@@ -52,7 +52,7 @@ UNIVERFILE=./orders.univer
 WORKTREE_ID=<id>
 
 univer status "$UNIVERFILE" --worktree "$WORKTREE_ID"                       # lifecycle + commit count
-univer status "$UNIVERFILE" --worktree "$WORKTREE_ID" --unit <localUnitId>  # restrict to one unit
+univer status "$UNIVERFILE" --worktree "$WORKTREE_ID" --unit <unitId>  # restrict to one unit
 ```
 
 `status` always requires the actual `.univer` path; it is not a current-directory, viewer, git, or
@@ -69,7 +69,7 @@ univer open "$SOURCE_URL" --json
 ```
 
 Open the returned `url` with agent-browser, Playwright, or another browser tool; the source URL must
-be browser-fetchable with CORS enabled. Pass `--unit <localUnitId>` for an initial unit, or
+be browser-fetchable with CORS enabled. Pass `--unit <unitId>` for an initial unit, or
 `--viewer-url <url>` for a private or local viewer deployment.
 
 A local `.univer` path resolves to its own trunk/worktree viewer room instead of a hosted source:

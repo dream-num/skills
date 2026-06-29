@@ -4,11 +4,11 @@ const __univerManagedInspectTool = true;
 
 async function inspectSheetFormulasTool({ params, context, univerAPI }) {
   params = requireObjectParams(params);
-  const localUnitId = requireString(params, "localUnitId");
+  const unitId = requireString(params, "unitId");
   const maxResults = readLimit(params.maxResults, 200, 1, 2000);
   const includeNeighborLabels = params.includeNeighborLabels === true;
-  const unit = requireSheetUnit(context, localUnitId);
-  const workbook = getWorkbook(univerAPI, localUnitId);
+  const unit = requireSheetUnit(context, unitId);
+  const workbook = getWorkbook(univerAPI, unitId);
   const sheets = typeof params.sheetName === "string" ? [getSheet(workbook, params.sheetName)] : getWorkbookSheets(workbook);
   const formulas = [];
   const warnings = [];
@@ -43,7 +43,7 @@ async function inspectSheetFormulasTool({ params, context, univerAPI }) {
     }
   }
   return envelope("sheet-formulas", {
-    localUnitId,
+    unitId,
     unitType: unit.type
   }, {
     formulas
@@ -100,20 +100,20 @@ function readLimit(value, fallback, min, max) {
   }
   return Math.min(max, Math.max(min, Math.trunc(value)));
 }
-function requireSheetUnit(context, localUnitId) {
-  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.localUnitId === localUnitId) : null;
+function requireSheetUnit(context, unitId) {
+  const unit = Array.isArray(context.units) ? context.units.find((entry) => entry.unitId === unitId) : null;
   if (unit == null) {
-    throw new Error("Unknown localUnitId: " + localUnitId + ".");
+    throw new Error("Unknown unitId: " + unitId + ".");
   }
   if (unit.type !== "sheet") {
-    throw new Error("Managed sheet inspect tools require a sheet unit. localUnitId " + localUnitId + " is type " + unit.type + ".");
+    throw new Error("Managed sheet inspect tools require a sheet unit. unitId " + unitId + " is type " + unit.type + ".");
   }
   return unit;
 }
-function getWorkbook(univerAPI, localUnitId) {
-  const workbook = univerAPI.getWorkbook(localUnitId);
+function getWorkbook(univerAPI, unitId) {
+  const workbook = univerAPI.getWorkbook(unitId);
   if (workbook == null) {
-    throw new Error("Workbook unit is not loaded: " + localUnitId + ".");
+    throw new Error("Workbook unit is not loaded: " + unitId + ".");
   }
   return workbook;
 }
