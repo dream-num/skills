@@ -57,7 +57,7 @@ Sidecar `runs/` contains verify evidence:
 Interpretation:
 
 - `status: passed` means global assertions matched actual readback.
-- `status: failed` means compare scope, `unitType`, `localUnitId`, assertion kind, unit-local
+- `status: failed` means compare scope, `unitType`, `unitId`, assertion kind, unit-local
   target, expected value, actual value, cross-unit participant actuals, diagnostics, and first
   difference when present. Decide whether the target final state is wrong or the global assertion
   expectation is wrong before editing either side.
@@ -71,7 +71,7 @@ Interpretation:
   final contract. Keep those assertions only when source preservation is required; otherwise focus
   verification on the user-requested output before broadening preservation checks.
 - `status: error` means setup failed before target behavior can be judged.
-- setup errors such as legacy top-level `sheet()`/`range()` usage, unknown `localUnitId`, unit type
+- setup errors such as legacy top-level `sheet()`/`range()` usage, unknown `unitId`, unit type
   mismatch, missing Facade getters, or unsupported readback surfaces are assertion setup repair
   issues, not final-state workbook mismatches.
 - missing global assertions are setup errors and are not completion evidence for changed durable

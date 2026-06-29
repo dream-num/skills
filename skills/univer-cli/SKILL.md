@@ -291,9 +291,9 @@ entrypoint files.
 
 `assertions/**/*.assertions.ts` entrypoints express the current file-level target-visible final-state
 contract when correctness matters. Use `target` for unit inventory, typed unit helpers for
-unit-scoped facts, and `facts` for shared business facts. `sheetUnit(localUnitId, ...)`,
-`baseUnit(localUnitId, ...)`, `slideUnit(localUnitId, ...)`, and `docUnit(localUnitId, ...)`
-require the explicit `localUnitId`. `localUnitId` is the only top-level assertion unit selector; do
+unit-scoped facts, and `facts` for shared business facts. `sheetUnit(unitId, ...)`,
+`baseUnit(unitId, ...)`, `slideUnit(unitId, ...)`, and `docUnit(unitId, ...)`
+require the explicit `unitId`. `unitId` is the only top-level assertion unit selector; do
 not route assertions by unit name, sheet name, or implicit active workbook state.
 Split entrypoints by unit or target concern, not by migration pack, and update them to the intended
 final state as migrations change behavior.
@@ -328,7 +328,7 @@ before re-authoring; there is no separate commit/restore step.
 - `sac rollback` removes the latest worktree commit (LIFO). It is not arbitrary spreadsheet undo.
 - `sac verify` checks file-level typed unit assertions against a sandbox copy of the worktree. It
   does not apply pending source. It returns a `reportPath`; read the report for scope-aware failure
-  facts such as `scope`, `unitType`, `localUnitId`, assertion kind, target, expected value, actual
+  facts such as `scope`, `unitType`, `unitId`, assertion kind, target, expected value, actual
   value, participant actuals, first difference, and setup error code.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
