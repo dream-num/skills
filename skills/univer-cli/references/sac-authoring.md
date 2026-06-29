@@ -50,7 +50,7 @@ univer sac migration create "describe-change" "$UNIVERFILE"
 ```
 
 Migration packs are ordinary TypeScript source. Use generated local types in the sidecar. Keep
-target path, `localUnitId`, sheet names, and ranges explicit when behavior is unit-specific.
+target path, `unitId`, sheet names, and ranges explicit when behavior is unit-specific.
 Ordinary draft packs include a `migration.ts` entrypoint by default. Keep `pack.ts` as metadata and
 execution order; author target mutations in listed entrypoint files such as `migration.ts` or
 `*.unit.ts`.
@@ -106,14 +106,14 @@ import { defineAssertions } from "univer:sac/assertions";
 export default defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUnit, facts }) => {
   target(({ units }) => {
     units().contains([
-      { localUnitId: "crm", unitType: "base", name: "CRM" },
-      { localUnitId: "report", unitType: "sheet", name: "Pipeline Report" },
-      { localUnitId: "brief", unitType: "doc", name: "Executive Brief" },
-      { localUnitId: "deck", unitType: "slide", name: "QBR Deck" }
+      { unitId: "crm", unitType: "base", name: "CRM" },
+      { unitId: "report", unitType: "sheet", name: "Pipeline Report" },
+      { unitId: "brief", unitType: "doc", name: "Executive Brief" },
+      { unitId: "deck", unitType: "slide", name: "QBR Deck" }
     ]);
   });
 
-  sheetUnit("replace-with-sheet-localUnitId", ({ sheet, range }) => {
+  sheetUnit("replace-with-sheet-unitId", ({ sheet, range }) => {
     sheet("Summary").exists();
     range("Summary!A1:C3").displayValues([
       ["Region", "Revenue", "Margin"],
@@ -124,7 +124,7 @@ export default defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUn
     range("Summary!B4").numberFormat("$#,##0");
   });
 
-  baseUnit("replace-with-base-localUnitId", ({ table }) => {
+  baseUnit("replace-with-base-unitId", ({ table }) => {
     table("Accounts").exists();
     table("Accounts").fields([{ name: "Status", type: "text" }]);
     table("Accounts").records([{ Name: "Acme", Status: "Active" }]);
@@ -134,14 +134,14 @@ export default defineAssertions(({ target, sheetUnit, baseUnit, slideUnit, docUn
     table("Accounts").view("Open Accounts").type("grid");
   });
 
-  slideUnit("replace-with-slide-localUnitId", ({ presentation, slide }) => {
+  slideUnit("replace-with-slide-unitId", ({ presentation, slide }) => {
     presentation().pageSize({ width: 1280, height: 720 });
     slide("intro").exists();
     slide("intro").textContains("Q2 Revenue");
     slide("intro").shape("title").text("Q2 Revenue Review");
   });
 
-  docUnit("replace-with-doc-localUnitId", ({ document }) => {
+  docUnit("replace-with-doc-unitId", ({ document }) => {
     document().heading("Executive Summary").exists();
     document().paragraphs(["Executive Summary", "Approved forecast"]);
     document().paragraphsContain(["Approved forecast"]);
@@ -166,10 +166,10 @@ business facts.
 runtime probes inside registration; use readonly inspect scripts for investigation and then encode
 the durable result as assertions.
 
-`localUnitId` is the only top-level assertion unit selector. Do not use remote unit ids, unit
+`unitId` is the only top-level assertion unit selector. Do not use remote unit ids, unit
 names, sheet names, or implicit active workbook state to route assertions. Legacy top-level
 `sheet()` and `range()` helpers are not current assertion APIs; spreadsheet assertions belong inside
-`sheetUnit("<localUnitId>", ({ sheet, range }) => { ... })`.
+`sheetUnit("<unitId>", ({ sheet, range }) => { ... })`.
 
 Treat `assertions/**/*.assertions.ts` as the current acceptance contract for the target state.
 Split entrypoints by unit or target concern, such as `sheet-values.assertions.ts`,
@@ -193,7 +193,7 @@ A minimal entrypoint (`assertions/values.assertions.ts`) looks like this:
 import { defineAssertions } from "univer:sac/assertions";
 
 export default defineAssertions(({ sheetUnit }) => {
-  sheetUnit("replace-with-sheet-localUnitId", ({ sheet, range }) => {
+  sheetUnit("replace-with-sheet-unitId", ({ sheet, range }) => {
     sheet("Summary").exists();
     // values()/rawValues() compare TYPED cell values, not display text:
     range("Summary!A2:B2").values([["Widget", 1280]]); // a number stays a number

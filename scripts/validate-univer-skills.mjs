@@ -266,11 +266,11 @@ async function validateTypedUnitAssertionGuidance() {
   const executionText = await readText(executionFile);
 
   const requiredSkillTokens = [
-    "sheetUnit(localUnitId, ...)",
-    "baseUnit(localUnitId, ...)",
-    "slideUnit(localUnitId, ...)",
-    "docUnit(localUnitId, ...)",
-    "`localUnitId` is the only top-level assertion unit selector",
+    "sheetUnit(unitId, ...)",
+    "baseUnit(unitId, ...)",
+    "slideUnit(unitId, ...)",
+    "docUnit(unitId, ...)",
+    "`unitId` is the only top-level assertion unit selector",
     "legacy top-level `sheet()` or\n`range()` usage"
   ];
   for (const token of requiredSkillTokens) {
@@ -281,10 +281,10 @@ async function validateTypedUnitAssertionGuidance() {
 
   const requiredAuthoringTokens = [
     "defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit })",
-    "sheetUnit(\"replace-with-sheet-localUnitId\"",
-    "baseUnit(\"replace-with-base-localUnitId\"",
-    "slideUnit(\"replace-with-slide-localUnitId\"",
-    "docUnit(\"replace-with-doc-localUnitId\"",
+    "sheetUnit(\"replace-with-sheet-unitId\"",
+    "baseUnit(\"replace-with-base-unitId\"",
+    "slideUnit(\"replace-with-slide-unitId\"",
+    "docUnit(\"replace-with-doc-unitId\"",
     "Legacy top-level\n`sheet()` and `range()` helpers are not current assertion APIs"
   ];
   for (const token of requiredAuthoringTokens) {
@@ -296,8 +296,8 @@ async function validateTypedUnitAssertionGuidance() {
   const requiredExecutionTokens = [
     "global typed unit `assertions/**/*.assertions.ts`",
     "total and per-unit assertion counts",
-    "`unitType`, `localUnitId`, assertion kind",
-    "unknown `localUnitId`, unit type\n  mismatch"
+    "`unitType`, `unitId`, assertion kind",
+    "unknown `unitId`, unit type\n  mismatch"
   ];
   for (const token of requiredExecutionTokens) {
     if (!executionText.includes(token)) {

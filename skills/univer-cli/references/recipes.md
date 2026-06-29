@@ -289,10 +289,10 @@ import { defineAssertions } from "univer:sac/assertions";
 
 export default defineAssertions(({ target, sheetUnit }) => {
   target(({ units }) => {
-    units().contains([{ localUnitId: "replace-with-sheet-localUnitId", unitType: "sheet" }]);
+    units().contains([{ unitId: "replace-with-sheet-unitId", unitType: "sheet" }]);
   });
 
-  sheetUnit("replace-with-sheet-localUnitId", ({ sheet, range }) => {
+  sheetUnit("replace-with-sheet-unitId", ({ sheet, range }) => {
     sheet("Summary").exists();
     range("Summary!A2:B2").values([["Widget", 1280]]); // typed values: number stays a number
     range("Summary!B2").displayValue("1,280");
@@ -318,7 +318,7 @@ only when text identity is the contract, such as SKU, ZIP, ID, code, or preserve
 
 `sheet-keyed-write` is useful after inspecting a stable key column and the target column to update.
 It creates ordinary TODO TypeScript source; it does not interpret `--params` as workbook mutation
-data. Fill placeholders such as `localUnitId`, `sheetName`, `keyColumn`, `targetColumn`, row scope,
+data. Fill placeholders such as `unitId`, `sheetName`, `keyColumn`, `targetColumn`, row scope,
 and `valuesByKey` from inspected evidence before applying.
 
 ## Roll Back Latest Applied Boundary
