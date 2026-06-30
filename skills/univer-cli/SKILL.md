@@ -46,6 +46,14 @@ resources inside a selected unit.
 Use public surfaces for reads and writes. A `.univer` univerfile is not an agent-handwritten source
 file; do not bypass the CLI/SaC surfaces to patch it by hand.
 
+## Per-Unit References
+
+Before authoring any read, write, or assertion on a unit, read its `references/unit-<type>.md`
+first — it owns that unit's cell model and value-surface rules. Skipping it can produce silently
+wrong output: there is no command error, and even a self-authored `sac verify` may pass while the
+final result is wrong. For a `sheet` unit, read `references/unit-sheet.md`. (`base`, `doc`, and
+`slide` per-unit files do not exist yet.)
+
 ## Public Surfaces
 
 | Need | Use |
@@ -100,7 +108,7 @@ univer lookup "range address"
 Use exact-symbol lookup when you need a precise declaration:
 
 ```bash
-univer lookup "FRange.getValues"
+univer lookup "FRange.getCellDatas"
 univer lookup "FRange.setValues"
 ```
 
@@ -170,10 +178,6 @@ active sheet, broad style preservation, and non-output facts as readback notes u
 explicitly requires them.
 
 ## Evidence Tools
-
-When the target unit is a `sheet`, open `references/unit-sheet.md` before authoring sheet reads or
-writes — it owns the sheet inspect tool roles, the cell model (`{ v, t, f, s }`) and value-surface
-rules (including the `getValues()` vs `getCellDatas()` trap), and copyable recipes.
 
 Managed inspect tools are the preferred readonly evidence surface. A unit-scoped `inspect` reads the
 worktree named by the required `--worktree <id>`; the `inspect tools` registry commands take no
@@ -283,7 +287,7 @@ final state as migrations change behavior.
 
 SaC source imports generated ambient modules for migration packs and assertions. Full Facade method
 signatures live in the sidecar `types/*.d.ts`; use short `univer lookup` queries such as
-`range read`, `range write`, or exact symbols such as `FRange.getValues` for concise API
+`range read`, `range write`, or exact symbols such as `FRange.getCellDatas` for concise API
 navigation, then follow read hints when you need exact declarations. For sidecar-local checks, scope
 lookups narrowly, e.g. `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of
 broad reads of the sidecar or CLI install. See `references/sac-authoring.md` for import names and
