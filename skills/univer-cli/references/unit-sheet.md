@@ -71,8 +71,11 @@ Use these stable primitives before lookup when the task is ordinary range read/w
 assertion work. If a diagnostic names a missing overload, enum, helper, or unsupported surface not
 covered here, use one short lookup or exact declaration read, then return to authoring.
 
-- Read values: `range.getValues()` for logical values, `range.getDisplayValues()` for displayed
-  strings, and cell-data APIs only when storage type, formula, rich text, or style details matter.
+- Read values: use `range.getCellDatas()` for the authoritative logical cell model (`{ v, t, f, s }`).
+  Do **not** trust `range.getValues()` for logical values — for a cell with a number format it returns
+  the formatted display string (a date serial `44900` reads back as `"2022-12-05"`) and `1`/`0` for
+  booleans, exactly like `getDisplayValues()`. Use `getDisplayValues()` only when you want display
+  text. Managed `inspect` `value` fields are unaffected because they read `cellData.v`.
 - Write values: use rectangular `range.setValues(matrix)` only with concrete values. Normalize
   nullable readback first; do not pass `null` or `undefined` inside `setValues()` matrices.
 - Write sparse cells: prefer single-cell writes or skip blank writes instead of rewriting a large
@@ -87,21 +90,46 @@ covered here, use one short lookup or exact declaration read, then return to aut
   output. Style assertions should cover only output cells or necessary preservation invariants.
 
 
+## Cell model (`{ v, t, f, s }`)
+
+A cell is not a bare value but `{ v, t, f?, s? }`:
+
+| field | meaning |
+| --- | --- |
+| `v` | stored logical value — used by formulas, sorting, filters, comparison, and write-back |
+| `t` | value type (`CellValueType`): `1`=text, `2`=number, `3`=boolean, `4`=force-text — tells the engine how to read `v` |
+| `f` | formula text; its computed result is cached separately in `v`, so `f` and `v` are different things |
+| `s.n.pattern` | number format — controls display only, never changes `v` |
+
+When writing, prefer explicit `ICellData` over bare values, because a bare `"2-2"`, a leading-zero id,
+or a date-like string gets auto-inferred into a number or date. Pin identity with the type code:
+
+```ts
+range.setValue({ v: "text", t: 1 });
+range.setValue({ v: 42, t: 2 });
+range.setValue({ v: 1, t: 3 });        // boolean (v: 0 = false)
+range.setValue({ v: "00123", t: 4 });  // force-text: ids, leading zeros, scores like 2-2, phone, zip
+range.setValue({ f: "=A1+B1" });       // formula
+```
+
+Dates, percentages, and currency are a number **plus a number format**, not separate types. A date
+stores the serial number, not the rendered string:
+
+```ts
+range.setValue({ v: 44900, s: { n: { pattern: "yyyy-MM-DD" } } }); // serial number, displays as 2022-12-05
+range.setValue({ v: 0.25, s: { n: { pattern: "0%" } } });          // displays as 25%
+```
+
 ## Spreadsheet value surfaces
 
-Before writing values or assertions, decide which spreadsheet surface the task specifies:
+Map the task's wording to the cell-model surfaces above:
 
-- Logical value: the typed value used by formulas, sorting, filters, pivots, and export semantics.
-- Display value: the formatted string users see in the grid.
-- Storage cell data: lower-level cell model details such as forced string type.
-
-Words like "show", "display", "appear", "formatted as", currency, percent, date format, or
-dash-for-zero usually describe display values. Keep logical values typed and apply number/date
-formatting for the presentation.
-
-Words like "literal", "text", "cell value should be", "preserve leading zeros", SKU, ZIP, ID, or
-code usually describe logical or storage text identity. Use strings or `CellValueType.FORCE_STRING`
-when text identity matters.
+- Words like "show", "display", "appear", "formatted as", currency, percent, date format, or
+  dash-for-zero usually describe the **display** side — keep the logical `v` typed and apply a
+  number/date format; do not write the formatted string into `v`.
+- Words like "literal", "text", "cell value should be", "preserve leading zeros", SKU, ZIP, ID, or
+  code usually describe **logical/storage text identity** — use `t: 4` (force-text) /
+  `CellValueType.FORCE_STRING`.
 
 For numeric, date, amount, count, total, difference, or formula-referenced cells, do not satisfy
 display requirements by writing formatted strings. For example, "show `-` instead of zero" in an
@@ -133,6 +161,13 @@ strings.
 For style contracts, prefer semantic assertion helpers such as `styles` or `backgroundColors`.
 Avoid raw style ids, `styleId`, `style.id`, generated resource ids, or raw `cellData.s` snapshots as
 the expected contract unless a lower-level implementation test specifically needs storage identity.
+
+## Grid dimensions
+
+- `getMaxRows()` / `getMaxColumns()` report the sheet's current capacity; `getLastRow()` /
+  `getLastColumn()` report the last used row/column (0-based).
+- Before writing past the current capacity, extend the grid first with `setRowCount(n)` /
+  `setColumnCount(n)`, then write — an out-of-range write otherwise has nowhere to land.
 
 ## Sheet data recipes
 
@@ -257,7 +292,7 @@ cat > "$SIDECAR/inspect-scripts/aggregate-range.js" <<'JS'
 
   const sampleLimit = Math.max(1, Math.min(Number(params.sampleLimit ?? 5), 20));
   const range = sheet.getRange(params.rangeA1);
-  const values = range.getValues();
+  const cells = range.getCellDatas(); // logical { v, t } — getValues() returns display strings for formatted cells
   const displayValues = range.getDisplayValues();
   const groupColumnOffset = Number(params.groupColumnOffset ?? -1);
   const valueColumnOffset = Number(params.valueColumnOffset ?? -1);
@@ -266,14 +301,15 @@ cat > "$SIDECAR/inspect-scripts/aggregate-range.js" <<'JS'
   const mismatches = [];
   let nonBlankCellCount = 0;
 
-  values.forEach((row, rowIndex) => {
-    row.forEach((value) => {
-      if (value !== null && value !== undefined && value !== "") nonBlankCellCount += 1;
+  cells.forEach((row, rowIndex) => {
+    row.forEach((cell) => {
+      const v = cell?.v;
+      if (v !== null && v !== undefined && v !== "") nonBlankCellCount += 1;
     });
 
     const key = groupColumnOffset >= 0 ? displayValues[rowIndex]?.[groupColumnOffset] : "";
     if (key) {
-      const numericValue = valueColumnOffset >= 0 ? Number(values[rowIndex]?.[valueColumnOffset] ?? 0) : 1;
+      const numericValue = valueColumnOffset >= 0 ? Number(cells[rowIndex]?.[valueColumnOffset]?.v ?? 0) : 1;
       groups[key] = {
         count: (groups[key]?.count ?? 0) + 1,
         total: (groups[key]?.total ?? 0) + (Number.isFinite(numericValue) ? numericValue : 0)
@@ -281,7 +317,7 @@ cat > "$SIDECAR/inspect-scripts/aggregate-range.js" <<'JS'
     }
 
     if (Object.prototype.hasOwnProperty.call(expectedByKey, key)) {
-      const actual = valueColumnOffset >= 0 ? values[rowIndex]?.[valueColumnOffset] : row;
+      const actual = valueColumnOffset >= 0 ? cells[rowIndex]?.[valueColumnOffset]?.v : row;
       if (actual !== expectedByKey[key] && mismatches.length < sampleLimit) {
         mismatches.push({ rowOffset: rowIndex, key, expected: expectedByKey[key], actual });
       }
