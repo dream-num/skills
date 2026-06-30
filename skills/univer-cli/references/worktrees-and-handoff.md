@@ -38,8 +38,8 @@ source of truth — and read the message intent:
 
 - `status` `merged` or `discarded` (terminal, not writable): start the next change on a fresh
   `worktree create` off the current trunk, which now includes that merge and any direct user edits.
-- `status` still `open`/`ready` and the message refines the same change: keep working on the same
-  worktree. More SaC returns a `ready` worktree to the `open` status; when done, mark it `ready` and
+- `status` still `draft`/`ready` and the message refines the same change: keep working on the same
+  worktree. More SaC returns a `ready` worktree to the `draft` status; when done, mark it `ready` and
   hand off a fresh link with `univer open`.
 - A distinct new task: use a separate `worktree create` so each task stays independently reviewable.
 

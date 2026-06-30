@@ -34,8 +34,8 @@ page or via `worktree merge` / `worktree discard`. Merging into trunk is normall
 decision, not an automatic agent step.
 
 Before acting on a follow-up, re-check with `worktree list`, because the user may have merged,
-discarded, or only reviewed in the browser. If its `status` is still `open`/`ready` and the message
-refines the same change, keep working there — more SaC returns a `ready` worktree to the `open`
+discarded, or only reviewed in the browser. If its `status` is still `draft`/`ready` and the message
+refines the same change, keep working there — more SaC returns a `ready` worktree to the `draft`
 status; when done, mark it `ready` and hand off a fresh link with `univer open`. Use a new worktree for a
 merged or discarded one, or for a separate task.
 
