@@ -23,7 +23,7 @@ Each univerfile has two scopes. `trunk` is the authoritative mainline a person s
 `worktree` is an isolated copy where agents do work so it can be reviewed before it touches trunk.
 Scope commands — the reads (`inspect`, `status`, `export`, `open`) and the SaC write path (`apply`,
 `rollback`, `verify`, `materialize`) — require `--worktree <id>` to name the worktree. `new` creates
-on trunk and takes no `--worktree`, and `worktree create`/`list` act on the whole univerfile. Scope
+on trunk and takes no `--worktree`, and `worktree add`/`list` act on the whole univerfile. Scope
 is stateless: there is no "current worktree" checkout, so `--worktree <id>` is mandatory on every
 scope command and parallel agents never cross scopes. A worktree changes only through SaC; its work
 reaches trunk only through `worktree merge`.
@@ -51,7 +51,7 @@ file; do not bypass the CLI/SaC surfaces to patch it by hand.
 | Need | Use |
 | --- | --- |
 | Create or import univerfiles | `new` (trunk), `import` |
-| Isolate work for review | `worktree create`, then work under a required `--worktree <id>` |
+| Isolate work for review | `worktree add`, then work under a required `--worktree <id>` |
 | Read target evidence | task-local route contract when present; otherwise focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
 | Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
 | Recover an applied SaC boundary | `sac rollback` |
@@ -359,7 +359,7 @@ assertion failure interpretation is unclear.
 
 ## Worktrees, Preview, And Handoff
 
-Use `worktree create` to make an isolated copy, then work under its id as the required
+Use `worktree add` to make an isolated copy, then work under its id as the required
 `--worktree <id>` on reads and the SaC write path. Use `worktree list` to see each worktree's id,
 status, head commit, and name. Use `status` to check a worktree's lifecycle and commit count before
 SaC commands; `status` always requires the actual `.univer` file and is not a current-directory,
@@ -397,7 +397,7 @@ file.
   layout, template selection, follow-up migrations, or a typecheck failure pointing at source.
 - `references/sac-execution.md`: open for apply/rollback/verify report interpretation, unit drift,
   setup errors, assertion surface decisions, or target-state recovery.
-- `references/worktrees-and-handoff.md`: open for worktree lifecycle (create/list/ready/merge/discard),
+- `references/worktrees-and-handoff.md`: open for worktree lifecycle (add/list/ready/merge/discard),
   scope-aware status, hosted open, comments, conflict handoff, or export details.
 - `references/recipes.md`: open after you know the workflow and only need a copyable command shape
   that has been checked against current CLI behavior.

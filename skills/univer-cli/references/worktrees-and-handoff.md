@@ -9,7 +9,7 @@ same shell or replace `$UNIVERFILE` with the literal `.univer` path.
 ```bash
 UNIVERFILE=./orders.univer
 
-univer worktree create "$UNIVERFILE" --name task-a    # prints the new worktree id
+univer worktree add "$UNIVERFILE" --name task-a    # prints the new worktree id
 univer worktree list "$UNIVERFILE"                    # id, status, head commit, name
 univer worktree ready "$UNIVERFILE" --worktree <id>   # mark ready, then hand off for review
 univer open "$UNIVERFILE" --worktree <id> --json      # give the user a viewer link to review
@@ -37,11 +37,11 @@ without acting. Before responding, re-check with `worktree list` — the reporte
 source of truth — and read the message intent:
 
 - `status` `merged` or `discarded` (terminal, not writable): start the next change on a fresh
-  `worktree create` off the current trunk, which now includes that merge and any direct user edits.
+  `worktree add` off the current trunk, which now includes that merge and any direct user edits.
 - `status` still `draft`/`ready` and the message refines the same change: keep working on the same
   worktree. More SaC returns a `ready` worktree to the `draft` status; when done, mark it `ready` and
   hand off a fresh link with `univer open`.
-- A distinct new task: use a separate `worktree create` so each task stays independently reviewable.
+- A distinct new task: use a separate `worktree add` so each task stays independently reviewable.
 
 Never reuse a `merged`/`discarded` worktree, and never assume a worktree's `status` across a handoff.
 

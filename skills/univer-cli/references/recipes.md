@@ -3,7 +3,7 @@
 These are concise command shapes. Replace paths, unit ids, sheet names, and ranges with inspected
 facts. Use `../SKILL.md` for mandatory product boundaries and command selection. Examples use
 `UNIVERFILE=./orders.univer` for the target path and `WORKTREE_ID=<id>` for the worktree returned by
-`worktree create`. Scope commands (`inspect`, `status`, `export`, `open`, and the SaC write path)
+`worktree add`. Scope commands (`inspect`, `status`, `export`, `open`, and the SaC write path)
 require `--worktree "$WORKTREE_ID"`. When copying a command by itself, set both variables in the same
 shell first or replace them with literals.
 
@@ -12,8 +12,8 @@ shell first or replace them with literals.
 ```bash
 UNIVERFILE=./orders.univer
 univer import --file ./orders.csv "$UNIVERFILE" --json   # or: univer new "$UNIVERFILE"
-univer worktree create "$UNIVERFILE" --name task-a       # prints the new worktree id; use it below
-WORKTREE_ID=<id-from-create>
+univer worktree add "$UNIVERFILE" --name task-a       # prints the new worktree id; use it below
+WORKTREE_ID=<id-from-add>
 univer sac materialize "$UNIVERFILE" --worktree "$WORKTREE_ID" --json > ./materialize.json
 printf '%s' '{}' | univer inspect "$UNIVERFILE" --tool units --worktree "$WORKTREE_ID" --params -
 ```
