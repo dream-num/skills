@@ -261,8 +261,11 @@ covered here, use one short lookup or exact declaration read, then return to aut
 
 - Read values: `range.getValues()` for logical values, `range.getDisplayValues()` for displayed
   strings, and cell-data APIs only when storage type, formula, rich text, or style details matter.
-- Write values: use rectangular `range.setValues(matrix)` only with concrete values. Normalize
-  nullable readback first; do not pass `null` or `undefined` inside `setValues()` matrices.
+- Write values: `range.setValues(matrix)` takes an `ICellData[][]` of explicit `{ v, t }` cells (or a
+  concrete `CellValue[][]` of string/number/boolean). `CellValue` excludes `null`, so a nullable
+  readback (`Nullable<CellValue>[][]`) cannot be passed as-is — drop blanks or carry them as
+  `{ v: null }` in `ICellData`. Set type via numeric `t` (1=STRING 2=NUMBER 3=BOOLEAN 4=FORCE_STRING);
+  the `CellValueType` enum is not importable in migration source.
 - Write sparse cells: prefer single-cell writes or skip blank writes instead of rewriting a large
   grid of blanks when only a few cells change.
 - Clear content: use the Facade clear-content surface for old output bodies before writing a shorter

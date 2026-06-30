@@ -61,7 +61,8 @@ README files, params, probes, or evidence files. Keep global assertions under
 from migration apply source.
 
 For ranges with intentional blanks, clear the target range first and skip per-cell writes for blank
-cells, or write nonblank cells individually. Do not pass `null` inside `setValues()` matrices. When
+cells, or write nonblank cells individually. `setValues()` rejects a bare `null` (a `CellValue` is
+string/number/boolean); carry an intentional blank as `{ v: null }` in an `ICellData` matrix. When
 writing totals or other formulas in amount columns, set the formula/value and expected number format
 in the same migration. Prefer A1 range strings for simple table writes. Before broad type searches,
 use short lookup queries such as `univer lookup "range address"` or exact-symbol queries such as
@@ -230,8 +231,10 @@ dash-for-zero usually describe display values. Keep logical values typed and app
 formatting for the presentation.
 
 Words like "literal", "text", "cell value should be", "preserve leading zeros", SKU, ZIP, ID, or
-code usually describe logical or storage text identity. Use strings or `CellValueType.FORCE_STRING`
-when text identity matters.
+code usually describe logical or storage text identity. Use plain strings, or force text identity by
+writing an `ICellData` cell with numeric `t: 4` (FORCE_STRING; 1=STRING, 2=NUMBER, 3=BOOLEAN). In
+migration source the `CellValueType` enum is not reachable — an `import` from `@univerjs/core` is
+rejected and `univerAPI.Enum` does not expose it — so write the numeric `t` directly.
 
 For numeric, date, amount, count, total, difference, or formula-referenced cells, do not satisfy
 display requirements by writing formatted strings. For example, "show `-` instead of zero" in an

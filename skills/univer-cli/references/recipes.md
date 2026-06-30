@@ -313,8 +313,9 @@ numbers as numbers (dates are serial numbers like `45344`), not quoted strings; 
 method/value-type table and Base/slide/doc/cross-unit examples.
 For numeric display requirements such as currency, percent, date formatting, or dash-for-zero, keep
 logical values typed, apply number/date formatting, and assert both `values` and `displayValues`
-when both semantics and presentation matter. Use literal strings or `CellValueType.FORCE_STRING`
-only when text identity is the contract, such as SKU, ZIP, ID, code, or preserved leading zeros.
+when both semantics and presentation matter. When text identity is the contract (SKU, ZIP, ID, code,
+or preserved leading zeros), write an `ICellData` cell with numeric `t: 4` (FORCE_STRING); the
+`CellValueType` enum is not importable in migration source.
 
 `sheet-keyed-write` is useful after inspecting a stable key column and the target column to update.
 It creates ordinary TODO TypeScript source; it does not interpret `--params` as workbook mutation
