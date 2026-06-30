@@ -171,6 +171,10 @@ explicitly requires them.
 
 ## Evidence Tools
 
+When the target unit is a `sheet`, open `references/unit-sheet.md` before authoring sheet reads or
+writes — it owns the sheet inspect tool roles, the cell model (`{ v, t, f, s }`) and value-surface
+rules (including the `getValues()` vs `getCellDatas()` trap), and copyable recipes.
+
 Managed inspect tools are the preferred readonly evidence surface. A unit-scoped `inspect` reads the
 worktree named by the required `--worktree <id>`; the `inspect tools` registry commands take no
 scope. Use them for target inventory, sheet names, used ranges, focused range readback,
