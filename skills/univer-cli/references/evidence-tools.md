@@ -62,7 +62,7 @@ Do not pass inline JSON as the `--params` value. `--params '{}'` is interpreted 
 path named `{}`. Use `--params -` and stdin for inline JSON, or write the JSON to a file and pass
 that file path.
 
-Per-unit managed tool roles, value-field semantics, and inspect-diagnostic recovery live in `units/<unit>.md`. For `sheet` units (tool roles, cell `value`/`displayValue`/`cellData` semantics, exact sheet-name rules, and `maxCells`/`include`/style recovery), see `units/sheet.md`.
+Per-unit managed tool roles, value-field semantics, and inspect-diagnostic recovery live in `unit-<unit>.md`. For `sheet` units (tool roles, cell `value`/`displayValue`/`cellData` semantics, exact sheet-name rules, and `maxCells`/`include`/style recovery), see `unit-sheet.md`.
 
 ## Custom Inspect Scripts
 

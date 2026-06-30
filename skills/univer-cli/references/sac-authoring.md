@@ -219,7 +219,7 @@ correct:
 
 ### Spreadsheet Value Surfaces
 
-Sheet value-surface guidance (logical vs display vs storage, numeric display placeholders, verify value-semantics) moved to `units/sheet.md`.
+Sheet value-surface guidance (logical vs display vs storage, numeric display placeholders, verify value-semantics) moved to `unit-sheet.md`.
 
 
 Do not use assertions for temporary intermediate migration states, raw `.univer` storage internals,

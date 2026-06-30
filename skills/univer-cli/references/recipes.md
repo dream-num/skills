@@ -57,7 +57,7 @@ assets only; it still requires an HTTP(S), browser-fetchable, CORS-enabled sourc
 
 ## Sheet Data Recipes
 
-Sheet range/label/conditional-format/aggregation recipes moved to `units/sheet.md`. Open it for `sheet`-unit data reads.
+Sheet range/label/conditional-format/aggregation recipes moved to `unit-sheet.md`. Open it for `sheet`-unit data reads.
 
 ## Template Migration, Apply, Verify
 
