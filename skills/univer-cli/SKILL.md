@@ -371,7 +371,7 @@ lookup, inspect, author, apply, verify, and export tasks should not require read
 file.
 
 References are organized along two orthogonal dimensions. Workflow-phase references stay
-unit-agnostic; per-unit references under `references/units/<unit>.md` own unit-specific tool roles,
+unit-agnostic; per-unit references under `references/unit-<unit>.md` own unit-specific tool roles,
 value surfaces, read/write patterns, and recipes. Open the workflow-phase reference for the current
 fallback condition, and the per-unit reference that matches the target unit type.
 
@@ -390,10 +390,10 @@ By workflow phase:
 
 By target unit type:
 
-- `references/units/sheet.md`: open for `sheet`-unit managed tool roles, cell value surfaces
+- `references/unit-sheet.md`: open for `sheet`-unit managed tool roles, cell value surfaces
   (logical/display/storage), exact sheet-name rules, inspect-diagnostic recovery, the sheet API
   pocket guide, and sheet range/label/conditional-format/aggregation recipes.
-- `base`, `doc`, and `slide` units do not yet have a `references/units/<unit>.md` file; per-unit
+- `base`, `doc`, and `slide` units do not yet have a `references/unit-<unit>.md` file; per-unit
   guidance for them is reserved for a later version.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
