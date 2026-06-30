@@ -219,50 +219,8 @@ correct:
 
 ### Spreadsheet Value Surfaces
 
-Before writing values or assertions, decide which spreadsheet surface the task specifies:
+Sheet value-surface guidance (logical vs display vs storage, numeric display placeholders, verify value-semantics) moved to `units/sheet.md`.
 
-- Logical value: the typed value used by formulas, sorting, filters, pivots, and export semantics.
-- Display value: the formatted string users see in the grid.
-- Storage cell data: lower-level cell model details such as forced string type.
-
-Words like "show", "display", "appear", "formatted as", currency, percent, date format, or
-dash-for-zero usually describe display values. Keep logical values typed and apply number/date
-formatting for the presentation.
-
-Words like "literal", "text", "cell value should be", "preserve leading zeros", SKU, ZIP, ID, or
-code usually describe logical or storage text identity. Use strings or `CellValueType.FORCE_STRING`
-when text identity matters.
-
-For numeric, date, amount, count, total, difference, or formula-referenced cells, do not satisfy
-display requirements by writing formatted strings. For example, "show `-` instead of zero" in an
-amount column should keep logical `0`, assert display `"-"`, and assert the number format:
-
-```ts
-range("Summary!F5").values([[0]]);
-range("Summary!F5").displayValues([["-"]]);
-range("Summary!F5").numberFormat("0;\\-0;\\-");
-```
-
-Do not use this shape for numeric display placeholders:
-
-```ts
-range("Summary!F5").values([["-"]]);
-```
-
-A literal formatted string in a numeric or formula-referenced column can break formulas, filters,
-sorts, and exported XLSX readback.
-
-When `univer sac verify` fails, read the report failure's `valueSemantics`, `actualDiagnostics`,
-and `firstDifference`. A string `"10"` and number `10` are different logical values even when they
-display the same; use the suggested next evidence such as `displayValues`, `valueDetails`, or
-`cellData` to decide whether the migration source or the assertion helper is wrong.
-
-Use raw/value assertions when null-like storage identity is the contract.
-For `displayValues`, assert blank cells as empty strings (`""`) because display readback returns
-strings.
-For style contracts, prefer semantic assertion helpers such as `styles` or `backgroundColors`.
-Avoid raw style ids, `styleId`, `style.id`, generated resource ids, or raw `cellData.s` snapshots as
-the expected contract unless a lower-level implementation test specifically needs storage identity.
 
 Do not use assertions for temporary intermediate migration states, raw `.univer` storage internals,
 generated ids, broad inspect dumps, or runtime implementation details. Use readonly inspect probes

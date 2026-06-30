@@ -126,7 +126,18 @@ async function validateSkillStructure() {
     const entries = await fs.readdir(referencesDir, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.isDirectory()) {
-        recordError(`skills/univer-cli/references/${entry.name}: nested reference directories are not allowed`);
+        if (entry.name === "units") {
+          const unitEntries = await fs.readdir(path.join(referencesDir, "units"), { withFileTypes: true });
+          for (const unitEntry of unitEntries) {
+            if (unitEntry.isDirectory()) {
+              recordError(`skills/univer-cli/references/units/${unitEntry.name}: per-unit references must be flat .md files, no deeper nesting`);
+            } else if (!unitEntry.name.endsWith(".md")) {
+              recordError(`skills/univer-cli/references/units/${unitEntry.name}: per-unit references directory may contain only .md files`);
+            }
+          }
+        } else {
+          recordError(`skills/univer-cli/references/${entry.name}: nested reference directories are not allowed except references/units/`);
+        }
       }
     }
   }

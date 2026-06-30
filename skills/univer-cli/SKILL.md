@@ -253,27 +253,6 @@ combine it with value evidence when a value-dependent rule is part of the task.
 Read `references/evidence-tools.md` only when inspect params, include fields, custom script shape,
 or recoverable inspect diagnostics are unclear.
 
-## SaC Common API Pocket Guide
-
-Use these stable primitives before lookup when the task is ordinary range read/write/format or
-assertion work. If a diagnostic names a missing overload, enum, helper, or unsupported surface not
-covered here, use one short lookup or exact declaration read, then return to authoring.
-
-- Read values: `range.getValues()` for logical values, `range.getDisplayValues()` for displayed
-  strings, and cell-data APIs only when storage type, formula, rich text, or style details matter.
-- Write values: use rectangular `range.setValues(matrix)` only with concrete values. Normalize
-  nullable readback first; do not pass `null` or `undefined` inside `setValues()` matrices.
-- Write sparse cells: prefer single-cell writes or skip blank writes instead of rewriting a large
-  grid of blanks when only a few cells change.
-- Clear content: use the Facade clear-content surface for old output bodies before writing a shorter
-  final output; verify blank display tails only when the requested output window requires them.
-- Formats and styles: set number format or supported style traits only when the task or target
-  pattern requires them. If rich text, merge, or semantic style support is absent, use a bounded
-  capability check and choose a supported representation or report the gap instead of adjacent
-  exploration.
-- Assertions: use logical value assertions for typed semantics and display assertions for formatted
-  output. Style assertions should cover only output cells or necessary preservation invariants.
-
 ## SaC Authoring
 
 SaC is the source-backed authoring path for durable target behavior. SaC is the only write path:
@@ -391,6 +370,13 @@ Open only the reference needed for the current fallback condition. Ordinary rang
 lookup, inspect, author, apply, verify, and export tasks should not require reading every reference
 file.
 
+References are organized along two orthogonal dimensions. Workflow-phase references stay
+unit-agnostic; per-unit references under `references/units/<unit>.md` own unit-specific tool roles,
+value surfaces, read/write patterns, and recipes. Open the workflow-phase reference for the current
+fallback condition, and the per-unit reference that matches the target unit type.
+
+By workflow phase:
+
 - `references/evidence-tools.md`: open for unknown inspect params/include fields, custom inspect
   script shape, unsupported inspect diagnostics, or exact evidence surface selection.
 - `references/sac-authoring.md`: open for unfamiliar migration/assertion imports, sidecar source
@@ -401,6 +387,14 @@ file.
   scope-aware status, hosted open, comments, conflict handoff, or export details.
 - `references/recipes.md`: open after you know the workflow and only need a copyable command shape
   that has been checked against current CLI behavior.
+
+By target unit type:
+
+- `references/units/sheet.md`: open for `sheet`-unit managed tool roles, cell value surfaces
+  (logical/display/storage), exact sheet-name rules, inspect-diagnostic recovery, the sheet API
+  pocket guide, and sheet range/label/conditional-format/aggregation recipes.
+- `base`, `doc`, and `slide` units do not yet have a `references/units/<unit>.md` file; per-unit
+  guidance for them is reserved for a later version.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
 you read. Reopen a reference only when a new failure or missing detail is outside the already-read
