@@ -51,8 +51,8 @@ file; do not bypass the CLI/SaC surfaces to patch it by hand.
 Before authoring any read, write, or assertion on a unit, read its `references/unit-<type>.md`
 first — it owns that unit's cell model and value-surface rules. Skipping it can produce silently
 wrong output: there is no command error, and even a self-authored `sac verify` may pass while the
-final result is wrong. For a `sheet` unit, read `references/unit-sheet.md`. (`base`, `doc`, and
-`slide` per-unit files do not exist yet.)
+final result is wrong. For a `sheet` unit, read `references/unit-sheet.md`; for a `slide` unit, read
+`references/unit-slide.md`. (`base` and `doc` per-unit files do not exist yet.)
 
 ## Public Surfaces
 
@@ -401,8 +401,12 @@ By target unit type:
 - `references/unit-sheet.md`: open for `sheet`-unit managed tool roles, cell value surfaces
   (logical/display/storage), exact sheet-name rules, inspect-diagnostic recovery, the sheet API
   pocket guide, and sheet range/label/conditional-format/aggregation recipes.
-- `base`, `doc`, and `slide` units do not yet have a `references/unit-<unit>.md` file; per-unit
-  guidance for them is reserved for a later version.
+- `references/unit-slide.md`: open for `slide`-unit evidence (the bundled `slide-overview` tool and
+  when to escalate to a sidecar-local probe), the slide API pocket guide, coordinate/size units, the
+  flat-text-vs-rich-text gap, known Facade gaps (duplicate slide, table/chart creation), and slide
+  authoring recipes.
+- `base` and `doc` units do not yet have a `references/unit-<unit>.md` file; per-unit guidance for
+  them is reserved for a later version.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
 you read. Reopen a reference only when a new failure or missing detail is outside the already-read
