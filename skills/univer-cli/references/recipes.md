@@ -3,9 +3,9 @@
 These are concise command shapes. Replace paths, unit ids, sheet names, and ranges with inspected
 facts. Use `../SKILL.md` for mandatory product boundaries and command selection. Examples use
 `UNIVERFILE=./orders.univer` for the target path and `WORKTREE_ID=<id>` for the worktree returned by
-`worktree add`. Scope commands (`inspect`, `status`, `export`, `open`, and the SaC write path)
-require `--worktree "$WORKTREE_ID"`. When copying a command by itself, set both variables in the same
-shell first or replace them with literals.
+`worktree add`. Scope commands (`inspect`, `status`, `export`, `open`, `screenshot`, and the SaC
+write path) require `--worktree "$WORKTREE_ID"`. When copying a command by itself, set both
+variables in the same shell first or replace them with literals.
 
 ## Create, Isolate, Materialize, Discover Units
 
