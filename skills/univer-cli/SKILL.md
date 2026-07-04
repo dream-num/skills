@@ -21,12 +21,12 @@ target work by `sessionId`, runtime id, display name, sheet name, or the current
 
 Each univerfile has two scopes. `trunk` is the authoritative mainline a person sees and may edit. A
 `worktree` is an isolated copy where agents do work so it can be reviewed before it touches trunk.
-Scope commands — the reads (`inspect`, `status`, `export`, `open`) and the SaC write path (`apply`,
-`rollback`, `verify`, `materialize`) — require `--worktree <id>` to name the worktree. `new` creates
-on trunk and takes no `--worktree`, and `worktree add`/`list` act on the whole univerfile. Scope
-is stateless: there is no "current worktree" checkout, so `--worktree <id>` is mandatory on every
-scope command and parallel agents never cross scopes. A worktree changes only through SaC; its work
-reaches trunk only through `worktree merge`.
+Scope commands — the reads (`inspect`, `status`, `export`, `open`, `screenshot`) and the SaC write
+path (`apply`, `rollback`, `verify`, `materialize`) — require `--worktree <id>` to name the worktree.
+`new` creates on trunk and takes no `--worktree`, and `worktree add`/`list` act on the whole
+univerfile. Scope is stateless: there is no "current worktree" checkout, so `--worktree <id>` is
+mandatory on every scope command and parallel agents never cross scopes. A worktree changes only
+through SaC; its work reaches trunk only through `worktree merge`.
 
 Typical loop: do the user's task on a worktree, mark it ready with `worktree ready`, then `open` it
 to give the user a viewer link. The user reviews and chooses to merge or discard — from that viewer
@@ -49,10 +49,12 @@ file; do not bypass the CLI/SaC surfaces to patch it by hand.
 ## Per-Unit References
 
 Before authoring any read, write, or assertion on a unit, read its `references/unit-<type>.md`
-first — it owns that unit's cell model and value-surface rules. Skipping it can produce silently
-wrong output: there is no command error, and even a self-authored `sac verify` may pass while the
-final result is wrong. For a `sheet` unit, read `references/unit-sheet.md`. (`base`, `doc`, and
-`slide` per-unit files do not exist yet.)
+first — it owns that unit's cell/shape model and value-surface rules. Skipping it can produce
+silently wrong output: there is no command error, a self-authored `sac verify` may still pass, and
+for a `slide` unit some defects (default styles, text color, layout overflow) have no assertion
+coverage at all — a rendered `screenshot` is the only surface that catches them. For a `sheet` unit,
+read `references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`. (`base` and
+`doc` per-unit files do not exist yet.)
 
 ## Public Surfaces
 
@@ -66,6 +68,7 @@ final result is wrong. For a `sheet` unit, read `references/unit-sheet.md`. (`ba
 | Check scope state | `status` |
 | Land or drop a worktree | `worktree ready`, `worktree merge`, `worktree discard` |
 | Review or hand off visually | `open`, `view comments`, browser tools |
+| Self-check visual-only defects (fill, stroke, text color, overflow) | `screenshot` — renders the worktree/trunk unit to PNG; required before treating a `slide` styling task as done |
 | Produce Excel-compatible output | `export` after verifying the relevant target-visible state |
 
 ## Tool Loop Budget
@@ -401,8 +404,12 @@ By target unit type:
 - `references/unit-sheet.md`: open for `sheet`-unit managed tool roles, cell value surfaces
   (logical/display/storage), exact sheet-name rules, inspect-diagnostic recovery, the sheet API
   pocket guide, and sheet range/label/conditional-format/aggregation recipes.
-- `base`, `doc`, and `slide` units do not yet have a `references/unit-<unit>.md` file; per-unit
-  guidance for them is reserved for a later version.
+- `references/unit-slide.md`: open for `slide`-unit managed tool roles and their evidence gap, the
+  shape/text Facade pocket guide (default styles, fill/stroke/text-color overrides, `setText`
+  geometry reset, alignment injection), which assertion methods cover which facts, and the
+  `screenshot` self-check recipe.
+- `base` and `doc` units do not yet have a `references/unit-<unit>.md` file; per-unit guidance for
+  them is reserved for a later version.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
 you read. Reopen a reference only when a new failure or missing detail is outside the already-read
