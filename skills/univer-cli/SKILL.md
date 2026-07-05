@@ -48,13 +48,14 @@ file; do not bypass the CLI/SaC surfaces to patch it by hand.
 
 ## Per-Unit References
 
-Before authoring any read, write, or assertion on a unit, read its `references/unit-<type>.md`
-first — it owns that unit's cell/shape model and value-surface rules. Skipping it can produce
-silently wrong output: there is no command error, a self-authored `sac verify` may still pass, and
-for a `slide` unit some defects (default styles, text color, layout overflow) have no assertion
-coverage at all — a rendered `screenshot` is the only surface that catches them. For a `sheet` unit,
-read `references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`. (`base` and
-`doc` per-unit files do not exist yet.)
+Before authoring any read, write, or assertion on a unit — including creating one that does not
+exist yet — read its `references/unit-<type>.md` first; it owns that unit's cell/shape model,
+value-surface rules, and creation recipe. Skipping it can produce silently wrong output: there is no
+command error, a self-authored `sac verify` may still pass, and for a `slide` unit some defects
+(default styles, text color, layout overflow) have no assertion coverage at all — a rendered
+`screenshot` is the only surface that catches them. For a `sheet` unit, read
+`references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`. (`base` and `doc`
+per-unit files do not exist yet.)
 
 ## Public Surfaces
 

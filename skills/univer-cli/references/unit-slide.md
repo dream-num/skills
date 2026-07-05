@@ -26,6 +26,30 @@ printf '%s' '{"unitId":"replace-with-slide-unitId","maxSlides":20,"maxShapes":50
 univer inspect "$UNIVERFILE" --tool slide-overview --worktree "$WORKTREE_ID" --params ./slide-overview.params.json --out ./slide-overview.result.json
 ```
 
+## Create A Fresh Slide Unit
+
+When the target unit does not exist yet (no baseline import, an empty univerfile), create it inside
+migration source with `univerAPI.createPresentation(data)` — there is no CLI unit-add command; unit
+creation is a migration action like any other durable change. Guard it so re-applying the pack stays
+safe:
+
+```ts
+const presentation = univerAPI.getPresentation("replace-with-unitId") ?? univerAPI.createPresentation({
+  id: "replace-with-unitId",
+  name: "replace-with-display-name",
+  defaultPageSize: { width: 1280, height: 720, preset: univerAPI.Enum.SlidePageSizePresetEnum.WideScreen16By9 }
+});
+const slide = presentation.getSlides()[0] ?? presentation.appendSlide();
+```
+
+`createPresentation` takes `Partial<ISlideData>` — verified minimal: `{ id, name, defaultPageSize }`
+is enough (`slideOrder`/`slides` are not required); the result is a valid 0-slide deck ready for
+`appendSlide()`, not a broken/partial object. Pin the unit's id by passing it as `data.id`, not as a
+separate option — `ICreateUnitOptions` (the second argument) has no id field. `getPresentation(id)`
+on a missing id returns a falsy value (not a throw), so the `??` guard above is safe on first apply
+and a no-op on re-apply — remember a fresh deck still starts at 0 slides, so guard the first slide
+the same way rather than assuming index 0 exists.
+
 ## Slide Facade API Pocket Guide
 
 Use these stable primitives before lookup when the task is ordinary shape/text authoring. Elements
