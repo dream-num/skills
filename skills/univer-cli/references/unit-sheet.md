@@ -171,6 +171,25 @@ the expected contract unless a lower-level implementation test specifically need
 
 ## Sheet data recipes
 
+## Create A Fresh Sheet Unit
+
+When the target unit does not exist yet (no baseline import, an empty univerfile), create it inside
+migration source with `univerAPI.createWorkbook(data)` — there is no CLI unit-add command; unit
+creation is a migration action like any other durable change. Guard it so re-applying the pack stays
+safe:
+
+```ts
+const workbook = univerAPI.getWorkbook("replace-with-unitId")
+  ?? univerAPI.createWorkbook({ id: "replace-with-unitId", name: "replace-with-display-name" });
+```
+
+`createWorkbook` takes `Partial<IWorkbookData>` — verified minimal: `{ id, name }` alone is enough
+and produces one default sheet named `Sheet1` (`getActiveSheet()` / `getSheetByName("Sheet1")` work
+immediately, no `sheetOrder`/`sheets` needed). Pin the unit's id by passing it as `data.id`, not as a
+separate option — `ICreateUnitOptions` (the second argument) has no id field. `getWorkbook(id)` on a
+missing id returns a falsy value (not a throw), so the `??` guard above is safe on first apply and a
+no-op on re-apply.
+
 ## Read A Known Range
 
 ```bash
