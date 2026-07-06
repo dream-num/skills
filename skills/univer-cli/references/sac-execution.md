@@ -42,7 +42,8 @@ UNIVERFILE=./orders.univer
 univer sac verify "$UNIVERFILE" --worktree "$WORKTREE_ID" --json
 ```
 
-`verify` checks global container and typed unit `assertions/**/*.assertions.ts` entrypoints against a sandbox copy of the scope.
+`verify` checks global container and typed unit `assertions/**/*.assertions.ts` entrypoints against
+the selected worktree state after `sac apply`.
 The global typed unit `assertions/**/*.assertions.ts` entrypoints are still ordinary assertion
 sources, not migration files.
 It does not apply pending source. It returns `reportPath`; read that path instead of constructing a
@@ -52,7 +53,6 @@ Sidecar `runs/` contains verify evidence:
 
 - `runs/<run-id>/verify-report.json`: `assertionSources[]`, total and per-unit assertion counts,
   container counts, scope-aware failures, setup errors, participant actuals, and diagnostics.
-- `runs/<run-id>/artifacts/`: sandbox copy artifacts when verify reaches runtime readback.
 
 Interpretation:
 

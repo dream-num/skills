@@ -27,7 +27,7 @@ Typical sidecar roles:
   materialize for review only.
 - `types/`: generated Facade/SaC reference material.
 - `inspect-scripts/`: scratch readonly probes.
-- `runs/`: verification reports and sandbox artifacts.
+- `runs/`: verification reports and diagnostics.
 - optional notes, plans, or success criteria if the agent or task uses them.
 
 The sidecar is source and orientation evidence. Use materialized baseline source, migration pack
