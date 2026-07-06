@@ -80,12 +80,11 @@ artifact with bounded `jq`/`sed` before rerunning the same discovery command. Re
 after target state changes such as `sac apply`, rollback, restore, reset, import/export roundtrip,
 or an explicitly new range/sheet question.
 
-Do not begin common range read/write/format/assertion tasks with lookup when the needed command or
-API pattern is already known. Use lookup and references as bounded fallback for one diagnostic-driven
-gap such as a missing API, unknown helper, argument shape, or specific unresolved symbol. If a
-primitive lookup result gives the API, minimal source shape, and read hint you need, author or verify
-next. Read a declaration or reference file only when a new failure, unfamiliar command surface, or
-missing API detail names that specific gap.
+Do not begin common range read/write/format/assertion tasks by searching when the needed command or
+API pattern is already known. Use the discovery tools (below) and reference files as a bounded
+fallback for one diagnostic-driven gap such as a missing API, unknown helper, argument shape, or
+unresolved symbol — then author or verify. Read a declaration or reference file only when a new
+failure, unfamiliar command surface, or missing API detail names that specific gap.
 
 For large-table or cross-range facts, prefer one reusable managed artifact plus bounded shell reads
 first. Use a custom readonly inspect script only after that artifact cannot answer a concrete
@@ -94,58 +93,58 @@ compact facts such as counts, grouped totals, mismatches, candidate ranges, and 
 Do not use a custom probe to mutate workbook state, read `.univer` internals, encode out-of-band
 correctness data or external expected answers, or write durable migration/assertion source.
 
-## Lookup Protocol
+## API Reference, Lookup, and Assertions
 
-Use `univer lookup` for CLI-owned API/type/manual discovery, not workbook-visible facts. Workbook
-facts still belong to managed `univer inspect` tools. Lookup is a fallback, not the default first
-step for ordinary range read/write/format/assertion work when the known pattern is sufficient.
+Two discovery tools exist. This section states what each does and when it applies; it does not rank
+them or tell you which to reach for first.
 
-Prefer short primitive lookup queries with 2-3 words:
+**`univer api find` / `univer api show`** — a zero-backend static reference over the SDK Facade and
+the SaC assertion builders. Both are **variadic**: pass several terms/symbols in one call and it
+returns a block per argument, so you resolve a whole set of symbols in a single command instead of
+one call each. `api find <term> [<term>…]` searches method names, interface/type fields, and enum
+members (substring + tokenized matching). `api show <Symbol> [<Symbol>…]` prints each symbol's exact
+definition: a method signature with the types in it expanded plus an `@example`, an interface's
+fields with its inheritance chain, or an enum's members. Output is self-contained text. It answers
+"what is this symbol / what's its exact shape".
+
+```bash
+univer api find shape textbox gradient      # each term searched independently, one call; --unit sheet|slide|doc limits to a unit kind
+univer api show FSlide FShapeBuilder FPresentation   # batch several symbols in one call (not one at a time)
+univer api show FRange.setValues ICellData CellValueType  # a method plus the types in its signature together
+univer api show AssertionRangeBuilder       # all methods of the assertion range builder
+```
+
+**`univer lookup "<task>"`** — CLI-owned task recipes. For a common task it returns a mini-recipe of
+what to do, the pitfalls, and a stop condition. It searches recipes, not individual symbols and not
+workbook-visible facts (those stay in managed `univer inspect` tools). Text output has `Query`,
+`Mode`, and optional `Suggested queries`; on `Mode: decompose` it lists shorter primitive queries.
+Do not pass `--json`. It answers "how is this kind of task usually done".
 
 ```bash
 univer lookup "range read"
 univer lookup "range write"
 univer lookup "range clear"
-univer lookup "range address"
 ```
 
-Use exact-symbol lookup when you need a precise declaration:
+### Assertions
 
-```bash
-univer lookup "FRange.getCellDatas"
-univer lookup "FRange.setValues"
+Assertion sources are authored with `defineAssertions` from `univer:sac/assertions`. It hands you
+per-unit entry helpers — destructure the ones you need; inside a unit, `range(...)` / `sheet(...)`
+carry the assertion methods:
+
+```ts
+import { defineAssertions } from "univer:sac/assertions";
+export default defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit, target, facts }) => {
+  sheetUnit("<sheet-unitId>", ({ sheet, range }) => {
+    range("Summary!A1:B2").values([[1, 2]]);
+  });
+});
 ```
 
-Do not paste a whole task prompt into lookup. Bad queries include
-`range set values clear content spreadsheet facade` or long worksheet instructions that mix read,
-write, clear, format, assertion, and workbook evidence in one search. Split complex tasks into
-primitive lookups, then follow the returned `Read` hints.
-
-Lookup text output is the public agent-facing contract. It includes `Query`, `Mode`, optional
-`Suggested queries`, and `Read` sections. Do not use `univer lookup ... --json` or request another
-machine-readable lookup format.
-
-Fallback lookup flow:
-
-1. Start lookup only after a typecheck/apply/verify/command diagnostic or genuinely unfamiliar
-   command surface names the immediate API/detail gap. If the common pattern is already known, skip
-   lookup and author or verify.
-2. Use one short primitive query for that gap, such as `univer lookup "range values"`,
-   `univer lookup "display values"`, or `univer lookup "set number format"`.
-3. Read the text sections. Use `Read` commands for exact declaration lines, and use `Suggested
-   queries` only when lookup reports `Mode: decompose`.
-4. For compound spreadsheet tasks, follow shorter suggested primitive lookups only for still-open
-   API gaps instead of trying to make one broad lookup cover reading, writing, formatting, and
-   assertions.
-
-Stop lookup once the immediate API gap is closed. A successful primitive lookup such as
-`range write`, `range clear`, `number format`, or `range style` should usually be followed by
-authoring or evidence work, not adjacent lookup expansion. Use exact-symbol lookup only when a
-specific declaration is still ambiguous or a typecheck/apply failure points at that API.
-
-Lookup read hints are designed to work with shell tools. Use the returned `sed -n` command or exact
-location to read the declaration lines you need; avoid broad `rg` over all `types/*.d.ts` or full
-type-file reads when short lookup or exact-symbol lookup can bound the context.
+The builder method surfaces are `AssertionRangeBuilder` / `AssertionSheetBuilder` (sheet unit),
+`AssertionBaseTableBuilder` (base), `AssertionSlideShapeBuilder` (slide), and the doc builders;
+`api show <Builder>` lists their methods. `references/sac-authoring.md` has full import names and
+copyable examples.
 
 ## Task-Local Route Contracts
 
@@ -289,13 +288,12 @@ not route assertions by unit name, sheet name, or implicit active workbook state
 Split entrypoints by unit or target concern, not by migration pack, and update them to the intended
 final state as migrations change behavior.
 
-SaC source imports generated ambient modules for migration packs and assertions. Full Facade method
-signatures live in the sidecar `types/*.d.ts`; use short `univer lookup` queries such as
-`range read`, `range write`, or exact symbols such as `FRange.getCellDatas` for concise API
-navigation, then follow read hints when you need exact declarations. For sidecar-local checks, scope
-lookups narrowly, e.g. `rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of
-broad reads of the sidecar or CLI install. See `references/sac-authoring.md` for import names and
-copyable examples.
+SaC source imports generated ambient modules for migration packs and assertions. Facade method
+signatures and assertion builders are available two ways: `api show <Symbol>` / `api find <term>`
+(self-contained, covers SDK Facade + assertion builders), and the full declarations in the sidecar
+`types/*.d.ts`. For a direct sidecar read, scope it narrowly, e.g.
+`rg "setFormula|class FRange" <sidecarPath>/types -g '*.d.ts'`, instead of broad reads of the
+sidecar or CLI install. See `references/sac-authoring.md` for import names and copyable examples.
 
 Migration templates are source scaffolds, not a DSL. Discover them with
 `univer sac migration templates --json`, choose one only when its `useWhen` matches target-visible
