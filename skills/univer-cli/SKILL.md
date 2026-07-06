@@ -317,10 +317,10 @@ before re-authoring; there is no separate commit/restore step.
 - `sac apply` executes pending migration source into the worktree as one commit. Apply success is
   not proof that target-visible behavior is correct.
 - `sac rollback` removes the latest worktree commit (LIFO). It is not arbitrary spreadsheet undo.
-- `sac verify` checks file-level typed unit assertions against a sandbox copy of the worktree. It
-  does not apply pending source. It returns a `reportPath`; read the report for scope-aware failure
-  facts such as `scope`, `unitType`, `unitId`, assertion kind, target, expected value, actual
-  value, participant actuals, first difference, and setup error code.
+- `sac verify` checks file-level typed unit assertions against the worktree state after
+  `sac apply`. It does not apply pending source. It returns a `reportPath`; read the report for
+  scope-aware failure facts such as `scope`, `unitType`, `unitId`, assertion kind, target, expected
+  value, actual value, participant actuals, first difference, and setup error code.
 
 Missing global assertions are setup errors and are not completion evidence for changed durable
 behavior. Treat failed assertions as a decision point: either the target final state is wrong, or
