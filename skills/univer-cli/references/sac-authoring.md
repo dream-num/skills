@@ -63,9 +63,10 @@ from migration apply source.
 For ranges with intentional blanks, clear the target range first and skip per-cell writes for blank
 cells, or write nonblank cells individually. Do not pass `null` inside `setValues()` matrices. When
 writing totals or other formulas in amount columns, set the formula/value and expected number format
-in the same migration. Prefer A1 range strings for simple table writes. Before broad type searches,
-use short lookup queries such as `univer lookup "range address"` or exact-symbol queries such as
-`univer lookup "FRange.offset"`, then follow the returned `sed -n` read hint.
+in the same migration. Prefer A1 range strings for simple table writes. For a common task, `univer lookup "<task>"` (e.g.
+`univer lookup "range address"`) returns a recipe; for an exact symbol or type, use
+`univer api show FRange.offset` or `univer api find <term>` — both print self-contained definitions
+(`lookup` no longer resolves individual symbols).
 
 If a pack has already been applied and behavior needs to change, prefer a follow-up migration pack
 over editing already-applied source into hash or applied-state drift.
