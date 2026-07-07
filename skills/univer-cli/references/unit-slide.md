@@ -142,15 +142,16 @@ A `roundRect` shape's corner radius has no builder setter — inject it after `b
 `cornerRadius ≈ (adj / 100000) × min(width, height)`. `50000` gives a full pill (radius = half the
 short side); the default is ≈16667 (16.7%). Verified via screenshot.
 
-Shape type and gradient type enum members (e.g. the arrow family, gradient stops) are real Facade
-capabilities but do not resolve well from natural-language lookup queries — a query like
-`"slide gradient fill"` or `"slide arrow shape"` can return an unrelated chart symbol instead. Use
-exact-symbol lookup for these instead of a task-intent query:
+Shape type and gradient type enum members (the arrow family, gradient stops, etc.) are in the
+`api find`/`api show` index. Look them up by their declared symbol name — `ShapeTypeEnum` /
+`ShapeGradientTypeEnum` (the runtime `univerAPI.Enum` aliases are `SlideShapeTypeEnum` /
+`SlideShapeGradientTypeEnum`) — rather than trying to recall the member list. `api find` surfaces
+them too; on a slide task add `--unit slide`:
 
 ```bash
-univer lookup "FShapeBuilder.setShapeGradientFill"
-univer lookup "ShapeGradientTypeEnum"
-univer lookup "ShapeTypeEnum"
+univer api show ShapeTypeEnum ShapeGradientTypeEnum   # full member lists (declared names)
+univer api show FShapeBuilder.setShapeGradientFill    # the builder method
+univer api find arrow --unit slide                    # surfaces the arrow shape enums
 ```
 
 ## Slide value & assertion surfaces
