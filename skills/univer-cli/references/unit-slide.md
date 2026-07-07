@@ -60,8 +60,8 @@ position/size/style setters, then `insertShape()` / `insertImage(builder.build()
 Default style for a new text box (SDK-defined constants, not task-specific): white solid fill, 1px
 `#bcbcbc` stroke, text 16px `#111827` (near-black), left/top alignment; size defaults to 260×88 when
 `setSize` is omitted. A plain `newShape()` (no fill/stroke set) is different: it renders with an
-opaque **blue** fill (≈`#4472c4`) plus a thin border, not a white box — override both explicitly on a
-non-default background just as you would for a text box.
+opaque **blue** fill (measured `#4472c4`) plus a 1px black (`#000000`) border, not a white box —
+override both explicitly on a non-default background just as you would for a text box.
 
 Check these three against the page background before treating a shape/text-box task as done;
 none of them error when left at their default, they just render wrong:
