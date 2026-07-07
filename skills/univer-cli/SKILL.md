@@ -108,7 +108,7 @@ fields with its inheritance chain, or an enum's members. Output is self-containe
 "what is this symbol / what's its exact shape".
 
 ```bash
-univer api find shape textbox gradient      # each term searched independently, one call; --unit sheet|slide|doc limits to a unit kind
+univer api find shape textbox gradient      # each term searched independently, one call; --unit sheet|slide|doc limits to a unit kind — always set it on a slide/doc task
 univer api show FSlide FShapeBuilder FPresentation   # batch several symbols in one call (not one at a time)
 univer api show FRange.setValues ICellData CellValueType  # a method plus the types in its signature together
 univer api show AssertionRangeBuilder       # all methods of the assertion range builder
