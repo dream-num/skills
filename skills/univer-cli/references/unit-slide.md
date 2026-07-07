@@ -59,16 +59,20 @@ position/size/style setters, then `insertShape()` / `insertImage(builder.build()
 
 Default style for a new text box (SDK-defined constants, not task-specific): white solid fill, 1px
 `#bcbcbc` stroke, text 16px `#111827` (near-black), left/top alignment; size defaults to 260×88 when
-`setSize` is omitted.
+`setSize` is omitted. A plain `newShape()` (no fill/stroke set) is different: it renders with an
+opaque **blue** fill (≈`#4472c4`) plus a thin border, not a white box — override both explicitly on a
+non-default background just as you would for a text box.
 
 Check these three against the page background before treating a shape/text-box task as done;
 none of them error when left at their default, they just render wrong:
 
-- **Fill**: `setNoneFill()` / `setShapeSolidFill(color[, opacity])` — the default white fill renders
-  as a solid block on a dark or colored background.
-- **Stroke**: removing it requires `setStrokeOpacity(0)`. `setStrokeWidth(0)` does **not** suppress
-  the rendered stroke (verified: the stroke stays visible on both `newTextBox()` and `newShape()`
-  elements) — do not use it as the way to hide a border.
+- **Fill**: `setNoneFill()` / `setShapeSolidFill(color[, opacity])` — the default fill (white text
+  box, blue shape) renders as a solid block on a dark or colored background.
+- **Stroke**: remove it with `setStrokeOpacity(0)` or
+  `setStrokeLineType(univerAPI.Enum.SlideShapeLineTypeEnum.NoLine)` (both verified equivalent; NoLine
+  is the DrawingML-semantic "no line" and is the cleaner form). `setStrokeWidth(0)` does **not**
+  suppress the rendered stroke (verified: the stroke stays visible on both `newTextBox()` and
+  `newShape()` elements) — do not use it as the way to hide a border.
 - **Text color**: `setTextStyle({ color })` — the default near-black text is invisible on a dark
   background if no color is set.
 
@@ -132,6 +136,11 @@ info.element.shapeData.shapeText.horizontalAlign = "center"; // "left" | "center
 info.element.shapeData.shapeText.verticalAlign = "middle"; // "top" | "middle" | "bottom", default "top"
 slide.insertShape(info);
 ```
+
+A `roundRect` shape's corner radius has no builder setter — inject it after `build()` the same way:
+`info.element.shapeData.adjustValues = { adj }` where `adj ∈ [0, 50000]` and
+`cornerRadius ≈ (adj / 100000) × min(width, height)`. `50000` gives a full pill (radius = half the
+short side); the default is ≈16667 (16.7%). Verified via screenshot.
 
 Shape type and gradient type enum members (e.g. the arrow family, gradient stops) are real Facade
 capabilities but do not resolve well from natural-language lookup queries — a query like
