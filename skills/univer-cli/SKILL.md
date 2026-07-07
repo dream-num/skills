@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when working with `.univer` targets, Univer CLI commands, worktrees, SaC sidecars, managed inspect tools, migration packs, spreadsheet formulas/formatting/charts, preview, worktree merge, import/export, or Excel-compatible handoff."
+description: "Use when working with `.univer` targets, Univer CLI commands, worktrees, SaC sidecars, managed inspect tools, migration packs, sheet formulas/formatting/charts, Doc unit Markdown authoring, preview, worktree merge, import/export, or Excel-compatible handoff."
 ---
 
 # Univer CLI
@@ -54,8 +54,8 @@ value-surface rules, and creation recipe. Skipping it can produce silently wrong
 command error, a self-authored `sac verify` may still pass, and for a `slide` unit some defects
 (default styles, text color, layout overflow) have no assertion coverage at all — a rendered
 `screenshot` is the only surface that catches them. For a `sheet` unit, read
-`references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`. (`base` and `doc`
-per-unit files do not exist yet.)
+`references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`; for a `doc` unit,
+read `references/unit-doc.md`. (`base` per-unit guidance is reserved for a later version.)
 
 ## Public Surfaces
 
@@ -65,6 +65,7 @@ per-unit files do not exist yet.)
 | Isolate work for review | `worktree add`, then work under a required `--worktree <id>` |
 | Read target evidence | task-local route contract when present; otherwise focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
 | Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
+| Create or replace Doc content from Markdown | SaC migration source with `univerAPI.convertMarkdown(markdown)` and `document.replaceRange(range, fragment)`; read `references/unit-doc.md` |
 | Recover an applied SaC boundary | `sac rollback` |
 | Check scope state | `status` |
 | Land or drop a worktree | `worktree ready`, `worktree merge`, `worktree discard` |
@@ -111,6 +112,7 @@ fields with its inheritance chain, or an enum's members. Output is self-containe
 univer api find shape textbox gradient      # each term searched independently, one call; --unit sheet|slide|doc limits to a unit kind — always set it on a slide/doc task
 univer api show FSlide FShapeBuilder FPresentation   # batch several symbols in one call (not one at a time)
 univer api show FRange.setValues ICellData CellValueType  # a method plus the types in its signature together
+univer api show FUniver.convertMarkdown FDocument.replaceRange FDocument.toMarkdown FDocumentTable.toMarkdown
 univer api show AssertionRangeBuilder       # all methods of the assertion range builder
 ```
 
@@ -124,6 +126,7 @@ Do not pass `--json`. It answers "how is this kind of task usually done".
 univer lookup "range read"
 univer lookup "range write"
 univer lookup "range clear"
+univer lookup "create doc from markdown"
 ```
 
 ### Assertions
@@ -407,8 +410,9 @@ By target unit type:
   shape/text Facade pocket guide (default styles, fill/stroke/text-color overrides, `setText`
   geometry reset, alignment injection), which assertion methods cover which facts, and the
   `screenshot` self-check recipe.
-- `base` and `doc` units do not yet have a `references/unit-<unit>.md` file; per-unit guidance for
-  them is reserved for a later version.
+- `references/unit-doc.md`: open for `doc`-unit Markdown authoring, fragment apply/export, table
+  Markdown behavior, and the lookup/API symbols to resolve before authoring migration source.
+- `base` per-unit guidance is reserved for a later version.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
 you read. Reopen a reference only when a new failure or missing detail is outside the already-read
