@@ -77,6 +77,43 @@ text-box size (260×88), overwriting an earlier `setSize()` call; the position a
 unaffected. Call `setSize()` **after** `setText()` to keep the intended size. `newTextBox()` is not
 affected by call order.
 
+**Text sizing & wrapping** is the top cause of overflow / CJK line-break rework — eyeballing font
+size and box width leads to repeated fix rounds. Two facts to encode up front:
+
+- `fontSize` is interpreted as **points, not pixels**: the renderer draws it as `Npt`
+  (`Npt = N × 96/72 px`), so a value passed as if it were px renders **1.333× too large** and CJK
+  text overflows its box most easily. Convert `fontSize = designPx × 0.75` (e.g. visual 24px → pass
+  `18`). Keep positions/box widths/line heights in px; convert only at the `setTextStyle` step.
+- A text box **wraps to its box width by default**, and any "estimate glyph width × char count" box
+  sizing is always too narrow (CJK full-width glyphs, 4px inner padding, real font metrics), so it
+  wraps. Do not size by estimate — after `build()`, inject `shapeText.textWrap = "none"` (no
+  auto-wrap; explicit `\n` still breaks lines) and `autoFit = true` (real-font-metric measurement
+  auto-sizes the box to the text's true width; center/right alignment shifts the box to keep its
+  anchor):
+
+```ts
+const info = slide
+  .newTextBox()
+  .setText(text)
+  .setTextStyle({ color: "#111827", fontSize: 24 * 0.75 }) // px → pt
+  .setNoneFill()
+  .setStrokeOpacity(0)
+  .setSize(10, lineCount * 24 * 1.4) // width is overwritten by autoFit; give height per line count
+  .setAbsolutePosition(x, y)
+  .build();
+info.element.shapeData.shapeText.textWrap = "none";
+info.element.shapeData.shapeText.autoFit = true;
+slide.insertShape(info);
+```
+
+- `autoFit` sizes **width only**, never height — give multi-line boxes enough height yourself or the
+  text is clipped vertically. Heuristic: `height = lineCount × fontSizePx × 1.4` (1.4–1.5 line height).
+
+Colors accept `rgba(r, g, b, a)` and the alpha renders (verified: both text color and fill honor it)
+— `setShapeSolidFill("#dc2626", 0.3)` and `setShapeSolidFill("rgba(220,38,38,0.3)")` render
+identically, and semi-transparent text is done by baking alpha into the text color. Avoid `hsl()` and
+color names.
+
 `setTextStyle` has no alignment field (only `color`/`fontFamily`/`fontSize`/`bold`/`italic`/
 `underline`). Horizontal/vertical alignment exists at the data layer and renders correctly when
 injected into the built element before inserting it:
