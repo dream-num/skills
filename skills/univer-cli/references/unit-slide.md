@@ -3,6 +3,17 @@
 Unit-specific reference for `slide` units. Open it when the target unit is a `slide` presentation,
 before authoring shape/text migrations or slide assertions.
 
+## Prefer SVG-first for whole-page generation
+
+**When generating a slide page, default to drawing the full target page as one SVG (your strongest
+visual authoring language), then compile it with `univer compile-svg page.svg` into facade TS and
+paste that into the migration — instead of hand-writing shape/text calls one by one.** In SVG you
+can lay out the whole page (positions, sizes, colors, layering) correctly in a single pass, and the
+compiler bakes in the geometry conversion and facade gotcha avoidance documented in this file (see
+the "SVG → facade" section near the end for usage). Reserve hand-written facade calls for local
+touch-ups on compiled output, or for pages with only one or two elements where drawing an SVG would
+be slower.
+
 ## Managed slide inspect tools
 
 | Tool | Use when |
@@ -179,6 +190,25 @@ Two coverage gaps to plan around:
 - Text color, font, and alignment have **no** assertion coverage at all (`style()` excludes
   `shapeText`; `text()` checks only the string). For any task where those must be correct, `sac
   verify` passing is not sufficient evidence — render and inspect the page.
+
+## SVG → facade (`univer compile-svg`, the preferred generation path — see top)
+
+`univer compile-svg page.svg` deterministically compiles one SVG (inline styles) into a block of
+slide facade TS on stdout: rect / circle / ellipse / path / line / polygon / text (including
+per-`tspan` colored runs) / linear gradients / transforms map to `newShape` / `newTextBox` / custom
+geometry calls, with the gotchas above baked in (px→pt, textWrap/autoFit, NoLine stroke removal,
+roundRect adj, per-run coloring, marker arrowheads, dashes). `--json` emits `{ ts, warnings }`.
+
+- The compiled code uses `slide` and `univerAPI` from the surrounding scope. In a migration's
+  `apply(context)`, bind both before pasting: `const { univerAPI } = context;`, get the presentation
+  (`univerAPI.getPresentation(...)` or the create-fresh guard above), then bind the target page as
+  `slide` (`presentation.getSlides()[0]` / `getSlideById(id)` / `appendSlide()`). Keep the SVG
+  `viewBox` equal to the deck's page size (default page 960×540; if yours differs, match the
+  `defaultPageSize` you created the deck with).
+- Unconvertible features (mask / clipPath / filter / embedded `<image>` bitmaps) fail the compile or
+  degrade with a warning — read the warnings first and redraw the SVG as instructed.
+- Compilation is deterministic, but whether your SVG looks like the target is still judged by
+  `screenshot` output, not by the compile succeeding.
 
 ## Visual verification
 
