@@ -27,7 +27,6 @@ document.replaceRange(range, fragment);
 For exact API shape, query the CLI references:
 
 ```bash
-univer lookup "create doc from markdown"
 univer api show FUniver.createDocument FUniver.getDocument FUniver.convertMarkdown FDocument.replaceRange
 univer api show FDocument.toMarkdown FDocumentTable.toMarkdown
 univer api find markdown --unit doc
