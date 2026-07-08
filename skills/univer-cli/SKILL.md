@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when working with `.univer` targets, Univer CLI commands, worktrees, SaC sidecars, managed inspect tools, migration packs, preview, worktree merge, import/export, or Excel-compatible handoff."
+description: "Use when working with `.univer` targets, Univer CLI commands, worktrees, SaC sidecars, managed inspect tools, migration packs, spreadsheet formulas/formatting/charts, preview, worktree merge, import/export, or Excel-compatible handoff."
 ---
 
 # Univer CLI
@@ -11,19 +11,13 @@ handoff. Use `univer help` and `univer help <command...>` for exact command synt
 
 ## Core Model
 
-A `.univer` path is the univerfile you work on: the authoritative store for the user's content. Pick
+Treat target-visible unit state as the source of truth. Command success, metadata, local notes, or
+generated source do not prove that sheets, values, formulas, formatting, charts, resources, or
+handoff files are correct.
+
+A `.univer` path is the univerfile you work on: the authoritative store for that file's units. Pick
 one explicit path such as `./Budget.univer` and pass it to commands, including `status`. Do not
 target work by `sessionId`, runtime id, display name, sheet name, or the current directory.
-
-A **unit** is a top-level content object inside a `.univer` file. Common unit types are `sheet`
-(spreadsheet workbook), `slide` (presentation), `doc` (document), and `base` (table/database). A
-`unitId` selects that top-level object. Sheet names, A1 ranges, values, formulas, styles, tables,
-filters, charts, shapes, images, document paragraphs, and document tables are coordinates or
-resources inside a selected unit; they are not substitutes for `unitId`.
-
-Treat target-visible state inside the selected unit as the source of truth. Command success,
-metadata, local notes, or generated source do not prove that sheets, values, formulas, formatting,
-charts, document text, document tables, resources, or handoff files are correct.
 
 Each univerfile has two scopes. `trunk` is the authoritative mainline a person sees and may edit. A
 `worktree` is an isolated copy where agents do work so it can be reviewed before it touches trunk.
@@ -45,22 +39,23 @@ refines the same change, keep working there — more SaC returns a `ready` workt
 status; when done, mark it `ready` and hand off a fresh link with `univer open`. Use a new worktree for a
 merged or discarded one, or for a separate task.
 
+A `.univer` file holds top-level units; `unitId` identifies a unit inside it. Sheet names, A1
+ranges, values, formulas, styles, tables, filters, charts, shapes, and images are coordinates or
+resources inside a selected unit.
+
 Use public surfaces for reads and writes. A `.univer` univerfile is not an agent-handwritten source
 file; do not bypass the CLI/SaC surfaces to patch it by hand.
 
 ## Per-Unit References
 
-Before authoring any read, write, or assertion for a top-level unit — including creating one that
-does not exist yet — identify its type (`sheet`, `slide`, `doc`, or `base`) and read the matching
-`references/unit-<type>.md` first. If the task does not provide a `unitId` or type, discover them
-with target evidence such as the managed `units` inspect tool before writing source. The per-unit
-reference owns that type's internal model, value-surface rules, and creation recipe. Skipping it can
-produce silently wrong output: there is no command error, a self-authored `sac verify` may still
-pass, and for a `slide` unit some defects (default styles, text color, layout overflow) have no
-assertion coverage at all — a rendered `screenshot` is the only surface that catches them. For a
-`sheet` unit, read `references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`;
-for a `doc` unit, read `references/unit-doc.md`. (`base` per-unit guidance is reserved for a later
-version.)
+Before authoring any read, write, or assertion on a unit — including creating one that does not
+exist yet — read its `references/unit-<type>.md` first; it owns that unit's cell/shape model,
+value-surface rules, and creation recipe. Skipping it can produce silently wrong output: there is no
+command error, a self-authored `sac verify` may still pass, and for a `slide` unit some defects
+(default styles, text color, layout overflow) have no assertion coverage at all — a rendered
+`screenshot` is the only surface that catches them. For a `sheet` unit, read
+`references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`; for a `doc` unit,
+read `references/unit-doc.md`. (`base` per-unit guidance is reserved for a later version.)
 
 ## Public Surfaces
 
@@ -70,7 +65,6 @@ version.)
 | Isolate work for review | `worktree add`, then work under a required `--worktree <id>` |
 | Read target evidence | task-local route contract when present; otherwise focused managed `inspect --tool`; custom readonly `inspect --script` only for bounded aggregation/comparison gaps |
 | Make durable changes | `sac materialize`, `sac migration create`, source edits, `sac apply`, `sac verify` |
-| Create or replace Doc content from Markdown | SaC migration source with `univerAPI.convertMarkdown(markdown)` and `document.replaceRange(range, fragment)`; read `references/unit-doc.md` |
 | Recover an applied SaC boundary | `sac rollback` |
 | Check scope state | `status` |
 | Land or drop a worktree | `worktree ready`, `worktree merge`, `worktree discard` |
@@ -117,7 +111,6 @@ fields with its inheritance chain, or an enum's members. Output is self-containe
 univer api find shape textbox gradient      # each term searched independently, one call; --unit sheet|slide|doc limits to a unit kind — always set it on a slide/doc task
 univer api show FSlide FShapeBuilder FPresentation   # batch several symbols in one call (not one at a time)
 univer api show FRange.setValues ICellData CellValueType  # a method plus the types in its signature together
-univer api show FUniver.convertMarkdown FDocument.replaceRange FDocument.toMarkdown FDocumentTable.toMarkdown
 univer api show AssertionRangeBuilder       # all methods of the assertion range builder
 ```
 
@@ -131,7 +124,6 @@ Do not pass `--json`. It answers "how is this kind of task usually done".
 univer lookup "range read"
 univer lookup "range write"
 univer lookup "range clear"
-univer lookup "create doc from markdown"
 ```
 
 ### Assertions
