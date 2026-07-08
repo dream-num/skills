@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when working with `.univer` targets, Univer CLI commands, worktrees, SaC sidecars, managed inspect tools, migration packs, spreadsheets, documents, presentations, data tables, preview, worktree merge, import/export, or Excel-compatible handoff."
+description: "Use when working with `.univer` targets, Univer CLI commands, worktrees, SaC sidecars, managed inspect tools, migration packs, preview, worktree merge, import/export, or Excel-compatible handoff."
 ---
 
 # Univer CLI
