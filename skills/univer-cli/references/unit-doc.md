@@ -46,6 +46,9 @@ Use `document.replaceRange(range, fragment)` for multi-paragraph Markdown and wh
 replacement. The text and paragraph helpers are for narrower shapes; if a fragment shape is
 rejected, follow the diagnostic and use `replaceRange`.
 
+Markdown table cells are inline text containers. Applying a Markdown table fragment to
+`table.getCellContentRange(row, column)` is rejected because nested tables are not supported.
+
 Use Markdown export as an agent-readable content view when the task asks for supported Doc content in
 Markdown. Treat it as a content view, not a full-fidelity Doc snapshot:
 
