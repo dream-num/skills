@@ -104,7 +104,9 @@ size and box width leads to repeated fix rounds. Two facts to encode up front:
   wraps. Do not size by estimate — after `build()`, inject `shapeText.textWrap = "none"` (no
   auto-wrap; explicit `\n` still breaks lines) and `autoFit = true` (real-font-metric measurement
   auto-sizes the box to the text's true width; center/right alignment shifts the box to keep its
-  anchor):
+  anchor). These fields are runtime-honored but missing from the SDK types (a known SDK typing
+  gap), and `sac apply` typechecks migration source — typed property assignment fails with
+  TS2339/TS18048, so go through a local `as any` alias until the SDK types are fixed:
 
 ```ts
 const info = slide
@@ -116,8 +118,9 @@ const info = slide
   .setSize(10, lineCount * 24 * 1.4) // width is overwritten by autoFit; give height per line count
   .setAbsolutePosition(x, y)
   .build();
-info.element.shapeData.shapeText.textWrap = "none";
-info.element.shapeData.shapeText.autoFit = true;
+const infoData = info.element.shapeData as any; // SDK types miss these runtime fields
+infoData.shapeText.textWrap = "none";
+infoData.shapeText.autoFit = true;
 slide.insertShape(info);
 ```
 
@@ -131,7 +134,8 @@ color names.
 
 `setTextStyle` has no alignment field (only `color`/`fontFamily`/`fontSize`/`bold`/`italic`/
 `underline`). Horizontal/vertical alignment exists at the data layer and renders correctly when
-injected into the built element before inserting it:
+injected into the built element before inserting it (same `as any` alias — these fields are also
+missing from the SDK types and typed assignment fails the `sac apply` typecheck):
 
 ```ts
 const info = slide
@@ -143,8 +147,9 @@ const info = slide
   .setShapeSolidFill("#4472c4")
   .setTextStyle({ color: "#ffffff", fontSize: 20 })
   .build();
-info.element.shapeData.shapeText.horizontalAlign = "center"; // "left" | "center" | "right", default "left"
-info.element.shapeData.shapeText.verticalAlign = "middle"; // "top" | "middle" | "bottom", default "top"
+const infoData = info.element.shapeData as any;
+infoData.shapeText.horizontalAlign = "center"; // "left" | "center" | "right", default "left"
+infoData.shapeText.verticalAlign = "middle"; // "top" | "middle" | "bottom", default "top"
 slide.insertShape(info);
 ```
 
