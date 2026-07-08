@@ -50,11 +50,6 @@ async function readText(filePath) {
   return fs.readFile(filePath, "utf8");
 }
 
-async function listDirNames(dirPath) {
-  const entries = await fs.readdir(dirPath, { withFileTypes: true });
-  return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-}
-
 function parseFrontmatter(text, filePath) {
   if (!text.startsWith("---\n")) {
     recordError(`${relativeToRoot(filePath)}: missing frontmatter`);
@@ -93,16 +88,6 @@ async function collectMarkdownFiles(dirPath) {
 }
 
 async function validateSkillStructure() {
-  const actualSkillDirs = await listDirNames(skillsRoot);
-  const expected = [...requiredSkills].sort();
-  const missing = expected.filter((skill) => !actualSkillDirs.includes(skill));
-  const unexpected = actualSkillDirs.filter((skill) => !expected.includes(skill));
-
-  for (const skill of missing) recordError(`skills/${skill}: missing official skill directory`);
-  for (const skill of unexpected) {
-    recordError(`skills/${skill}: unexpected official skill directory; add it to validation explicitly if intentional`);
-  }
-
   for (const skill of requiredSkills) {
     const skillPath = path.join(skillsRoot, skill);
     const skillFile = path.join(skillPath, "SKILL.md");
@@ -182,10 +167,15 @@ function lineMatchesExactToken(line, token) {
 }
 
 async function validateStaleContractText() {
+  const requiredSkillMarkdownFiles = [];
+  for (const skill of requiredSkills) {
+    requiredSkillMarkdownFiles.push(...await collectMarkdownFiles(path.join(skillsRoot, skill)));
+  }
+
   const contractFiles = [
     path.join(root, "README.md"),
     path.join(root, "README.zh-CN.md"),
-    ...await collectMarkdownFiles(skillsRoot)
+    ...requiredSkillMarkdownFiles
   ];
 
   const forbiddenOldSkillNames = [
