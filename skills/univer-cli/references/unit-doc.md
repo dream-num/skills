@@ -1,7 +1,9 @@
 # Doc Unit
 
-Unit-specific reference for `doc` units. Open it before creating or replacing document content,
-especially when the desired content is naturally represented as Markdown.
+A `doc` unit is a top-level document object inside a `.univer` file. It is selected by `unitId`; it
+is not the `.univer` file path, not a paragraph range, and not the Markdown fragment you generate.
+Open this reference before creating or replacing document content, especially when the desired
+content is naturally represented as Markdown.
 
 ## When to use Markdown
 
@@ -20,8 +22,8 @@ univer api find markdown --unit doc
 
 ## Markdown authoring pocket guide
 
-In SaC migration source, create or resolve the document unit, convert Markdown to an
-`FDocumentFragment`, then apply it through a Doc facade range:
+In SaC migration source, create or resolve the top-level document unit by its `unitId`, convert
+Markdown to an `FDocumentFragment`, then apply it through a Doc facade range:
 
 ```ts
 const document =
