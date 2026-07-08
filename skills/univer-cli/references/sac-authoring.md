@@ -89,6 +89,22 @@ UNIVERFILE=./orders.univer
 univer sac migration create "update-prices" "$UNIVERFILE" --template sheet-keyed-write
 ```
 
+For complex Doc initialization, use the Doc Typst authoring form:
+
+```bash
+univer sac migration create "draft-work-order" "$UNIVERFILE" --template doc-typst-pages
+```
+
+Use this for formal documents, papers, resumes, form templates, public notices, work orders, or
+batch-generated Docs. `typst-doc-pages` remains a compatibility alias only. The `.typ` files under
+`typst/` are author source for one migration pack; `univer sac migration build <univerfile>
+--worktree <id> --pack <pack-id>` refreshes generated Facade TypeScript and review artifacts, while
+`sac apply` executes only the generated TypeScript. For later local paragraph/style
+changes, shapes, table borders, figure/caption adjustments, or precise positioning, create a normal
+Facade migration pack. If Typst must be used again after later refinements, create an explicit
+replacement/regeneration pack and treat it as potentially overwriting refinements that were not
+ported into that new pack.
+
 If no template fits, create an ordinary migration pack and author the source directly.
 
 Do not infer template availability by passing invalid ids, scanning sidecars, or scanning installed

@@ -300,6 +300,18 @@ Migration templates are source scaffolds, not a DSL. Discover them with
 evidence, then fill the generated ordinary SaC source from evidence. If no template fits, create an
 ordinary migration pack.
 
+For complex Doc initialization, formal documents, papers, resumes, form templates, public notices,
+work orders, or batch-generated Docs, strongly prefer
+`univer sac migration create ... --template doc-typst-pages`. `typst-doc-pages` is only a
+compatibility alias. The `.typ` files under `typst/` are migration-scoped author source; run
+`univer sac migration build <univerfile> --worktree <id> --pack <pack-id>` to refresh generated
+Facade TypeScript and review artifacts. `sac apply` executes the generated TypeScript and does not
+run Typst translation. For later precise paragraph/style, shape, table
+border, figure/caption, or positioning refinements, create a normal Facade migration pack instead
+of editing an already-applied Typst pack. Use Typst again only as an explicit replacement or
+regeneration pack, and treat it as potentially overwriting later local refinements unless they are
+ported into that new pack.
+
 If behavior changes after a pack has been applied, prefer a follow-up migration over editing
 already-applied source into hash/applied-state drift.
 
