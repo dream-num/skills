@@ -24,11 +24,14 @@ const fragment = univerAPI.convertMarkdown(markdown);
 document.replaceRange(range, fragment);
 ```
 
+`convertMarkdown` returns an opaque Doc facade fragment. Pass that fragment to Doc facade methods;
+do not inspect or construct the underlying document body.
+
 For exact API shape, query the CLI references:
 
 ```bash
 univer api show FUniver.createDocument FUniver.getDocument FUniver.convertMarkdown FDocument.replaceRange
-univer api show FDocument.toMarkdown FDocumentTable.toMarkdown
+univer api show FDocument.toMarkdown FDocumentParagraph.toMarkdown FDocumentTable.toMarkdown
 univer api find markdown --unit doc
 ```
 
@@ -45,6 +48,7 @@ Markdown. Treat it as a content view, not a full-fidelity Doc snapshot:
 
 ```ts
 const markdown = document.toMarkdown();
+const paragraphMarkdown = paragraph.toMarkdown();
 const firstTableMarkdown = document.getTables()[0]?.toMarkdown();
 ```
 
