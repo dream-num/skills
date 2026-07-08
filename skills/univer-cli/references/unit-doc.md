@@ -21,6 +21,7 @@ Minimal shape:
 
 ```ts
 const fragment = univerAPI.convertMarkdown(markdown);
+const range = paragraph.getRange();
 document.replaceRange(range, fragment);
 ```
 
@@ -31,17 +32,19 @@ For exact API shape, query the CLI references:
 
 ```bash
 univer api show FUniver.createDocument FUniver.getDocument FUniver.convertMarkdown FDocument.replaceRange
+univer api show IFDocumentTextRange FDocumentParagraph.getRange FDocumentTable.getRange FDocumentTable.getCellContentRange
 univer api show FDocument.toMarkdown FDocumentParagraph.toMarkdown FDocumentTable.toMarkdown
 univer api find markdown --unit doc
 ```
 
-For an existing document, derive the replacement range from Doc facade state such as paragraph
-ranges, table cell content ranges, or a previously discovered target range. Do not compute offsets
-from a separate Markdown string or from package internals.
+For an existing document, derive the replacement range from Doc facade state: use
+`paragraph.getRange()` for a paragraph, `table.getRange()` for a whole table, and
+`table.getCellContentRange(row, column)` for table cell content. Do not compute offsets from a
+separate Markdown string or from package internals.
 
-Use `document.replaceRange(range, fragment)` for multi-paragraph Markdown and tables. The text and
-paragraph helpers are for narrower shapes; if a fragment shape is rejected, follow the diagnostic
-and use `replaceRange`.
+Use `document.replaceRange(range, fragment)` for multi-paragraph Markdown and whole-table
+replacement. The text and paragraph helpers are for narrower shapes; if a fragment shape is
+rejected, follow the diagnostic and use `replaceRange`.
 
 Use Markdown export as an agent-readable content view when the task asks for supported Doc content in
 Markdown. Treat it as a content view, not a full-fidelity Doc snapshot:
