@@ -228,6 +228,11 @@ univer screenshot setup --json # once, if no cached browser yet
 univer screenshot "$UNIVERFILE" --worktree "$WORKTREE_ID" --unit "replace-with-slide-unitId" --out ./slide-review --json
 ```
 
+`setup` only reports a browser after a real headless launch succeeds — a binary that exists but
+cannot start is an error, not a "usable browser". If the pinned-Chromium download fails, partial
+archives are cleaned up automatically; retry, set `UNIVER_SCREENSHOT_DOWNLOAD_BASE_URL` behind a
+proxy/mirror, or point `UNIVER_SCREENSHOT_BROWSER` at an existing Chrome/Chromium executable.
+
 For any task where fill, stroke, text color, or layout/overflow correctness matters, render and look
 at the PNGs before `sac verify`/`worktree merge`. Treat a passing `sac verify` and a rendered
 screenshot as both required, not either/or: `sac verify` is the repeatable structural/style-storage
