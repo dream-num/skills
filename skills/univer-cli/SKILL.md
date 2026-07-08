@@ -407,8 +407,8 @@ By target unit type:
   shape/text Facade pocket guide (default styles, fill/stroke/text-color overrides, `setText`
   geometry reset, alignment injection), which assertion methods cover which facts, and the
   `screenshot` self-check recipe.
-- `references/unit-doc.md`: open for `doc`-unit Markdown authoring, fragment apply/export, table
-  Markdown behavior, and the lookup/API symbols to resolve before authoring migration source.
+- `references/unit-doc.md`: open for `doc`-unit facade authoring, editing, export, and
+  verification, including the optional Markdown shortcut for semantic content.
 - `base` per-unit guidance is reserved for a later version.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
