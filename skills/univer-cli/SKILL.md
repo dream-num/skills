@@ -54,8 +54,8 @@ value-surface rules, and creation recipe. Skipping it can produce silently wrong
 command error, a self-authored `sac verify` may still pass, and for a `slide` unit some defects
 (default styles, text color, layout overflow) have no assertion coverage at all — a rendered
 `screenshot` is the only surface that catches them. For a `sheet` unit, read
-`references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`. (`base` and `doc`
-per-unit files do not exist yet.)
+`references/unit-sheet.md`; for a `slide` unit, read `references/unit-slide.md`; for a `doc` unit,
+read `references/unit-doc.md`. (`base` per-unit guidance is reserved for a later version.)
 
 ## Public Surfaces
 
@@ -300,6 +300,21 @@ Migration templates are source scaffolds, not a DSL. Discover them with
 evidence, then fill the generated ordinary SaC source from evidence. If no template fits, create an
 ordinary migration pack.
 
+For complex Doc initialization, formal documents, papers, resumes, form templates, public notices,
+work orders, or batch-generated Docs, strongly prefer
+`univer sac migration create ... --template doc-typst-pages`. The `.typ` files under `typst/`
+are migration-scoped author source; run
+`univer sac migration build <univerfile> --worktree <id> --pack <pack-id>` to refresh generated
+Facade TypeScript and review artifacts. `sac apply` executes the generated TypeScript and does not
+run Typst translation. For later precise paragraph/style, shape, table
+border, figure/caption, or positioning refinements, create a normal Facade migration pack instead
+of editing an already-applied Typst pack. Use Typst again only as an explicit replacement or
+regeneration pack, and treat it as potentially overwriting later local refinements unless they are
+ported into that new pack.
+Generated Typst source must use public Doc Facade APIs. Do not construct `IDocumentData`,
+`IDocumentBody`, `dataStream`, body marker tokens, `tableSource`, raw drawings, or resource ids;
+record a Facade capability gap instead.
+
 If behavior changes after a pack has been applied, prefer a follow-up migration over editing
 already-applied source into hash/applied-state drift.
 
@@ -407,8 +422,9 @@ By target unit type:
   shape/text Facade pocket guide (default styles, fill/stroke/text-color overrides, `setText`
   geometry reset, alignment injection), which assertion methods cover which facts, and the
   `screenshot` self-check recipe.
-- `base` and `doc` units do not yet have a `references/unit-<unit>.md` file; per-unit guidance for
-  them is reserved for a later version.
+- `references/unit-doc.md`: open for `doc`-unit facade authoring, editing, export, and
+  verification, including the optional Markdown shortcut for semantic content.
+- `base` per-unit guidance is reserved for a later version.
 
 If you already opened the relevant reference in the current task, reuse the rule or command shape
 you read. Reopen a reference only when a new failure or missing detail is outside the already-read

@@ -19,6 +19,9 @@ univer worktree discard "$UNIVERFILE" --worktree <id> # user discards instead (o
 
 A worktree is an isolated copy of the whole univerfile. Reads and the SaC write path require its id
 as `--worktree <id>`; pass it explicitly on every command so parallel agents never cross scopes.
+Addressing is id-only: `--worktree` accepts the id printed by `worktree add` / `worktree list`,
+never the `--name` label. Names are display metadata for humans scanning `worktree list`; passing
+one fails with `worktree <name> not found`.
 
 After the task is done, mark the worktree ready and `open` it for the user (see Preview And
 Comments); the user reviews and chooses to merge or discard — from that viewer page or via the
