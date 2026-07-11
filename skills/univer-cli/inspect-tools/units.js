@@ -37,4 +37,3 @@ function requireString(params, name) {
 function envelope(id, target, evidence, warnings, truncated) {
   return baseEnvelope(id, target, evidence, warnings, truncated);
 }
-

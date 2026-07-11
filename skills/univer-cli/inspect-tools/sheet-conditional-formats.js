@@ -866,4 +866,3 @@ function listFormulaCells(formulas, bounds, limit) {
 function readMatrixCell(matrix, row, column) {
   return Array.isArray(matrix) && Array.isArray(matrix[row]) ? matrix[row][column] ?? null : null;
 }
-
