@@ -1,4 +1,4 @@
-# Official Univer CLI Discovery Skill
+# Univer CLI Skill
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Skills](https://img.shields.io/badge/skills-1-0a7ea4.svg)
@@ -7,55 +7,49 @@
 
 语言: [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-面向 Claude Code、Codex 和 Cursor 的官方 Univer CLI discovery skill。公共入口是
-[univer.ai](https://univer.ai)。
+面向 Claude Code、Codex 和 Cursor 的官方 Univer CLI Skill。把 `.univer` 文件交给 agent，并描述
+期望的结果，Skill 会引导 agent 使用 Univer CLI 完成内容创作、结果验证和可视化检查。
 
-这个仓库只分发一个 canonical product skill：
+访问 [univer.ai](https://univer.ai) 了解 Univer。
 
-- [`univer-cli`](./skills/univer-cli/SKILL.md): 安装、诊断 public `univer` CLI，并从已安装
-  package 加载版本匹配的 core 和 Unit Skills。
+## 能做什么
 
-## 亮点
+- **构建电子表格** — 编辑值和公式，设置格式，以及操作表格、图表和形状。
+- **创作文档和幻灯片** — 编写富文本内容、安排布局并检查渲染结果。
+- **管理结构化数据** — 创建 Base 的表、字段、记录和视图。
+- **使用开放画布** — 创建 Board 画布并添加可视化元素。
+- **安全地与 agent 协作** — 使用 worktree 隔离修改、读回持久化模型，并交付浏览器 review 链接。
+- **交换 Excel 文件** — 导入和导出 `.xlsx`，同时使用结构化 `.univer` 文件承载工作模型。
 
-- **一个 CLI 覆盖全部 Unit 类型**
-  在明确的 `.univer` target 中操作 Sheet、Doc、Slide、Base 和 Board Unit。
+## 与 CLI 版本匹配的指引
 
-- **版本匹配的操作指引**
-  从已安装 CLI 加载 core 和 Unit Skills，确保 command 和 Facade API 与版本一致。
+这个仓库安装 Univer CLI 入口 Skill。它会引导 agent 从已安装的 CLI 加载 core 指引和对应的 Unit
+Skill，使 command 和 Facade API 始终与当前版本一致。
 
-- **Evidence-first authoring**
-  handoff 前读回持久化 model，并检查渲染结果。
+Unit Skills 覆盖 Sheet、Doc、Slide、Base 和 Board：
 
-- **Excel 兼容交付**  
-  支持 `.xlsx` import/export；agent 内部处理结构化 `.univer` workbook state。
+```bash
+univer skills list
+univer skills get core
+univer skills get board
+```
 
-## 为什么只保留一个 Skill
+## 安装
 
-`univer-cli` 是隐藏的 discovery skill，不是 operational documentation 的第二份副本。它负责安装或
-诊断 CLI，并引导 agent 加载 CLI 自带的 core 和 Unit Skills。运行时 Skills 才是 command、Facade API
-和验证行为的权威来源。
-
-这个 skill 使用 progressive disclosure：
-
-- `skills/univer-cli/SKILL.md` 是这个仓库的完整 payload。
-- `univer skills get core` 加载共享 operational Skill。
-- `univer skills get sheet|doc|slide|base|board` 加载 Unit-specific guidance。
-
-## 快速安装
-
-安装 workbook CLI：
+安装 Univer CLI：
 
 ```bash
 npm install -g univer-cli@latest
+univer doctor
 ```
 
-安装这个 skill repository：
+安装 Skill：
 
 ```bash
 npx skills add dream-num/skills
 ```
 
-手动安装：
+### 手动安装
 
 ```bash
 git clone https://github.com/dream-num/skills.git
@@ -74,38 +68,31 @@ mkdir -p ~/.cursor/skills
 cp -R skills/univer-cli ~/.cursor/skills/
 ```
 
-## Available Skill
-
-| Skill | Best for | Status |
-| --- | --- | --- |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | CLI 安装、诊断和版本匹配的 Skill discovery | canonical |
-
 ## 示例 Prompts
 
 ```text
-Use univer-cli to inspect this .univer file and update its pricing sheet.
+Use univer-cli to inspect this .univer file and update the formulas and formatting on its pricing sheet.
 ```
 
 ```text
-Use univer-cli to create a Board, insert one shape, and open the viewer for review.
+Use univer-cli to create a Board, insert a shape, and open the viewer for review.
 ```
 
 ```text
-Use univer-cli to create a Base, add a table and record, then verify the stored model.
+Use univer-cli to create a Base with a contacts table, add a record, and verify the stored model.
 ```
 
-## Requirements
+## 环境要求
 
-- OS: Linux or macOS
-- 已安装可执行命令 `univer`
-- 用于安装的 Node.js 和 npm
+- Linux 或 macOS
+- Node.js 和 npm
+- 可通过 `univer` 命令使用 Univer CLI
 
-## Contributing
+## 参与贡献
 
-- discovery skill source 保持在 `skills/univer-cli/SKILL.md`
-- operational Skills 和 resources 在 Univer CLI package 内保持版本匹配
-- 不要在这个仓库重复 runtime command 或 Facade guidance
-- 发布 skill package 变更前运行 `npm run validate`
+- 入口 Skill 位于 [`skills/univer-cli/SKILL.md`](./skills/univer-cli/SKILL.md)。
+- 与版本匹配的 operational Skills 和 resources 随 Univer CLI package 分发。
+- 发布 Skill 变更前运行 `npm run validate`。
 
 ## License
 

@@ -1,4 +1,4 @@
-# Official Univer CLI Discovery Skill
+# Univer CLI Skill
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Skills](https://img.shields.io/badge/skills-1-0a7ea4.svg)
@@ -7,55 +7,55 @@
 
 Languages: [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-Official Univer CLI discovery skill for Claude Code, Codex, and Cursor.
-Start from [univer.ai](https://univer.ai).
+The official Univer CLI Skill for Claude Code, Codex, and Cursor. Give your agent a `.univer`
+file and describe the result you want; the Skill guides it through authoring, verification, and
+visual review with Univer CLI.
 
-This repository exposes one canonical product skill:
+Learn more about Univer at [univer.ai](https://univer.ai).
 
-- [`univer-cli`](./skills/univer-cli/SKILL.md): install and diagnose the public `univer` CLI, then
-  load version-matched core and Unit Skills from the installed package.
+## What You Can Do
 
-## Highlights
+- **Build spreadsheets** — edit values and formulas, apply formatting, and work with tables,
+  charts, and shapes.
+- **Create documents and slides** — author rich content, arrange layouts, and review rendered
+  output.
+- **Manage structured data** — create Base tables, fields, records, and views.
+- **Use an open canvas** — create Board canvases and add visual elements.
+- **Work safely with agents** — isolate changes in worktrees, read back stored models, and hand off
+  a browser review link.
+- **Exchange Excel files** — import and export `.xlsx` while keeping the working model in a
+  structured `.univer` file.
 
-- **One CLI for every Unit type**
-  Work with Sheet, Doc, Slide, Base, and Board Units in explicit `.univer` targets.
+## Version-Matched Guidance
 
-- **Version-matched operational guidance**
-  Load core and Unit Skills from the installed CLI so commands and Facade APIs match that version.
+This repository installs the Univer CLI entry Skill. It guides agents to load core guidance and the
+relevant Unit Skill from your installed CLI, keeping commands and Facade APIs aligned with that
+version.
 
-- **Evidence-first authoring**
-  Read back stored models and review rendered output before handoff.
+The available Unit Skills cover Sheet, Doc, Slide, Base, and Board:
 
-- **Excel-compatible handoff**  
-  Import and export `.xlsx` files while agents work against structured `.univer` workbook state.
+```bash
+univer skills list
+univer skills get core
+univer skills get board
+```
 
-## Why One Skill
+## Install
 
-`univer-cli` is a hidden discovery skill, not a second copy of the operational documentation. It
-installs or diagnoses the CLI and directs agents to the core and Unit Skills bundled with that CLI.
-Those runtime Skills are the authority for commands, Facade APIs, and verification behavior.
-
-The skill uses progressive disclosure:
-
-- `skills/univer-cli/SKILL.md` is the complete repository payload.
-- `univer skills get core` loads the shared operational Skill.
-- `univer skills get sheet|doc|slide|base|board` loads Unit-specific guidance.
-
-## Quick Install
-
-Install the workbook CLI:
+Install Univer CLI:
 
 ```bash
 npm install -g univer-cli@latest
+univer doctor
 ```
 
-Install this skill repository:
+Install the Skill:
 
 ```bash
 npx skills add dream-num/skills
 ```
 
-Manual install:
+### Manual installation
 
 ```bash
 git clone https://github.com/dream-num/skills.git
@@ -74,38 +74,31 @@ mkdir -p ~/.cursor/skills
 cp -R skills/univer-cli ~/.cursor/skills/
 ```
 
-## Available Skill
-
-| Skill | Best for | Status |
-| --- | --- | --- |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | CLI installation, diagnosis, and version-matched Skill discovery | canonical |
-
 ## Example Prompts
 
 ```text
-Use univer-cli to inspect this .univer file and update its pricing sheet.
+Use univer-cli to inspect this .univer file and update the formulas and formatting on its pricing sheet.
 ```
 
 ```text
-Use univer-cli to create a Board, insert one shape, and open the viewer for review.
+Use univer-cli to create a Board, insert a shape, and open the viewer for review.
 ```
 
 ```text
-Use univer-cli to create a Base, add a table and record, then verify the stored model.
+Use univer-cli to create a Base with a contacts table, add a record, and verify the stored model.
 ```
 
 ## Requirements
 
-- OS: Linux or macOS
-- Univer CLI installed as `univer`
-- Node.js and npm for installation
+- Linux or macOS
+- Node.js and npm
+- Univer CLI available as `univer`
 
 ## Contributing
 
-- keep the discovery skill source under `skills/univer-cli/SKILL.md`
-- keep operational Skills and resources version-matched inside the Univer CLI package
-- do not duplicate runtime command or Facade guidance in this repository
-- run `npm run validate` before publishing skill package changes
+- The entry Skill lives at [`skills/univer-cli/SKILL.md`](./skills/univer-cli/SKILL.md).
+- Version-matched operational Skills and resources ship with the Univer CLI package.
+- Run `npm run validate` before publishing Skill changes.
 
 ## License
 
