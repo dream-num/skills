@@ -1,4 +1,4 @@
-# Official Univer CLI Skill for Workbook Automation
+# Official Univer CLI Discovery Skill
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Skills](https://img.shields.io/badge/skills-1-0a7ea4.svg)
@@ -7,41 +7,39 @@
 
 语言: [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-面向 Claude Code、Codex 和 Cursor 的官方 Univer product skill。公共入口是
+面向 Claude Code、Codex 和 Cursor 的官方 Univer CLI discovery skill。公共入口是
 [univer.ai](https://univer.ai)。
 
 这个仓库只分发一个 canonical product skill：
 
-- [`univer-cli`](./skills/univer-cli/SKILL.md): 说明 public `univer` CLI 和 SaC 能力，包括
-  `.univer` target、workbook evidence、managed inspect tools、migration packs、verify、preview、
-  worktrees、import、export 和 handoff。
+- [`univer-cli`](./skills/univer-cli/SKILL.md): 安装、诊断 public `univer` CLI，并从已安装
+  package 加载版本匹配的 core 和 Unit Skills。
 
 ## 亮点
 
-- **终端里的电子表格引擎**  
-  通过 public `univer` CLI 驱动真实 workbook 语义：公式、格式、条件格式、图表、形状、布局、导入/导出和预览。
+- **一个 CLI 覆盖全部 Unit 类型**
+  在明确的 `.univer` target 中操作 Sheet、Doc、Slide、Base 和 Board Unit。
 
-- **Evidence-first workbook work**  
-  通过 managed inspect tools、readonly probes、view、verify 和 export/readback 理解并证明 workbook-visible state。
+- **版本匹配的操作指引**
+  从已安装 CLI 加载 core 和 Unit Skills，确保 command 和 Facade API 与版本一致。
 
-- **Source-backed durable changes**  
-  通过 SaC sidecar、Facade Migration Packs、templates、apply、rollback 和 verify 构建可重复的 workbook behavior。
+- **Evidence-first authoring**
+  handoff 前读回持久化 model，并检查渲染结果。
 
 - **Excel 兼容交付**  
   支持 `.xlsx` import/export；agent 内部处理结构化 `.univer` workbook state。
 
 ## 为什么只保留一个 Skill
 
-`univer-cli` 是 product skill，不是 agent workflow package。它解释 Univer CLI 和 SaC 的 public
-surfaces、evidence boundaries 和 best practices。Agent 可以使用 runtime 或用户选择的任意 planning
-方法。
+`univer-cli` 是隐藏的 discovery skill，不是 operational documentation 的第二份副本。它负责安装或
+诊断 CLI，并引导 agent 加载 CLI 自带的 core 和 Unit Skills。运行时 Skills 才是 command、Facade API
+和验证行为的权威来源。
 
 这个 skill 使用 progressive disclosure：
 
-- `skills/univer-cli/SKILL.md` 是唯一必读入口。
-- `skills/univer-cli/references/` 存放更长的 capability notes 和 checked recipes。
-- `skills/univer-cli/inspect-tools/` 存放 managed readonly inspect tool resources，通过
-  `univer inspect --tool` 使用。
+- `skills/univer-cli/SKILL.md` 是这个仓库的完整 payload。
+- `univer skills get core` 加载共享 operational Skill。
+- `univer skills get sheet|doc|slide|base|board` 加载 Unit-specific guidance。
 
 ## 快速安装
 
@@ -80,33 +78,33 @@ cp -R skills/univer-cli ~/.cursor/skills/
 
 | Skill | Best for | Status |
 | --- | --- | --- |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | workbook inspection、`.univer` targets、managed inspect tools、SaC authoring、apply/rollback/verify、preview、worktrees、import/export 和 handoff | canonical |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | CLI 安装、诊断和版本匹配的 Skill discovery | canonical |
 
 ## 示例 Prompts
 
 ```text
-Use univer-cli to inspect this workbook, list all sheets, and summarize formulas on the pricing sheet before making any edits.
+Use univer-cli to inspect this .univer file and update its pricing sheet.
 ```
 
 ```text
-Use univer-cli to import --file ./input.xlsx into ./Budget.univer, inspect the target unit and relevant ranges, then create a durable SaC migration for the requested workbook change.
+Use univer-cli to create a Board, insert one shape, and open the viewer for review.
 ```
 
 ```text
-Use univer-cli to create a migration from a suitable template if workbook-visible evidence matches one; otherwise create an ordinary migration pack, apply it, and verify the applied behavior.
+Use univer-cli to create a Base, add a table and record, then verify the stored model.
 ```
 
 ## Requirements
 
 - OS: Linux or macOS
 - 已安装可执行命令 `univer`
-- 常见 shell roundtrip 工具：`awk`、`sed` 和 Node.js
+- 用于安装的 Node.js 和 npm
 
 ## Contributing
 
-- product skill source 保持在 `skills/univer-cli/`
-- `SKILL.md` 保持简洁，长 capability notes 放到一层 `references/`
-- managed inspect tools 保持在 `skills/univer-cli/inspect-tools/`
+- discovery skill source 保持在 `skills/univer-cli/SKILL.md`
+- operational Skills 和 resources 在 Univer CLI package 内保持版本匹配
+- 不要在这个仓库重复 runtime command 或 Facade guidance
 - 发布 skill package 变更前运行 `npm run validate`
 
 ## License

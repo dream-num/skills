@@ -104,35 +104,13 @@ async function validateSkillStructure() {
     if (!frontmatter.description || !frontmatter.description.startsWith("Use")) {
       recordError(`skills/${skill}/SKILL.md: description must exist and start with "Use"`);
     }
-  }
-
-  const referencesDir = path.join(skillsRoot, "univer-cli", "references");
-  if (existsSync(referencesDir)) {
-    const entries = await fs.readdir(referencesDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        recordError(`skills/univer-cli/references/${entry.name}: nested reference directories are not allowed`);
-      }
+    if (frontmatter.hidden !== "true") {
+      recordError(`skills/${skill}/SKILL.md: discovery skill must be hidden`);
     }
-  }
-
-  const inspectToolsDir = path.join(skillsRoot, "univer-cli", "inspect-tools");
-  if (!existsSync(inspectToolsDir)) {
-    recordError("skills/univer-cli/inspect-tools: missing managed inspect tool resource directory");
-  } else {
-    const manifestPath = path.join(inspectToolsDir, "tools.manifest.json");
-    if (!existsSync(manifestPath)) {
-      recordError("skills/univer-cli/inspect-tools/tools.manifest.json: missing managed inspect tool manifest");
+    const entries = await fs.readdir(skillPath);
+    if (entries.length !== 1 || entries[0] !== "SKILL.md") {
+      recordError(`skills/${skill}: discovery skill directory must contain only SKILL.md`);
     }
-  }
-
-  const assetsDir = path.join(skillsRoot, "univer-cli", "assets");
-  const scriptsDir = path.join(skillsRoot, "univer-cli", "scripts");
-  if (existsSync(assetsDir)) {
-    recordError("skills/univer-cli/assets: managed inspect tools must not move to generic assets");
-  }
-  if (existsSync(scriptsDir)) {
-    recordError("skills/univer-cli/scripts: managed inspect tools must stay under inspect-tools");
   }
 
   reports.push(`structure: ${requiredSkills.length} official skills checked`);
@@ -245,57 +223,6 @@ async function validateStaleContractText() {
   }
 
   reports.push(`stale-contract: ${contractFiles.length} markdown files checked`);
-}
-
-async function validateTypedUnitAssertionGuidance() {
-  const skillFile = path.join(skillsRoot, "univer-cli", "SKILL.md");
-  const authoringFile = path.join(skillsRoot, "univer-cli", "references", "sac-authoring.md");
-  const executionFile = path.join(skillsRoot, "univer-cli", "references", "sac-execution.md");
-  const skillText = await readText(skillFile);
-  const authoringText = await readText(authoringFile);
-  const executionText = await readText(executionFile);
-
-  const requiredSkillTokens = [
-    "sheetUnit(unitId, ...)",
-    "baseUnit(unitId, ...)",
-    "slideUnit(unitId, ...)",
-    "docUnit(unitId, ...)",
-    "`unitId` is the only top-level assertion unit selector",
-    "legacy top-level `sheet()` or\n`range()` usage"
-  ];
-  for (const token of requiredSkillTokens) {
-    if (!skillText.includes(token)) {
-      recordError(`${relativeToRoot(skillFile)}: missing typed assertion guidance token ${JSON.stringify(token)}`);
-    }
-  }
-
-  const requiredAuthoringTokens = [
-    "defineAssertions(({ sheetUnit, baseUnit, slideUnit, docUnit })",
-    "sheetUnit(\"replace-with-sheet-unitId\"",
-    "baseUnit(\"replace-with-base-unitId\"",
-    "slideUnit(\"replace-with-slide-unitId\"",
-    "docUnit(\"replace-with-doc-unitId\"",
-    "Legacy top-level\n`sheet()` and `range()` helpers are not current assertion APIs"
-  ];
-  for (const token of requiredAuthoringTokens) {
-    if (!authoringText.includes(token)) {
-      recordError(`${relativeToRoot(authoringFile)}: missing typed assertion example token ${JSON.stringify(token)}`);
-    }
-  }
-
-  const requiredExecutionTokens = [
-    "global typed unit `assertions/**/*.assertions.ts`",
-    "total and per-unit assertion counts",
-    "`unitType`, `unitId`, assertion kind",
-    "unknown `unitId`, unit type\n  mismatch"
-  ];
-  for (const token of requiredExecutionTokens) {
-    if (!executionText.includes(token)) {
-      recordError(`${relativeToRoot(executionFile)}: missing typed verify guidance token ${JSON.stringify(token)}`);
-    }
-  }
-
-  reports.push("typed-assertions: skill guidance checked");
 }
 
 async function walkFiles(dirPath, baseDir = dirPath) {
@@ -428,7 +355,6 @@ async function main() {
   await validateSkillStructure();
   await validateReadmes();
   await validateStaleContractText();
-  await validateTypedUnitAssertionGuidance();
   await validateDrift();
 
   for (const report of reports) console.log(`ok: ${report}`);
