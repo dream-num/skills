@@ -1,6 +1,6 @@
 ---
 name: univer-cli
-description: "Use when installing or operating Univer CLI for .univer files, spreadsheets, documents, slides, Base databases, Board canvases, worktrees, Facade authoring, inspection, verification, import/export, screenshots, or viewer handoff."
+description: "Use when installing or operating Univer CLI for .univer files, spreadsheets, documents, slides, Base databases, Board canvases, cross-Unit embedding, worktrees, Facade authoring, inspection, verification, import/export, screenshots, or viewer handoff."
 hidden: true
 ---
 
@@ -56,6 +56,12 @@ univer skills get board
 Use `univer skills list` to discover the installed set. Each Unit Skill owns its creation recipe,
 Facade entrypoints, readback guidance, and visual verification requirements.
 
+For cross-Unit composition, load the additional Topic Skill after the host and child Unit Skills:
+
+```bash
+univer skills get embed
+```
+
 ## Task Routing
 
 | Task | Load and use |
@@ -65,6 +71,7 @@ Facade entrypoints, readback guidance, and visual verification requirements.
 | Build or review presentation pages, shapes, text, or images | core + `slide` |
 | Create or edit structured Base tables, fields, records, or views | core + `base` |
 | Create or edit a Board canvas and its elements | core + `board` |
+| Embed one Unit inside another Unit | core + host Unit + child Unit + `embed` |
 
 ## Standard Task Loop
 
@@ -73,7 +80,7 @@ Facade entrypoints, readback guidance, and visual verification requirements.
 3. Load core and the target Unit Skill before authoring.
 4. Gather bounded target evidence, then author through the documented Facade path.
 5. Read back the stored model and verify task-specific facts.
-6. Render or open the viewer when visual fidelity matters.
+6. Render screenshots when visual fidelity matters.
 7. Mark the worktree ready and hand off the review link; merge or discard follows review.
 
 ## Why Univer CLI
