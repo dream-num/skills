@@ -16,6 +16,26 @@ npm install -g univer-cli
 univer doctor
 ```
 
+## Keep the CLI current
+
+Use these commands to compare the installed CLI with the latest public release:
+
+```bash
+univer --version
+npm view univer-cli@latest version --registry=https://registry.npmjs.org/
+```
+
+When a newer version is available, complete the current Univer task before updating:
+
+```bash
+univer update
+univer doctor --json
+univer skills get core
+```
+
+If `univer update` reports that the shared daemon must stop, rerun it with `--force` after confirming
+that stopping the daemon is safe. Reload core and the target Unit Skill after every update.
+
 ## Start here
 
 This file is the discovery entry, not the operational guide. Before using Univer commands for a
@@ -72,16 +92,6 @@ univer skills get embed
 | Create or edit structured Base tables, fields, records, or views | core + `base` |
 | Create or edit a Board canvas and its elements | core + `board` |
 | Embed one Unit inside another Unit | core + host Unit + child Unit + `embed` |
-
-## Standard Task Loop
-
-1. Identify one explicit `.univer` target and inspect its Unit inventory.
-2. Create or reuse the correct worktree; re-check its state before continuing a prior task.
-3. Load core and the target Unit Skill before authoring.
-4. Gather bounded target evidence, then author through the documented Facade path.
-5. Read back the stored model and verify task-specific facts.
-6. Render screenshots when visual fidelity matters.
-7. Mark the worktree ready and hand off the review link; merge or discard follows review.
 
 ## Why Univer CLI
 
