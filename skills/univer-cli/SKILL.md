@@ -87,10 +87,10 @@ univer skills get embed
 | Task | Load and use |
 | --- | --- |
 | Inspect or edit spreadsheet values, formulas, formatting, charts, or tables | core + `sheet` |
-| Create or refine document paragraphs, rich text, tables, or page layout | core + `doc` |
+| Create or refine document paragraphs, rich text, tables, charts, or page layout | core + `doc` |
 | Build or review presentation pages, shapes, text, or images | core + `slide` |
 | Create or edit structured Base tables, fields, records, or views | core + `base` |
-| Create or edit a Board canvas and its elements | core + `board` |
+| Create or edit a Board canvas, charts, and other elements | core + `board` |
 | Embed one Unit inside another Unit | core + host Unit + child Unit + `embed` |
 
 ## Why Univer CLI
