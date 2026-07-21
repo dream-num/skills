@@ -1,0 +1,4 @@
+interface:
+  display_name: "Integrate Univer CLI"
+  short_description: "Build with Univer CLI, Gateway, and Cowork"
+  default_prompt: "Use $integrate-univer-cli to identify and integrate the Univer components required by this system."

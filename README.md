@@ -1,15 +1,14 @@
-# Univer CLI Skill
+# Univer CLI Skills
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Skills](https://img.shields.io/badge/skills-1-0a7ea4.svg)
+![Skills](https://img.shields.io/badge/skills-2-0a7ea4.svg)
 ![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
 Languages: [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-The official Univer CLI Skill for Claude Code, Codex, and Cursor. Give your agent a `.univer`
-file and describe the result you want; the Skill guides it through authoring, verification, and
-visual review with Univer CLI.
+The official Univer CLI Skills for Claude Code, Codex, and Cursor. Use them to operate `.univer`
+content or integrate Univer CLI, Gateway, and Cowork into your own system.
 
 Learn more about Univer at [univer.ai](https://univer.ai).
 
@@ -25,12 +24,21 @@ Learn more about Univer at [univer.ai](https://univer.ai).
   a browser review link.
 - **Exchange Excel files** — import and export `.xlsx` while keeping the working model in a
   structured `.univer` file.
+- **Build Univer-powered applications** — connect CLI processes, agent guidance, daemon/Gateway,
+  and Cowork UI to an existing host without prescribing the product shape.
+
+## Choose a Skill
+
+| Skill | Use it for |
+| --- | --- |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | Creating, inspecting, editing, verifying, importing, or exporting Univer content |
+| [`integrate-univer-cli`](./skills/integrate-univer-cli/SKILL.md) | Selecting, acquiring, connecting, customizing, and delivering CLI/Gateway/Cowork components in a host system |
 
 ## Version-Matched Guidance
 
-This repository installs the Univer CLI entry Skill. It guides agents to load core guidance and the
-relevant Unit Skill from your installed CLI, keeping commands and Facade APIs aligned with that
-version.
+The `univer-cli` entry guides agents to load core guidance and the relevant Unit Skill from the
+installed CLI, keeping commands and Facade APIs aligned with that version. The Builder integration
+Skill uses the same installed CLI and package declarations as its operational authority.
 
 The available Unit Skills cover Sheet, Doc, Slide, Base, and Board:
 
@@ -64,14 +72,17 @@ cd skills
 # Claude Code
 mkdir -p ~/.claude/skills
 cp -R skills/univer-cli ~/.claude/skills/
+cp -R skills/integrate-univer-cli ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
 cp -R skills/univer-cli ~/.codex/skills/
+cp -R skills/integrate-univer-cli ~/.codex/skills/
 
 # Cursor
 mkdir -p ~/.cursor/skills
 cp -R skills/univer-cli ~/.cursor/skills/
+cp -R skills/integrate-univer-cli ~/.cursor/skills/
 ```
 
 ## Example Prompts
@@ -88,6 +99,10 @@ Use univer-cli to create a Board, insert a shape, and open the viewer for review
 Use univer-cli to create a Base with a contacts table, add a record, and verify the stored model.
 ```
 
+```text
+Use integrate-univer-cli to add Univer content operations and an embedded Cowork Viewer to this application.
+```
+
 ## Requirements
 
 - Linux or macOS
@@ -96,7 +111,8 @@ Use univer-cli to create a Base with a contacts table, add a record, and verify 
 
 ## Contributing
 
-- The entry Skill lives at [`skills/univer-cli/SKILL.md`](./skills/univer-cli/SKILL.md).
+- Content-operation discovery lives at [`skills/univer-cli/SKILL.md`](./skills/univer-cli/SKILL.md).
+- Builder integration lives at [`skills/integrate-univer-cli/SKILL.md`](./skills/integrate-univer-cli/SKILL.md).
 - Version-matched operational Skills and resources ship with the Univer CLI package.
 - Run `npm run validate` before publishing Skill changes.
 
