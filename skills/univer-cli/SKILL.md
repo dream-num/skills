@@ -82,6 +82,12 @@ For cross-Unit composition, load the additional Topic Skill after the host and c
 univer skills get embed
 ```
 
+For a Formula Shape, load its Topic Skill after the host and Sheet or Base source Unit Skills:
+
+```bash
+univer skills get formula-shape
+```
+
 ## Task Routing
 
 | Task | Load and use |
@@ -92,6 +98,7 @@ univer skills get embed
 | Create or edit structured Base tables, fields, records, or views | core + `base` |
 | Create or edit a Board canvas, charts, and other elements | core + `board` |
 | Embed one Unit inside another Unit | core + host Unit + child Unit + `embed` |
+| Drive a Shape from a Sheet range or Base table column | core + host Unit + source Unit + `formula-shape` |
 
 ## Why Univer CLI
 
