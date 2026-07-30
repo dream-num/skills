@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(__filename), "..");
 const skillsRoot = path.join(root, "skills");
-const requiredSkills = ["univer-cli"];
+const requiredSkills = ["univer-cli", "univer-workspace-cli"];
 const removedWorkflowSkills = [
   "using-univer-cli",
   "writing-univer-plans",
@@ -225,6 +225,49 @@ async function validateStaleContractText() {
   reports.push(`stale-contract: ${contractFiles.length} markdown files checked`);
 }
 
+async function validateWorkspaceDiscoveryGuidance() {
+  const skillFile = path.join(skillsRoot, "univer-workspace-cli", "SKILL.md");
+  const readmes = ["README.md", "README.zh-CN.md"].map((name) => path.join(root, name));
+  const skillText = await readText(skillFile);
+  const corpus = [skillText, ...await Promise.all(readmes.map(readText))].join("\n");
+
+  const requiredTokens = [
+    "univer-workspace-cli config set-origin",
+    "univer-workspace-cli skills get core",
+    "univer-workspace-cli skills get core --full",
+    "univer-workspace-cli skills get sheet",
+    "univer-workspace-cli skills get doc",
+    "univer-workspace-cli skills get slide",
+    "Start every new task in a new Worktree",
+    "Base and Board authoring are outside the current Workspace Skill surface"
+  ];
+  for (const token of requiredTokens) {
+    if (!skillText.includes(token)) {
+      recordError(`${relativeToRoot(skillFile)}: missing Workspace discovery token ${JSON.stringify(token)}`);
+    }
+  }
+
+  const forbiddenTokens = [
+    "config set workspace.origin",
+    "https://workspace.univer.plus/",
+    "univer-workspace-cli update",
+    "univer-workspace-cli skills get base",
+    "univer-workspace-cli skills get board",
+    "Univerfile Link"
+  ];
+  for (const token of forbiddenTokens) {
+    if (corpus.includes(token)) {
+      recordError(`${relativeToRoot(skillFile)}: unsupported Workspace guidance ${JSON.stringify(token)}`);
+    }
+  }
+
+  if (/\btrunk\b/iu.test(skillText) || /\.univer\b/iu.test(skillText)) {
+    recordError(`${relativeToRoot(skillFile)}: Workspace discovery must not use local target semantics`);
+  }
+
+  reports.push("workspace-discovery: version-matched remote guidance checked");
+}
+
 async function walkFiles(dirPath, baseDir = dirPath) {
   const files = [];
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -355,6 +398,7 @@ async function main() {
   await validateSkillStructure();
   await validateReadmes();
   await validateStaleContractText();
+  await validateWorkspaceDiscoveryGuidance();
   await validateDrift();
 
   for (const report of reports) console.log(`ok: ${report}`);
