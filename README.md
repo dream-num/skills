@@ -11,6 +11,9 @@ The official Univer CLI Skills for Claude Code, Codex, and Cursor. Give your age
 `.univer` file or a remote Workspace task and describe the result you want; the matching Skill
 guides it through authoring, verification, and visual review.
 
+These are two independent applications, not a core/variant pair: `univer-cli` operates local
+`.univer` files, while `univer-workspace-cli` operates remote Workspace files.
+
 Learn more about Univer at [univer.ai](https://univer.ai).
 
 ## What You Can Do
