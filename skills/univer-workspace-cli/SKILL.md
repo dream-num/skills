@@ -1,6 +1,6 @@
 ---
 name: univer-workspace-cli
-description: "Use when installing or operating Univer Workspace CLI for remote Workspace files, Personal or Team Spaces, task Worktrees, Sheet/Doc/Slide Units, Facade authoring, inspection, verification, import/export, screenshots, or review handoff."
+description: "Use when installing or operating the independent Univer Workspace CLI application (`univer-workspace-cli`) for remote Workspace files, Personal or Team Spaces, task Worktrees, Sheet/Doc/Slide Units, Facade authoring, inspection, verification, import/export, screenshots, or review handoff. Do not use for local targets handled by `univer`."
 hidden: true
 ---
 
@@ -8,6 +8,9 @@ hidden: true
 
 Remote authoring and inspection for Univer Workspace files. The CLI provides Space discovery,
 per-task Worktrees, version-matched Facade guidance, model readback, and browser review.
+
+`univer-workspace-cli` is independent from `univer`, not a variant: it operates remote Workspace
+files, while `univer` operates local univerfiles.
 
 Install and configure the target Workspace:
 

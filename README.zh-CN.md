@@ -11,6 +11,9 @@
 Workspace 任务交给 agent，并描述期望的结果；对应 Skill 会引导 agent 完成内容创作、结果验证和
 可视化检查。
 
+这是两个独立应用，不是核心与变体的关系：`univer-cli` 操作本地 `.univer` 文件，
+`univer-workspace-cli` 操作远程 Workspace 文件。
+
 访问 [univer.ai](https://univer.ai) 了解 Univer。
 
 ## 能做什么
