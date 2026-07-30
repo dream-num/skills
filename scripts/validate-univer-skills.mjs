@@ -9,7 +9,12 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(__filename), "..");
 const skillsRoot = path.join(root, "skills");
-const requiredSkills = ["univer-cli"];
+const skillContracts = [
+  { name: "univer-cli", hidden: true, entryOnly: true },
+  { name: "integrate-univer-cli", hidden: false, entryOnly: false }
+];
+const requiredSkills = skillContracts.map(({ name }) => name);
+const cliMirroredSkills = ["univer-cli"];
 const removedWorkflowSkills = [
   "using-univer-cli",
   "writing-univer-plans",
@@ -88,7 +93,8 @@ async function collectMarkdownFiles(dirPath) {
 }
 
 async function validateSkillStructure() {
-  for (const skill of requiredSkills) {
+  for (const contract of skillContracts) {
+    const skill = contract.name;
     const skillPath = path.join(skillsRoot, skill);
     const skillFile = path.join(skillPath, "SKILL.md");
     if (!existsSync(skillFile)) {
@@ -104,12 +110,22 @@ async function validateSkillStructure() {
     if (!frontmatter.description || !frontmatter.description.startsWith("Use")) {
       recordError(`skills/${skill}/SKILL.md: description must exist and start with "Use"`);
     }
-    if (frontmatter.hidden !== "true") {
+    if (contract.hidden && frontmatter.hidden !== "true") {
       recordError(`skills/${skill}/SKILL.md: discovery skill must be hidden`);
     }
-    const entries = await fs.readdir(skillPath);
-    if (entries.length !== 1 || entries[0] !== "SKILL.md") {
+    if (!contract.hidden && frontmatter.hidden !== undefined) {
+      recordError(`skills/${skill}/SKILL.md: public builder skill must not be hidden`);
+    }
+    const entries = (await fs.readdir(skillPath)).sort();
+    if (contract.entryOnly && (entries.length !== 1 || entries[0] !== "SKILL.md")) {
       recordError(`skills/${skill}: discovery skill directory must contain only SKILL.md`);
+    }
+    if (!contract.entryOnly) {
+      for (const entry of ["SKILL.md", "agents", "references"]) {
+        if (!entries.includes(entry)) {
+          recordError(`skills/${skill}: missing required ${entry}`);
+        }
+      }
     }
   }
 
@@ -275,13 +291,19 @@ async function realpathOrNull(filePath) {
   }
 }
 
-async function validateExposureDirectory({ label, exposureRoot, failOnDrift, sourceRoot = skillsRoot }) {
+async function validateExposureDirectory({
+  label,
+  exposureRoot,
+  failOnDrift,
+  sourceRoot = skillsRoot,
+  skills = requiredSkills
+}) {
   if (!existsSync(exposureRoot)) {
     reports.push(`${label}: ${exposureRoot} not present`);
     return;
   }
 
-  for (const skill of requiredSkills) {
+  for (const skill of skills) {
     const canonicalDir = path.join(sourceRoot, skill);
     const exposedDir = path.join(exposureRoot, skill);
     if (!existsSync(exposedDir)) continue;
@@ -338,7 +360,8 @@ async function validateDrift() {
       label: "repo-local .codex/skills",
       exposureRoot: path.join(repoRoot, ".codex", "skills"),
       failOnDrift: true,
-      sourceRoot: path.join(repoRoot, "packages", "skills", "skills")
+      sourceRoot: path.join(repoRoot, "packages", "skills", "skills"),
+      skills: cliMirroredSkills
     });
   } else {
     reports.push("repo-local .codex/skills: skipped; pass --repo-root to check repository exposure");
