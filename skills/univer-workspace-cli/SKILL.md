@@ -1,6 +1,6 @@
 ---
 name: univer-workspace-cli
-description: "Use when installing or operating the independent Univer Workspace CLI application (`univer-workspace-cli`) for remote Workspace files, Personal or Team Spaces, task Worktrees, Sheet/Doc/Slide Units, Facade authoring, inspection, verification, import/export, screenshots, or review handoff. Do not use for local targets handled by `univer`."
+description: "Use when installing or operating the independent Univer Workspace CLI application (`univer-workspace-cli`) for remote Workspace files, Personal or Team Spaces, task Worktrees, Sheet/Doc/Slide/Base/Board Units, cross-Unit composition, Facade authoring, inspection, verification, import/export, screenshots, or review handoff. Do not use for local targets handled by `univer`."
 hidden: true
 ---
 
@@ -23,21 +23,17 @@ univer-workspace-cli doctor
 
 ## Keep the CLI current
 
-Use these commands to compare the installed CLI with the latest public release:
-
-```bash
-univer-workspace-cli --version
-npm view univer-workspace-cli@latest version --registry=https://registry.npmjs.org/
-```
-
-Complete the current Workspace task before upgrading. This CLI has no `update` command; install the
-new package version explicitly, then reload its operational Skills:
+Before starting a new Workspace task, apply any available CLI update:
 
 ```bash
 npm install -g univer-workspace-cli@latest
 univer-workspace-cli doctor --json
 univer-workspace-cli skills get core
 ```
+
+Continue only after `doctor` reports that the CLI is ready. Reload core and the target Unit Skill
+after every update. Once task work begins, keep the CLI and loaded Skills unchanged until handoff;
+apply later updates before the next new task.
 
 ## Start here
 
@@ -74,11 +70,19 @@ After core, load the Skill matching the target top-level Unit before authoring:
 univer-workspace-cli skills get sheet
 univer-workspace-cli skills get doc
 univer-workspace-cli skills get slide
+univer-workspace-cli skills get base
+univer-workspace-cli skills get board
 ```
 
 Use `univer-workspace-cli skills list` to discover the installed set. Each Unit Skill owns its
 creation recipe, injected Facade root, readback guidance, and visual verification requirements.
-Base and Board authoring are outside the current Workspace Skill surface.
+
+For cross-Unit composition, load the additional Topic Skill after the Host and Source Unit Skills:
+
+```bash
+univer-workspace-cli skills get embed
+univer-workspace-cli skills get cross-unit-formula
+```
 
 ## Task Routing
 
@@ -89,6 +93,10 @@ Base and Board authoring are outside the current Workspace Skill surface.
 | Inspect or edit Sheet values, formulas, formatting, charts, or tables | core + `sheet` |
 | Create or refine Doc paragraphs, rich text, tables, charts, or pagination | core + `doc` |
 | Build or review Slide pages, shapes, text, images, tables, or charts | core + `slide` |
+| Create or edit structured Base tables, fields, records, or views | core + `base` |
+| Create or edit a Board canvas, charts, and other elements | core + `board` |
+| Embed one Unit inside another Unit | core + Host Unit + Source Unit + `embed` |
+| Read a Sheet range or Base table column across Units | core + Host Unit + Source Unit + `cross-unit-formula` |
 | Verify, screenshot, export, mark ready, or generate a review URL | core + target Unit |
 
 ## Why Univer Workspace CLI
