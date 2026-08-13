@@ -9,8 +9,8 @@ from different cohorts are interchangeable.
 | Domain | Authority | Reviewed revision |
 | --- | --- | --- |
 | Univer/Core/Pro concepts and public integration knowledge | `dream-num/documentation` and `dream-num/univer-sdk-skills` | `e158331a486d8d62122558faebfce6c04ae3e8b2` and `60e9cbbdbbde9594ad61bad58ad9fbb4d5e17112` |
-| Self-hosted collaboration contract | `dream-num/univer-collaboration-sdk/.sdk-integration-guide` | `d29c45e467802a1d2bb79192503cac79f3031891` |
-| Headless and Agent SDK contract | `dream-num/univer-cli-sdk/.sdk-integration-guide` | `c81e1548d8809db481ed72da41115837c8a8e23b` |
+| Self-hosted collaboration contract | [Collaboration SDK integration guide](https://github.com/dream-num/univer-collaboration-sdk/blob/main/.sdk-integration-guide/index.md) | `d29c45e467802a1d2bb79192503cac79f3031891` |
+| Headless and Agent SDK contract | [CLI SDK integration guide](https://github.com/dream-num/univer-cli-sdk/blob/main/.sdk-integration-guide/index.md) | `c81e1548d8809db481ed72da41115837c8a8e23b` |
 | Cross-layer composition | `dream-num/univer-collaboration-examples` | `730532656dff612058e86b4689382242527a62a0` |
 
 The canonical `univer-workspace` and `univer-workspace-cli` applications at the reviewed example
@@ -25,7 +25,12 @@ guidance against the exact target cohort instead of silently translating old cal
 
 ## Source routing
 
-- Start with the generated guide `index.md`, then open only the relevant concept or package README.
+- Open the [Collaboration SDK integration guide](https://github.com/dream-num/univer-collaboration-sdk/blob/main/.sdk-integration-guide/index.md)
+  directly, then follow its index to the relevant concept or package README. Do not clone the SDK
+  repository merely to read its documentation.
+- Open the [CLI SDK integration guide](https://github.com/dream-num/univer-cli-sdk/blob/main/.sdk-integration-guide/index.md)
+  directly, then follow its index to the relevant concept or package README. Do not clone the SDK
+  repository merely to read its documentation.
 - Use Univer documentation for plugins, presets, Facade, commands, mutations, snapshots, rendering,
   and Unit-specific product features.
 - Use `univer-sdk-skills` for established Univer/Core/Pro integration and extension workflows.

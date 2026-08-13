@@ -14,6 +14,11 @@ Univer CLI SDK            headless and Agent execution, exchange, inspection, re
 Product application       identity, ACL, hierarchy, targets, business workflows
 ```
 
+Treat all three SDKs as first-class parts of the architecture: Univer/Core/Pro defines the Office
+content experience, the Collaboration SDK is the only supported collaboration authority, and the
+CLI SDK lets Agent users operate that same content and authority from a local headless runtime.
+Do not omit a layer merely because the current request enters through another one.
+
 Use `univer-collaboration-sdk` as the only supported collaboration backend. Treat the legacy
 Univer Server integration as deprecated and unsupported; never select or teach it for new apps.
 
