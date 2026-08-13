@@ -1,29 +1,46 @@
 # Cross-SDK architecture
 
-## The four owners
-
-| Layer | Owns | Does not own |
-| --- | --- | --- |
-| Univer/Core/Pro | Unit models, plugins and presets, Facade, commands, mutations, browser UI, rendering | Users, product hierarchy, authoritative collaboration persistence |
-| Collaboration SDK | Snapshot, changeset, revision, OT, idempotency, HTTP/WebSocket protocol, rooms, Worktree collaboration | Login, ACL storage, tenancy, Space/Node/Resource catalog |
-| CLI SDK | Headless Univer, explicit pull/execute/commit, pools and daemon, inspection, exchange, render and screenshot capabilities | Product targets, credentials, background sync policy, collaboration authority |
-| Product application | Authentication, users, ACL, tenant, hierarchy, sharing, target resolution, business workflow | OT, confirmed revision, content-engine internals |
-
-## Human and Agent clients share one authority
+## C4 context
 
 ```text
-Browser Univer/Pro + Collaboration Client
-                  \
-                   → Product auth/ACL → Collaboration Endpoint → Service → collab store
-                  /
-Agent target resolver → CLI manual runtime
-
-Product API → product store (users, Spaces, Nodes, Resources, ACL, operations)
+[Office Suite user] ───────────────→ [Developer-owned Office Suite application]
+                                             │
+[Agent user + local Univer CLI SDK] ─────────┘
+                                             │
+                 ┌───────────────────────────┼──────────────────────────┐
+                 ▼                           ▼                          ▼
+      [Univer/Core/Pro SDK]      [Collaboration SDK]      [Application integrations]
+      content and rendering      collaboration authority  identity, policy, blobs, ops
 ```
 
-The browser client provides automatic realtime behavior and presence. The CLI runtime provides an
-explicit state machine suitable for a bounded Agent task. Both load and submit the same Unit; they
-must not create competing authorities.
+The developer-owned application is the product boundary. It owns authentication, ACL, tenancy,
+Space/Node/Resource hierarchy, sharing, target resolution, and durable workflows. Univer/Core/Pro
+owns content behavior; the Collaboration SDK owns authoritative collaboration state. The Agent user
+runs the CLI SDK locally. Third-party systems connect only through developer-owned adapters.
+
+## C4 containers
+
+```text
+[Office Suite user]
+        │
+        ▼
+[Browser Office application]
+ Developer UI + Univer/Core/Pro + Browser Collaboration Client
+        │
+        ├───────────────────────┐
+        ▼                       ▼
+[Application backend] ← [Agent user running local Univer CLI SDK + headless Univer/Core/Pro]
+ Developer product APIs
+ + Univer Collaboration SDK
+        │
+        ├──→ [Product database]       users, ACL, hierarchy, metadata, operations
+        ├──→ [Collaboration database] snapshots, changesets, revisions, idempotency
+        └──→ [Application integrations]
+```
+
+The browser client owns automatic realtime synchronization. The local CLI runtime owns bounded
+`fetch → pull → execute → commit`. Both use the same application backend and Collaboration SDK
+authority; neither owns product identity or storage policy.
 
 ## Content change path
 

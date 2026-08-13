@@ -51,23 +51,6 @@ SDK. The legacy Univer Server integration is deprecated and unsupported.
    conversion, inspection, rendering, screenshots, and export.
 5. Check [Sources](./sources.md) for the exact revisions and release cohort reviewed by this guide.
 
-## What “excellent” means
-
-A production-quality application does more than render an editor. For the part of the product you
-are building, verify the relevant qualities:
-
-- correct SDK ownership and dependency direction;
-- one exact compatible release cohort;
-- trusted identity and server-side ACL at every data path;
-- explicit Unit, Resource, Node, Worktree, Session, and submission identities;
-- convergence between browser and Agent clients;
-- idempotent and recoverable cross-store operations;
-- content fidelity through inspection, visual review, and Office round trips where relevant;
-- a deployable persistence, network, backup, observability, and shutdown model.
-
-Do not turn that checklist into mandatory platform work for every small change. Validate in
-proportion to the requested outcome and risk.
-
 ## Canonical applications
 
 The integrated reference consists of two applications in `dream-num/univer-collaboration-examples`:

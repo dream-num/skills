@@ -1,150 +1,205 @@
 # Architecture
 
-This chapter explains the stable seams of a Univer Office Suite application. Package-level APIs
-change more often than these ownership rules, so establish the model before selecting calls.
+This chapter defines the system boundary of a Univer Office Suite application and the ownership
+seams between DreamNum SDKs, developer-owned product code, and third-party systems.
 
 [简体中文](./architecture.zh-CN.md)
 
-## Four responsibility layers
+## System context
 
-| Layer | Primary responsibility | Examples |
-| --- | --- | --- |
-| Univer/Core/Pro | Run and extend Office content | Unit models, plugins, presets, Facade, commands, mutations, UI, render |
-| Collaboration SDK | Maintain authoritative collaborative state | snapshot, changeset, revision, OT, idempotency, protocol, room, Worktree |
-| CLI SDK | Execute bounded Node and Agent content work | headless factory, manual runtime, pools, inspection, exchange, render, screenshot |
-| Product application | Turn content into a product | user, auth, ACL, tenant, Space, Node, Resource, sharing, target, durable operation |
+```mermaid
+C4Context
+    title System Context — Univer Office Suite Application
 
-The dependency direction follows ownership. Product code composes SDKs. The Collaboration Service
-does not import product, Endpoint, Transport, or a concrete Database Adapter. CLI capabilities use
-public content and collaboration contracts without becoming a product data model.
+    Person(user, "Office Suite user", "Creates, edits, reviews, and shares Office content")
+    Person(agentUser, "Agent user", "Runs the Univer CLI SDK locally, directs tasks, and reviews results")
+
+    System_Boundary(productScope, "Developer scope") {
+        System(product, "Office Suite application", "Browser experience, product APIs, identity mapping, ACL policy, Spaces, Nodes, Resources, Worktree catalog, and durable workflows")
+        SystemDb(productStore, "Product storage", "Users, ACL, hierarchy, metadata, operations, and business state")
+    }
+
+    System_Boundary(sdkScope, "univer-*-sdk scope") {
+        System(contentSdk, "Univer / Univer Pro SDK", "Office content model, plugins, Facade, commands, mutations, UI, and rendering")
+        System(collabSdk, "Univer Collaboration SDK", "Authoritative snapshots, changesets, revisions, OT, HTTP/WebSocket protocol, rooms, and Worktree collaboration")
+        System(cliSdk, "Univer CLI SDK", "Headless and Agent execution, manual collaboration runtime, inspection, Office exchange, rendering, lint, and screenshots")
+    }
+
+    System_Ext(integrations, "Application integrations", "Identity/user system, authorization policy, object storage, observability, queues, webhooks, and downstream consumers")
+
+    Rel(user, product, "Uses", "HTTPS / WebSocket")
+    Rel(agentUser, cliSdk, "Runs locally")
+    Rel(cliSdk, product, "Uses authenticated product and collaboration APIs", "HTTPS / WebSocket")
+    Rel(product, contentSdk, "Embeds and extends")
+    Rel(product, collabSdk, "Hosts and calls")
+    Rel(product, productStore, "Reads and writes")
+    Rel(product, integrations, "Integrates through developer-owned adapters")
+```
+
+The SDK boundary provides content and collaboration primitives. It does not define the product's
+users, permissions, hierarchy, sharing, target resolution, or business workflows. The developer
+owns those policies and the adapters that connect external identity, authorization, storage, and
+operations systems. A third-party service may execute a decision, but the application remains
+responsible for mapping that decision to trusted SDK context and enforcing it on every path.
+
+## Runtime containers and SDK placement
+
+The product application is the composition root. Each SDK runs in a specific runtime; the SDKs do
+not form a separate deployable product by themselves.
+
+```mermaid
+C4Container
+    title Container Diagram — SDK Placement in a Univer Office Suite Application
+
+    Person(user, "Office Suite user", "Edits and reviews content")
+    Person(agentUser, "Agent user", "Runs the Univer CLI SDK locally, starts tasks, and reviews results")
+
+    System_Boundary(app, "Developer-owned Office Suite application") {
+        Container(browser, "Browser Office application", "Developer UI + Univer/Core/Pro SDK + Browser Collaboration Client", "Renders and edits Office content; automatically synchronizes realtime collaboration")
+        Container(backend, "Application backend", "Developer product APIs + Univer Collaboration SDK", "Owns the product control plane and hosts the authoritative collaboration gateway")
+        ContainerDb(productDb, "Product database", "Developer-selected database", "Stores users, ACL, hierarchy, metadata, and durable operations")
+        ContainerDb(collabDb, "Collaboration database", "Collaboration SDK Database Adapter", "Stores authoritative snapshots, changesets, revisions, and idempotency state")
+    }
+
+    System_Ext(integrations, "Application integrations", "Identity/user system, authorization policy, object storage, observability, queues, webhooks, and downstream consumers")
+
+    Rel(user, browser, "Edits and reviews")
+    Rel(browser, backend, "Uses product and collaboration APIs", "HTTPS / WebSocket")
+    Rel(agentUser, backend, "Runs the local CLI SDK", "HTTPS / WebSocket")
+    Rel(backend, productDb, "Stores product state")
+    Rel(backend, collabDb, "Stores collaboration state")
+    Rel(backend, integrations, "Uses developer-owned adapters")
+```
+
+SDK placement is therefore explicit:
+
+- **Univer/Core/Pro SDK** runs in the browser for interactive editing and inside the local CLI
+  runtime as a headless content engine.
+- **Browser Collaboration Client** runs only in the browser and owns automatic realtime sync.
+- **Univer CLI SDK** runs on the Agent user's client and owns the bounded manual execution loop.
+- **Univer Collaboration SDK** runs in the application backend and owns authoritative
+  collaboration state.
+- **Product backend code** runs beside the Collaboration SDK, owns product policy, and calls its
+  public Service contracts without taking ownership of collaboration internals.
+
+The diagram groups the server-side product API and collaboration gateway into one backend to keep
+the runtime view readable. They may share one process or be deployed separately. The CLI runtime
+remains on the Agent user's client, and deployment does not change ownership.
 
 ## Two clients, one content authority
 
-Human editing and Agent editing are not separate document systems:
+```mermaid
+sequenceDiagram
+    participant Human as Browser user
+    participant Browser as Browser + Collaboration Client
+    participant Product as Product auth / ACL
+    participant Collab as Collaboration Endpoint / Service
+    participant Agent as Agent user + local CLI runtime
 
-```text
-Browser
-  Univer/Core/Pro UI
-  automatic Collaboration Client
-             │
-             ├── authenticated snapshot / changeset HTTP
-             └── ticketed WebSocket Session
-                                  │
-                                  ▼
-                    Collaboration Endpoint
-                            │
-                    Collaboration Service
-                            │
-              snapshot + changeset + revision store
-                            ▲
-                                  │
-Agent
-  product target resolver
-  CLI manual collaboration runtime
-  headless Univer/Core/Pro
+    Human->>Browser: Edit through Facade / commands
+    Browser->>Product: Authenticate and resolve access
+    Browser->>Collab: Load, join, and submit mutations
+    Agent->>Product: Authenticate and resolve Unit / Worktree target
+    Agent->>Collab: Fetch and pull confirmed revisions
+    Agent->>Agent: Execute Facade code in headless Univer
+    Agent->>Collab: Commit captured mutations
+    Collab-->>Browser: ACK / broadcast or later replay
+    Collab-->>Agent: Confirmed revision or retry/conflict result
 ```
 
-The browser client optimizes continuous user interaction, realtime presence, ACK, and replay. The
-CLI runtime optimizes a bounded task with explicit fetch, pull, execute, and commit. Registering the
-automatic browser collaboration state machine inside the headless manual runtime would give one
-process two competing synchronization owners and is therefore forbidden.
+The browser client owns continuous realtime synchronization and presence. The CLI runtime owns an
+explicit, bounded `fetch → pull → execute → commit` state machine. Never register the automatic
+browser Collaboration Client in the same headless runtime; that would create competing sync owners.
 
 ## Content state and commands
 
-Univer is plugin-based and can run in browser, Electron, Node, worker, or tests with different
-plugin assemblies. Prefer Facade API for application behavior. Use plugins, dependency injection,
-and command APIs for extensions that Facade does not cover.
+Univer is plugin-based and can run in browser, Electron, Node, workers, and tests. Prefer Facade API
+for application behavior; use plugins, dependency injection, and command APIs for deeper product
+extensions.
 
-A snapshot is a persistence representation. It does not update as the live model changes, and
-editing it does not update the application. All live changes go through Facade or commands. The
-command system produces mutations; mutations are the smallest unit transformed by collaboration.
-
-```text
-intent → Facade/command → mutations → changeset → OT/CAS → confirmed revision
+```mermaid
+flowchart LR
+    Intent[User or Agent intent] --> Facade[Facade API / Command]
+    Facade --> Mutation[Mutation]
+    Mutation --> Changeset[Changeset + base revision + idempotency identity]
+    Changeset --> OT[OT + revision CAS]
+    OT --> Confirmed[Confirmed revision]
+    Confirmed --> Delivery[ACK / realtime delivery / HTTP replay]
 ```
 
-## Collaboration service chain
+A snapshot is persisted data, not mutable live state. Editing a snapshot does not update the running
+application. Change live content through Facade or commands; mutations are the smallest units
+transformed by collaboration.
 
-The self-hosted server is one assembly, not four alternatives:
+## Collaboration SDK internals
 
-```text
-Node Transport
-└── Collaboration Endpoint
-    └── Collaboration Service
-        └── Database Adapter
+```mermaid
+flowchart LR
+    Request[Raw HTTP / WebSocket] --> Transport[Node Transport<br/>network ingress]
+    Transport --> Endpoint[Collaboration Endpoint<br/>protocol · Session · room · presence · ACK]
+    Endpoint --> Service[Collaboration Service<br/>OT · revision · Unit lifecycle]
+    Service --> Adapter[Database Adapter<br/>atomic persistence · CAS · deduplication]
+    Adapter --> Store[(Collaboration database)]
 ```
 
-- **Transport** handles raw HTTP/WebSocket ingress and general request middleware.
-- **Endpoint** implements the client protocol and owns Session, room, presence, ACK, and broadcast.
-- **Service** owns network-independent OT, revision, Unit lifecycle, and collaboration middleware.
-- **Database Adapter** atomically persists snapshots, changesets, revision CAS, and idempotency.
-
-The legacy Univer Server integration is deprecated and unsupported. It is not a second supported
-deployment option and must not be selected for a new application.
+These are complementary layers, not alternative integration choices. The legacy Univer Server
+integration is deprecated and unsupported; new applications must use the Collaboration SDK.
 
 ## Control plane and content plane
 
 Product APIs form the control plane: identity, Space/Node hierarchy, Resource metadata, ACL,
 sharing, trash, recent items, Worktree catalog, task state, and durable operations. Collaboration
-routes form the content plane: Unit snapshot, block data, confirmed changesets, submit, Session,
-room, presence, and Worktree-scoped content.
+routes form the content plane: Unit snapshots, blocks, confirmed changesets, submit, Session, room,
+presence, and Worktree-scoped content.
 
-Both planes reuse in-process identity and access-policy modules, but neither should call the other
-over HTTP merely to ask the same process for authorization. This keeps policy consistent without
-mixing protocol ownership.
+Both planes may reuse the same in-process identity and access-policy modules. They should not call
+each other over HTTP merely to ask the same process for authorization.
 
 ## Identity vocabulary
 
-| Term | Meaning |
+| Term | Owner and meaning |
 | --- | --- |
-| application user ID / `userID` | Stable authenticated business identity and confirmed author |
-| `memberID` | One online Endpoint Session; changes after reconnect |
-| `sid` + `reqId` | Changeset submission idempotency identity; preserved across retries |
-| Unit ID | Global content identity in a Collaboration Service/database |
-| Resource ID | Product metadata identity that refers to a Unit |
+| application user ID / `userID` | Developer-owned stable identity mapped into trusted SDK context; confirmed author |
+| `memberID` | Collaboration Endpoint identity for one online Session; changes after reconnect |
+| `sid` + `reqId` | Collaboration client/runtime submission idempotency identity; preserved across retries |
+| Unit ID | Collaboration identity, globally unique within a Service/database |
+| Resource ID | Product metadata identity referring to a Unit |
 | Node ID | Product hierarchy entry in a Space |
-| Worktree ID | Isolated draft and review scope |
+| Worktree ID | Isolated draft and review scope shared by product catalog and Worktree services |
 
 Client payloads cannot establish trusted user identity, membership ownership, or confirmed
 revision. Resolve those facts from authenticated server state.
 
-## Authentication and ACL paths
+## Authentication and authorization paths
 
 Ordinary collaboration HTTP requests authenticate in Transport middleware. A Session-ticket
-request captures that trusted context into an opaque one-time ticket; WebSocket open consumes it to
-create an Endpoint Session. The ticket does not expose identity in the token itself.
-
-Authorization belongs on every relevant path:
+request captures trusted context in an opaque one-time ticket; WebSocket open consumes it to create
+an Endpoint Session.
 
 - Endpoint JOIN protects entry to a realtime room.
-- Service read middleware protects snapshot and missing-changes HTTP reads.
+- Service read middleware protects snapshots and missing-changes HTTP reads.
 - Service submit middleware protects authoritative content changes.
 - Create, delete, restore, History, Comment, and Worktree each require their own policy coverage.
 
 A JOIN check alone does not protect HTTP reads. Client-side read-only UI does not replace server
 authorization.
 
-## Persistence and delivery guarantees
+## Persistence, delivery, and lifecycle
 
-The collaboration database is authoritative. WebSocket is a low-latency delivery channel. A commit
-can succeed even if a realtime send fails; clients recover by fetching confirmed changesets after
-their known revision.
+The collaboration database is authoritative; WebSocket is a low-latency delivery channel. A commit
+may succeed even if realtime delivery fails, so clients recover confirmed changesets from their
+known revision.
 
-Product data and collaboration data have separate owners, even when development uses one physical
-SQLite file. A workflow that creates a Resource, ACL, Node, and Unit must use an idempotency key,
-durable operation state, explicit steps, and recovery. It must not claim a cross-owner transaction.
+Product and collaboration data have separate owners, even if development uses one physical SQLite
+file. Cross-store workflows require idempotency, durable operation state, explicit steps, and
+recovery—not a claimed shared transaction.
 
-Retryable apply/commit stages may run more than once after revision competition. Do not emit
-irreversible side effects there. Use committed events for in-process effects and a transactional
-outbox for reliable external delivery.
-
-## Process topology and lifecycle
+Retryable apply/commit stages may run more than once. Emit irreversible effects only after commit;
+use a transactional outbox when external delivery must be reliable.
 
 Database CAS can preserve authoritative correctness across multiple Service instances. Current
-room, presence, ACK, and broadcast guarantees are scoped to one Endpoint process; do not scale
-Endpoint horizontally without an explicit realtime distribution design.
+room, presence, ACK, and broadcast guarantees are scoped to one Endpoint process unless the
+application adds an explicit realtime distribution design.
 
 Dispose from the network edge inward. Transport disposes registered Endpoints; Endpoint does not
-dispose Service; Service does not dispose an externally injected Database Adapter. The application
-owns injected credentials, loggers, metrics, adapters, and other external resources unless the
-creating component documents otherwise.
+dispose Service; Service does not dispose an externally injected Database Adapter.

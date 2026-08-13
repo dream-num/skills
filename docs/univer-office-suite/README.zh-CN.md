@@ -49,21 +49,6 @@ Agent 任务
    转换、inspection、render、screenshot 与 export。
 5. 在[资料来源](./sources.md)查看本指南复核过的精确 revision 与 release cohort。
 
-## 怎样才算卓越
-
-生产级应用不只是把编辑器渲染出来。应按当前产品范围检查相关质量：
-
-- SDK 职责和依赖方向正确；
-- 全部版本耦合 package 使用同一个精确 release cohort；
-- 所有数据路径都使用可信身份和服务端 ACL；
-- Unit、Resource、Node、Worktree、Session 与提交身份边界清楚；
-- 浏览器与 Agent client 能收敛到同一个权威状态；
-- 跨存储操作幂等、持久化且可恢复；
-- 需要时通过 model inspection、视觉检查和 Office round trip 验证内容保真；
-- 持久化、网络、备份、可观测性和 shutdown 模型可部署。
-
-不要因为这份清单就为每个小改动搭建整个平台。验证范围应与目标和风险相称。
-
 ## Canonical applications
 
 贯通三层的 reference implementation 位于 `dream-num/univer-collaboration-examples`：
