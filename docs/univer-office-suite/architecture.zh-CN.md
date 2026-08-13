@@ -25,7 +25,12 @@ C4Context
         System(cliSdk, "Univer CLI SDK", "Headless 与 Agent execution、手动 collaboration runtime、inspection、Office exchange、render、lint 与 screenshot")
     }
 
-    System_Ext(integrations, "Application integrations", "身份/用户系统、授权策略、对象存储、可观测性、queue、webhook 与下游 consumer")
+    System_Boundary(integrationScope, "Developer-integrated third-party systems") {
+        System_Ext(identity, "身份 / 用户系统", "Login、OAuth、SSO、directory 与稳定业务身份")
+        System_Ext(policy, "授权 / 策略系统", "Role、permission、tenant policy 与 entitlement decision")
+        System_Ext(blob, "对象存储", "Import、export、asset、preview 与其他 blob")
+        System_Ext(operations, "运维集成", "Log、trace、metrics、queue、webhook 与下游 consumer")
+    }
 
     Rel(user, product, "使用", "HTTPS / WebSocket")
     Rel(agentUser, cliSdk, "在客户端运行")
@@ -33,7 +38,10 @@ C4Context
     Rel(product, contentSdk, "嵌入并扩展")
     Rel(product, collabSdk, "托管并调用")
     Rel(product, productStore, "读写")
-    Rel(product, integrations, "通过 developer-owned adapter 集成")
+    Rel(product, identity, "通过 developer-owned adapter 认证")
+    Rel(product, policy, "通过 developer-owned adapter 授权")
+    Rel(product, blob, "通过 developer-owned adapter 存取")
+    Rel(product, operations, "发布 telemetry 与 post-commit effect")
 ```
 
 SDK 边界提供内容与协同 primitive，但不定义产品用户、权限、层级、分享、target resolution 或

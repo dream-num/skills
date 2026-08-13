@@ -25,7 +25,12 @@ C4Context
         System(cliSdk, "Univer CLI SDK", "Headless and Agent execution, manual collaboration runtime, inspection, Office exchange, rendering, lint, and screenshots")
     }
 
-    System_Ext(integrations, "Application integrations", "Identity/user system, authorization policy, object storage, observability, queues, webhooks, and downstream consumers")
+    System_Boundary(integrationScope, "Developer-integrated third-party systems") {
+        System_Ext(identity, "Identity / user system", "Login, OAuth, SSO, directory, and stable business identity")
+        System_Ext(policy, "Authorization / policy system", "Roles, permissions, tenant policy, and entitlement decisions")
+        System_Ext(blob, "Object storage", "Imports, exports, assets, previews, and other blobs")
+        System_Ext(operations, "Operational integrations", "Logs, traces, metrics, queues, webhooks, and downstream consumers")
+    }
 
     Rel(user, product, "Uses", "HTTPS / WebSocket")
     Rel(agentUser, cliSdk, "Runs locally")
@@ -33,7 +38,10 @@ C4Context
     Rel(product, contentSdk, "Embeds and extends")
     Rel(product, collabSdk, "Hosts and calls")
     Rel(product, productStore, "Reads and writes")
-    Rel(product, integrations, "Integrates through developer-owned adapters")
+    Rel(product, identity, "Authenticates through developer-owned adapter")
+    Rel(product, policy, "Authorizes through developer-owned adapter")
+    Rel(product, blob, "Stores and retrieves through developer-owned adapter")
+    Rel(product, operations, "Publishes telemetry and post-commit effects")
 ```
 
 The SDK boundary provides content and collaboration primitives. It does not define the product's

@@ -9,8 +9,11 @@
                                              │
                  ┌───────────────────────────┼──────────────────────────┐
                  ▼                           ▼                          ▼
-      [Univer/Core/Pro SDK]      [Collaboration SDK]      [Application integrations]
-      content and rendering      collaboration authority  identity, policy, blobs, ops
+      [Univer/Core/Pro SDK]      [Collaboration SDK]      [Third-party systems]
+      content and rendering      collaboration authority  ├ identity/user
+                                                         ├ authorization/policy
+                                                         ├ object storage
+                                                         └ operations
 ```
 
 The developer-owned application is the product boundary. It owns authentication, ACL, tenancy,
