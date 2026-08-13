@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Univer App"
+  short_description: "Design, build, and explain complete Univer apps"
+  default_prompt: "Use $build-univer-app to design and implement a production-ready Univer Office Suite application."
