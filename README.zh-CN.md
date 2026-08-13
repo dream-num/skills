@@ -113,6 +113,8 @@ Use univer-workspace-cli to edit this Workspace file in a new Worktree and retur
 - SDK Skills 的 `agents/`、`references/`、`assets/` 和 `scripts/` 资源保留在各自
   skill 目录中。
 - 发布 Skill 变更前运行 `npm run validate`。
+- 修改 `build-univer-app` 时运行 `npm run validate:skill`；它使用本地 Codex 安装中的标准 Skill
+  Creator validator。
 
 ## License
 

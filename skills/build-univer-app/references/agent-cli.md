@@ -38,7 +38,7 @@ Use the runtime contract rather than inventing revision logic:
 
 ## Prefer Worktree for reviewable Agent tasks
 
-For every new editing task:
+When the application supports review and the task should be isolated, use a fresh Worktree:
 
 1. Resolve the product target and create a fresh Worktree with explicit Unit membership.
 2. Execute one coherent content change per intended revision.

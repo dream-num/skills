@@ -68,7 +68,7 @@ conflict 时停止，由产品策略或用户选择 reload、rework、export 或
 
 ## 4. 用 Worktree 建立 review 边界
 
-对于新的 Agent 编辑任务：
+当应用支持 review 且 Agent 任务需要隔离时：
 
 1. 创建 fresh Worktree，并加入目标 Unit。
 2. 解析 Worktree-scoped target 并 acquire runtime。

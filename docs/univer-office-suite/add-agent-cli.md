@@ -72,7 +72,7 @@ can overwrite intent even when they eventually pass.
 
 ## 4. Make Worktree the review boundary
 
-For a new Agent editing task:
+When the application supports review and an Agent task should be isolated:
 
 1. Create a fresh Worktree and attach the intended Unit or Units.
 2. Resolve the Worktree-scoped target and acquire its runtime.

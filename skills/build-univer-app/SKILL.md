@@ -25,6 +25,9 @@ Univer Server integration as deprecated and unsupported; never select or teach i
 - For **build/fix**, trace the existing flow, implement through public APIs, run validation
   proportional to the change, and report any unresolved version or ownership conflict.
 
+For a complex design or build, define success criteria before planning: user-visible outcomes,
+preservation constraints, deliverables, validation signals, non-goals, and unresolved ambiguities.
+
 Do not create repositories, publish packages, deploy, merge, or change upstream SDKs unless the
 user explicitly requests that external action.
 
@@ -54,39 +57,20 @@ Do not turn these references into an API mirror.
 6. Mark a combination **conceptual** when no coherent source baseline or runnable example verifies
    it. Do not present conceptual guidance as runnable.
 
-## Preserve the architecture
-
-- Prefer Facade API for application authoring. Use plugins, DI, commands, or mutations only when
-  the task genuinely requires lower-level extension points.
-- Modify live Univer content through Facade or commands. Never mutate a snapshot as live state.
-- Let the product application authenticate each request and own users, ACL, tenant, Space, Node,
-  Resource, Worktree catalog, sharing, and target resolution.
-- Let the Collaboration SDK own Unit snapshots, changesets, revisions, OT, submission idempotency,
-  rooms, ACK, and replay.
-- Keep product storage and collaboration storage separate. Coordinate cross-store operations with
-  idempotency, durable operation state, and recovery; never claim a shared transaction.
-- Treat browser Collaboration Client and CLI manual collaboration runtime as different clients of
-  the same authority. Never register automatic collaboration synchronization inside a CLI manual
-  runtime.
-- Distinguish `userID`, `memberID`, `{sid, reqId}`, Unit ID, Resource ID, Node ID, and Worktree ID.
-  Do not trust identity or confirmed revision supplied by a client payload.
-- Apply ACL at every relevant ingress and lifecycle path. A WebSocket JOIN check does not protect
-  snapshot reads or HTTP changeset submission.
-- Keep retryable collaboration stages free of irreversible side effects. Use committed events or a
-  transactional outbox for post-commit work.
-
 ## Implement and verify
 
-1. Reuse the target application's composition root and adapters before adding abstractions.
-2. Use the canonical Workspace applications as patterns, not copy sources.
-3. Scope every recipe to the Unit types actually verified by its packages and example.
-4. Validate content by reading the stored model; add lint, render, screenshot, and Office round-trip
+1. Load the task-specific reference and enforce its ownership, identity, persistence, and retry
+   invariants.
+2. Reuse the target application's composition root and adapters before adding abstractions.
+3. Use the canonical Workspace applications as patterns, not copy sources.
+4. Scope every recipe to the Unit types actually verified by its packages and example.
+5. Validate content by reading the stored model; add lint, render, screenshot, and Office round-trip
    checks only when relevant to the requested outcome.
-5. For Agent edits, isolate new tasks in Worktree when the application supports review. Do not
+6. For Agent edits, isolate new tasks in Worktree when the application supports review. Do not
    merge or discard without explicit user authority.
-6. For conflicts, pull and retry only when the runtime reports a retryable condition. Stop on a
+7. For conflicts, pull and retry only when the runtime reports a retryable condition. Stop on a
    terminal conflict and let the application or user choose reload, rework, or discard.
-7. Verify security, recovery, fidelity, and deployability in proportion to the task. Do not build a
+8. Verify security, recovery, fidelity, and deployability in proportion to the task. Do not build a
    complete platform to validate a small scoped change.
 
 ## Resolve conflicting sources

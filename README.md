@@ -114,6 +114,8 @@ Use univer-workspace-cli to edit this Workspace file in a new Worktree and retur
 - SDK Skills keep their supporting `agents/`, `references/`, `assets/`, and `scripts/`
   inside their owning skill directory.
 - Run `npm run validate` before publishing Skill changes.
+- Run `npm run validate:skill` when changing `build-univer-app`; it uses the standard Skill Creator
+  validator from the local Codex installation.
 
 ## License
 

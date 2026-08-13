@@ -4,6 +4,16 @@ Use this workflow for a browser application backed by product APIs and the Colla
 Start from the target repository's existing composition root. Use the canonical `univer-workspace`
 application to verify cross-layer patterns.
 
+## Contents
+
+1. [Define product identities and ownership](#1-define-product-identities-and-ownership)
+2. [Assemble the collaboration gateway](#2-assemble-the-collaboration-gateway)
+3. [Authenticate and authorize every path](#3-authenticate-and-authorize-every-path)
+4. [Create a Unit through a durable product operation](#4-create-a-unit-through-a-durable-product-operation)
+5. [Assemble the browser content runtime](#5-assemble-the-browser-content-runtime)
+6. [Add optional domains without reversing ownership](#6-add-optional-domains-without-reversing-ownership)
+7. [Validate the Workspace](#7-validate-the-workspace)
+
 ## 1. Define product identities and ownership
 
 Establish stable application user IDs before wiring collaboration. Define Space, Node, Resource,
