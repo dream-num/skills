@@ -1,53 +1,54 @@
-# Univer CLI Skills
+# Univer Skills
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Skills](https://img.shields.io/badge/skills-2-0a7ea4.svg)
+![Skills](https://img.shields.io/badge/skills-7-0a7ea4.svg)
 ![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
-语言: [English](./README.md) | [简体中文](./README.zh-CN.md)
+语言：[English](./README.md) | [简体中文](./README.zh-CN.md)
 
-面向 Claude Code、Codex 和 Cursor 的官方 Univer CLI Skills。把本地 `.univer` 文件或远程
-Workspace 任务交给 agent，并描述期望的结果；对应 Skill 会引导 agent 完成内容创作、结果验证和
-可视化检查。
+面向 SDK 集成、Pro 产品、插件与主题开发、后端处理和 CLI 操作的官方 Univer Skills。
 
-这是两个独立应用，不是核心与变体的关系：`univer-cli` 操作本地 `.univer` 文件，
-`univer-workspace-cli` 操作远程 Workspace 文件。
+## Skills
 
-访问 [univer.ai](https://univer.ai) 了解 Univer。
+| Skill | 用途 |
+| --- | --- |
+| [`univer-integrate`](./skills/univer-integrate/SKILL.md) | 嵌入 Univer Sheets、Docs 或 Slides，并使用当前 Facade API |
+| [`univer-pro-integrate`](./skills/univer-pro-integrate/SKILL.md) | 集成授权版 Sheets、Docs、Slides、Bases、Boards、PDFs、协同、交换和 Pro 功能 |
+| [`univer-node-backend`](./skills/univer-node-backend/SKILL.md) | 在 Node.js 中运行无头 Univer 模型和公式工作流 |
+| [`univer-plugin-dev`](./skills/univer-plugin-dev/SKILL.md) | 开发插件、Commands、UI 扩展、事件和 Facade 扩展 |
+| [`univer-customize-theme`](./skills/univer-customize-theme/SKILL.md) | 定制调色板、暗色模式、主题感知 UI 和 Pro Chart 主题 |
+| [`univer-cli`](./skills/univer-cli/SKILL.md) | 操作本地 `.univer` 文件 |
+| [`univer-workspace-cli`](./skills/univer-workspace-cli/SKILL.md) | 操作远程 Workspace 文件 |
 
-## 能做什么
+SDK Skills 跟随当前 Univer OSS 与 Pro 源码，覆盖 Sheets、Docs、Slides、Bases、Boards 和
+PDFs。修改已有应用时应保留它实际安装的精确 package 版本，并在使用源码新增 API 前检查对应
+exports 和 Facade 声明。
 
-- **构建电子表格** — 编辑值和公式，设置格式，以及操作表格、图表和形状。
-- **创作文档和幻灯片** — 编写富文本内容、安排布局并检查渲染结果。
-- **管理结构化数据** — 创建 Base 的表、字段、记录和视图。
-- **使用开放画布** — 创建 Board 画布并添加可视化元素。
-- **安全地与 agent 协作** — 使用 worktree 隔离修改、读回持久化模型，并交付浏览器 review 链接。
-- **自动化远程 Workspace 文件** — 在 Personal 或 Team Space 中发现文件，将其加入 task
-  Worktree，并在不自动 merge 的前提下交付 review URL。
-- **交换 Excel 文件** — 导入和导出 `.xlsx`，同时使用结构化 `.univer` 文件承载工作模型。
-
-## 与 CLI 版本匹配的指引
-
-这个仓库安装两个入口 Skills：
-
-- [`univer-cli`](./skills/univer-cli/SKILL.md) 用于本地 `.univer` 文件。
-- [`univer-workspace-cli`](./skills/univer-workspace-cli/SKILL.md) 用于远程 Workspace 文件。
-
-每个入口都会引导 agent 从已安装的 CLI 加载 core 指引和对应的 Unit Skill，使 command 和
-Facade API 始终与当前版本一致。Univer CLI 覆盖 Sheet、Doc、Slide、Base 和 Board；Workspace
-CLI 当前覆盖 Sheet、Doc 和 Slide。
+两个 CLI Skill 是彼此独立的 discovery 入口，并非核心与变体：`univer-cli` 操作本地
+`.univer` 文件，`univer-workspace-cli` 操作远程 Workspace 文件。它们会从已安装的 CLI
+加载版本匹配的 operational Skills：
 
 ```bash
-univer skills list
 univer skills get core
-univer-workspace-cli skills list
 univer-workspace-cli skills get core
 ```
 
 ## 安装
 
-按任务安装对应 CLI：
+安装全部 Skills：
+
+```bash
+npx skills add dream-num/skills
+```
+
+安装单个 Skill：
+
+```bash
+npx skills add dream-num/skills --skill univer-integrate
+```
+
+仅在任务需要操作对应应用时安装 CLI：
 
 ```bash
 npm install -g univer-cli@latest
@@ -58,12 +59,6 @@ univer-workspace-cli config set-origin https://workspace.example.com
 univer-workspace-cli doctor
 ```
 
-安装 Skills：
-
-```bash
-npx skills add dream-num/skills
-```
-
 ### 手动安装
 
 ```bash
@@ -72,50 +67,53 @@ cd skills
 
 # Claude Code
 mkdir -p ~/.claude/skills
-cp -R skills/univer-cli ~/.claude/skills/
-cp -R skills/univer-workspace-cli ~/.claude/skills/
+cp -R skills/* ~/.claude/skills/
 
 # Codex
 mkdir -p ~/.codex/skills
-cp -R skills/univer-cli ~/.codex/skills/
-cp -R skills/univer-workspace-cli ~/.codex/skills/
+cp -R skills/* ~/.codex/skills/
 
 # Cursor
 mkdir -p ~/.cursor/skills
-cp -R skills/univer-cli ~/.cursor/skills/
-cp -R skills/univer-workspace-cli ~/.cursor/skills/
+cp -R skills/* ~/.cursor/skills/
 ```
 
 ## 示例 Prompts
 
 ```text
-Use univer-cli to inspect this .univer file and update the formulas and formatting on its pricing sheet.
+Use univer-integrate to embed a themed spreadsheet editor in this React application.
 ```
 
 ```text
-Use univer-cli to create a Board, insert a shape, and open the viewer for review.
+Use univer-pro-integrate to add collaboration and XLSX exchange to this Sheets application.
 ```
 
 ```text
-Use univer-cli to create a Base with a contacts table, add a record, and verify the stored model.
+Use univer-plugin-dev to scaffold a command-driven plugin with a Facade extension.
 ```
 
 ```text
-Use univer-workspace-cli to find the quarterly report in my Team Space, update it in a new Worktree, verify the result, and give me the review URL without merging.
+Use univer-cli to update this local .univer file and verify the result.
+```
+
+```text
+Use univer-workspace-cli to edit this Workspace file in a new Worktree and return a review URL.
 ```
 
 ## 环境要求
 
-- Linux 或 macOS
-- Node.js 和 npm
-- 可通过 `univer` 或 `univer-workspace-cli` 命令使用对应 CLI
+- 使用 Node.js 和 npm 安装 Skills
+- CLI 任务需要对应的 `univer` 或 `univer-workspace-cli` 命令
+- SDK 任务需要目标应用实际安装的 Univer packages 和对应 release line
 
 ## 参与贡献
 
-- 入口 Skills 位于 `skills/<cli-name>/SKILL.md`。
-- 与版本匹配的 operational Skills 和 resources 随对应 CLI package 分发。
+- CLI discovery Skills 位于 `skills/univer-cli` 和 `skills/univer-workspace-cli`；与版本匹配
+  的 operational resources 随对应 CLI 分发。
+- SDK Skills 的 `agents/`、`references/`、`assets/` 和 `scripts/` 资源保留在各自
+  skill 目录中。
 - 发布 Skill 变更前运行 `npm run validate`。
 
 ## License
 
-This repository is licensed under the [Apache-2.0 License](./LICENSE).
+本仓库使用 [Apache-2.0 License](./LICENSE)。

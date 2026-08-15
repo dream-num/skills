@@ -9,7 +9,15 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(__filename), "..");
 const skillsRoot = path.join(root, "skills");
-const requiredSkills = ["univer-cli", "univer-workspace-cli"];
+const discoverySkills = ["univer-cli", "univer-workspace-cli"];
+const sdkSkills = [
+  "univer-integrate",
+  "univer-pro-integrate",
+  "univer-node-backend",
+  "univer-plugin-dev",
+  "univer-customize-theme"
+];
+const officialSkills = [...discoverySkills, ...sdkSkills];
 const removedWorkflowSkills = [
   "using-univer-cli",
   "writing-univer-plans",
@@ -88,7 +96,7 @@ async function collectMarkdownFiles(dirPath) {
 }
 
 async function validateSkillStructure() {
-  for (const skill of requiredSkills) {
+  for (const skill of officialSkills) {
     const skillPath = path.join(skillsRoot, skill);
     const skillFile = path.join(skillPath, "SKILL.md");
     if (!existsSync(skillFile)) {
@@ -101,8 +109,29 @@ async function validateSkillStructure() {
     if (frontmatter.name !== skill) {
       recordError(`skills/${skill}/SKILL.md: frontmatter name must be ${skill}`);
     }
-    if (!frontmatter.description || !frontmatter.description.startsWith("Use")) {
-      recordError(`skills/${skill}/SKILL.md: description must exist and start with "Use"`);
+    if (!frontmatter.description) {
+      recordError(`skills/${skill}/SKILL.md: description must exist`);
+    }
+
+    if (sdkSkills.includes(skill)) {
+      if (text.split(/\r?\n/).length > 500) {
+        recordError(`skills/${skill}/SKILL.md: must stay under 500 lines`);
+      }
+      if (!existsSync(path.join(skillPath, "agents", "openai.yaml"))) {
+        recordError(`skills/${skill}/agents/openai.yaml: missing agent metadata`);
+      }
+    }
+  }
+
+  for (const skill of discoverySkills) {
+    const skillPath = path.join(skillsRoot, skill);
+    const skillFile = path.join(skillPath, "SKILL.md");
+    if (!existsSync(skillFile)) continue;
+
+    const text = await readText(skillFile);
+    const frontmatter = parseFrontmatter(text, skillFile);
+    if (!frontmatter.description?.startsWith("Use")) {
+      recordError(`skills/${skill}/SKILL.md: discovery description must start with "Use"`);
     }
     if (frontmatter.hidden !== "true") {
       recordError(`skills/${skill}/SKILL.md: discovery skill must be hidden`);
@@ -113,14 +142,14 @@ async function validateSkillStructure() {
     }
   }
 
-  reports.push(`structure: ${requiredSkills.length} official skills checked`);
+  reports.push(`structure: ${officialSkills.length} official skills checked`);
 }
 
 async function validateReadmes() {
   const readmes = ["README.md", "README.zh-CN.md"].map((name) => path.join(root, name));
   for (const readme of readmes) {
     const text = await readText(readme);
-    for (const skill of requiredSkills) {
+    for (const skill of officialSkills) {
       if (!text.includes(`./skills/${skill}/SKILL.md`)) {
         recordError(`${relativeToRoot(readme)}: missing link to ${skill}`);
       }
@@ -145,15 +174,15 @@ function lineMatchesExactToken(line, token) {
 }
 
 async function validateStaleContractText() {
-  const requiredSkillMarkdownFiles = [];
-  for (const skill of requiredSkills) {
-    requiredSkillMarkdownFiles.push(...await collectMarkdownFiles(path.join(skillsRoot, skill)));
+  const officialSkillMarkdownFiles = [];
+  for (const skill of officialSkills) {
+    officialSkillMarkdownFiles.push(...await collectMarkdownFiles(path.join(skillsRoot, skill)));
   }
 
   const contractFiles = [
     path.join(root, "README.md"),
     path.join(root, "README.zh-CN.md"),
-    ...requiredSkillMarkdownFiles
+    ...officialSkillMarkdownFiles
   ];
 
   const forbiddenOldSkillNames = [
@@ -318,13 +347,13 @@ async function realpathOrNull(filePath) {
   }
 }
 
-async function validateExposureDirectory({ label, exposureRoot, failOnDrift, sourceRoot = skillsRoot }) {
+async function validateExposureDirectory({ label, exposureRoot, failOnDrift, skills = officialSkills, sourceRoot = skillsRoot }) {
   if (!existsSync(exposureRoot)) {
     reports.push(`${label}: ${exposureRoot} not present`);
     return;
   }
 
-  for (const skill of requiredSkills) {
+  for (const skill of skills) {
     const canonicalDir = path.join(sourceRoot, skill);
     const exposedDir = path.join(exposureRoot, skill);
     if (!existsSync(exposedDir)) continue;
@@ -381,6 +410,7 @@ async function validateDrift() {
       label: "repo-local .codex/skills",
       exposureRoot: path.join(repoRoot, ".codex", "skills"),
       failOnDrift: true,
+      skills: discoverySkills,
       sourceRoot: path.join(repoRoot, "packages", "skills", "skills")
     });
   } else {

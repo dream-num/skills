@@ -1,0 +1,6 @@
+interface:
+  display_name: "Univer Node.js Backend"
+  short_description: "Guide Node model workflows for all six Univer products"
+  default_prompt: "Use $univer-node-backend to choose and configure the current Node.js path for headless Univer Sheets, Docs, Slides, Bases, Boards, or PDFs."
+policy:
+  allow_implicit_invocation: true
