@@ -1,0 +1,6 @@
+interface:
+  display_name: "Univer Integrate"
+  short_description: "Embed Univer spreadsheets, docs, or slides into web apps"
+  default_prompt: "Use $univer-integrate to help me embed a Univer spreadsheet (or doc/slide) into my project and manipulate it with the Facade API."
+policy:
+  allow_implicit_invocation: true

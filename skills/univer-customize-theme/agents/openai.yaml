@@ -1,0 +1,4 @@
+interface:
+  display_name: "Customize Univer Theme"
+  short_description: "Customize Univer themes, dark mode, and CSS tokens"
+  default_prompt: "Use $univer-customize-theme to implement a source-compatible Univer theme for my application."

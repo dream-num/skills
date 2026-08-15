@@ -1,0 +1,6 @@
+interface:
+  display_name: "Univer Plugin Dev"
+  short_description: "Build custom plugins and UI extensions for Univer"
+  default_prompt: "Use $univer-plugin-dev to help me write a Univer plugin that registers a custom command, adds a toolbar button, and extends the Facade API."
+policy:
+  allow_implicit_invocation: true

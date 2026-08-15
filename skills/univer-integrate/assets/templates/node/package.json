@@ -1,0 +1,19 @@
+{
+  "name": "univer-node-headless",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@univerjs/preset-sheets-node-core": "1.0.0-beta.0",
+    "@univerjs/presets": "1.0.0-beta.0",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "tsx": "4.23.12",
+    "typescript": "6.0.3"
+  }
+}

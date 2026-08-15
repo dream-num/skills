@@ -1,0 +1,6 @@
+interface:
+  display_name: "Univer Pro Integrate"
+  short_description: "Integrate licensed Univer Pro features"
+  default_prompt: "Use $univer-pro-integrate to add current Univer Pro features to my application."
+policy:
+  allow_implicit_invocation: true

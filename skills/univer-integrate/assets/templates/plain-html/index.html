@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Univer Plain HTML</title>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script>
+      React.jsx = React.jsx || ((type, config, key) => React.createElement(type, { ...config, key }));
+      React.jsxs = React.jsxs || React.jsx;
+    </script>
+    <script src="https://unpkg.com/rxjs@7.8.2/dist/bundles/rxjs.umd.min.js"></script>
+    <script src="https://unpkg.com/@wendellhu/redi@1.1.2/dist/umd/index.js"></script>
+    <script src="https://unpkg.com/@wendellhu/redi@1.1.2/dist/umd/react-bindings/index.js"></script>
+
+    <script src="https://unpkg.com/@univerjs/themes@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/protocol@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/core@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/network@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/telemetry@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/rpc@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/design@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/engine-render@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/engine-formula@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/drawing@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/ui@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/docs@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/docs-ui@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-ui@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-formula@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-formula-ui@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-numfmt@1.0.0-beta.0/lib/umd/index.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-numfmt-ui@1.0.0-beta.0/lib/umd/index.js"></script>
+
+    <script src="https://unpkg.com/@univerjs/core@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/engine-formula@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/ui@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/docs@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/docs-ui@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-ui@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-formula@1.0.0-beta.0/lib/umd/facade.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-numfmt@1.0.0-beta.0/lib/umd/facade.js"></script>
+
+    <script src="https://unpkg.com/@univerjs/design@1.0.0-beta.0/lib/umd/locale/en-US.js"></script>
+    <script src="https://unpkg.com/@univerjs/ui@1.0.0-beta.0/lib/umd/locale/en-US.js"></script>
+    <script src="https://unpkg.com/@univerjs/docs-ui@1.0.0-beta.0/lib/umd/locale/en-US.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets@1.0.0-beta.0/lib/umd/locale/en-US.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-ui@1.0.0-beta.0/lib/umd/locale/en-US.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-formula-ui@1.0.0-beta.0/lib/umd/locale/en-US.js"></script>
+    <script src="https://unpkg.com/@univerjs/sheets-numfmt-ui@1.0.0-beta.0/lib/umd/locale/en-US.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/@univerjs/design@1.0.0-beta.0/lib/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@univerjs/ui@1.0.0-beta.0/lib/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@univerjs/docs-ui@1.0.0-beta.0/lib/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@univerjs/sheets-ui@1.0.0-beta.0/lib/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@univerjs/sheets-formula-ui@1.0.0-beta.0/lib/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@univerjs/sheets-numfmt-ui@1.0.0-beta.0/lib/index.css" />
+
+    <style>
+      html, body, #app { height: 100%; margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const { LocaleType, mergeLocales, Univer } = UniverCore;
+      const { FUniver } = UniverCoreFacade;
+      const { UniverRenderEnginePlugin } = UniverEngineRender;
+      const { UniverFormulaEnginePlugin } = UniverEngineFormula;
+      const { UniverUIPlugin } = UniverUi;
+      const { UniverDocsPlugin } = UniverDocs;
+      const { UniverDocsUIPlugin } = UniverDocsUi;
+      const { UniverSheetsPlugin } = UniverSheets;
+      const { UniverSheetsUIPlugin } = UniverSheetsUi;
+      const { UniverSheetsFormulaPlugin } = UniverSheetsFormula;
+      const { UniverSheetsFormulaUIPlugin } = UniverSheetsFormulaUi;
+      const { UniverSheetsNumfmtPlugin } = UniverSheetsNumfmt;
+      const { UniverSheetsNumfmtUIPlugin } = UniverSheetsNumfmtUi;
+
+      const univer = new Univer({
+        locale: LocaleType.EN_US,
+        locales: {
+          [LocaleType.EN_US]: mergeLocales(
+            UniverDesignEnUS,
+            UniverUiEnUS,
+            UniverDocsUiEnUS,
+            UniverSheetsEnUS,
+            UniverSheetsUiEnUS,
+            UniverSheetsFormulaUiEnUS,
+            UniverSheetsNumfmtUiEnUS,
+          ),
+        },
+      });
+
+      univer.registerPlugin(UniverRenderEnginePlugin);
+      univer.registerPlugin(UniverFormulaEnginePlugin);
+      univer.registerPlugin(UniverUIPlugin, { container: 'app' });
+      univer.registerPlugin(UniverDocsPlugin);
+      univer.registerPlugin(UniverDocsUIPlugin);
+      univer.registerPlugin(UniverSheetsPlugin);
+      univer.registerPlugin(UniverSheetsUIPlugin);
+      univer.registerPlugin(UniverSheetsFormulaPlugin);
+      univer.registerPlugin(UniverSheetsFormulaUIPlugin);
+      univer.registerPlugin(UniverSheetsNumfmtPlugin);
+      univer.registerPlugin(UniverSheetsNumfmtUIPlugin);
+
+      const univerAPI = FUniver.newAPI(univer);
+      univerAPI.createWorkbook({});
+    </script>
+  </body>
+</html>

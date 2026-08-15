@@ -1,0 +1,24 @@
+{
+  "name": "univer-vue3-vite-template",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@univerjs/preset-sheets-core": "1.0.0-beta.0",
+    "@univerjs/presets": "1.0.0-beta.0",
+    "@univerjs/ui-adapter-vue3": "1.0.0-beta.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "rxjs": "7.8.2",
+    "vue": "3.5.41"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vite": "8.2.1"
+  }
+}
