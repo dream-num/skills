@@ -1,41 +1,44 @@
 # Univer Office Suite Architecture
 
-This guide explains how a product application composes Univer/Core/Pro, the self-hosted
-Collaboration SDK, and the Univer CLI SDK. It covers cross-layer architecture; each SDK integration
-Skill owns its implementation details.
+This guide explains how a product application composes three SDK systems: the Univer Engine /
+Runtime SDK, the Agent-facing Univer CLI SDK, and the server-side Univer Collaboration SDK. It
+covers cross-system architecture; each integration Skill owns its SDK-specific details.
 
 English is authoritative. [简体中文](./README.zh-CN.md) is maintained alongside it.
 
-## The stack
+## The three SDK systems
 
 ```text
-Browser user → Univer/Core/Pro + Collaboration Client ─┐
-                                                       ├→ Product application
-Agent task  → CLI SDK + headless Univer/Core/Pro ──────┘   ├→ Product store
-                                                           └→ Collaboration SDK → collaboration store
+Browser user → Univer Engine / Runtime + Browser Collaboration Client ─┐
+                                                                       ├→ Product application
+Agent task → Univer CLI SDK + headless Engine / Runtime ───────────────┘   ├→ Product store
+                                                                           └→ server-side Collaboration SDK
+                                                                               → collaboration store
 ```
 
-- **Univer/Core/Pro** owns content models, plugins, Facade, commands, UI, and rendering.
-- **Collaboration SDK** owns authoritative snapshots, changesets, revisions, OT, and protocol.
-- **Univer CLI SDK** supplies headless execution, inspection, exchange, and rendering capabilities.
-- **The product application** owns identity, ACL, tenancy, hierarchy, targets, workflows, and
-  deployment policy.
+- **Univer Engine / Runtime SDK** is the foundation: Unit models, plugins, Facade, commands,
+  mutations, browser UI, rendering, and browser or Node runtimes. It includes Univer and Univer Pro
+  capabilities such as the browser Collaboration Client.
+- **Univer CLI SDK** is Agent-facing. It builds execution, inspection, Office exchange, rendering,
+  screenshots, lint, and runtime helpers on the Engine / Runtime SDK.
+- **Univer Collaboration SDK** is server-side. It owns authoritative snapshots, changesets,
+  revisions, OT, idempotency, HTTP/WebSocket protocol, rooms, and persistence contracts.
+- **The product application** composes all three and owns identity, ACL, tenancy, hierarchy, target
+  resolution, sharing, blob storage, workflows, and deployment policy.
 
-The self-hosted Collaboration SDK is the only supported collaboration backend for new apps. The
-legacy Univer Server integration is deprecated and unsupported.
+The self-hosted Univer Collaboration SDK is the only supported collaboration backend for new apps.
+The legacy Univer Server integration is deprecated and unsupported.
 
 ## Read by goal
 
-- Read [Architecture](./architecture.md) for data flow, identity, storage, and lifecycle seams.
-- Read [SDK boundaries](./sdk-boundaries.md) to select the owning Skill.
-- Read [Sources](./sources.md) when versions or source authority matter.
-
-Complete runnable applications remain in `dream-num/univer-collaboration-examples`; this guide does
-not duplicate them.
+- Read [Architecture](./architecture.md) for runtime placement, data flow, identity, storage, and
+  lifecycle seams.
+- Read [SDK boundaries](./sdk-boundaries.md) for responsibility and Skill routing.
+- Read [Sources](./sources.md) when source authority matters.
 
 ## Agent entry
 
-Use `build-univer-app` for cross-SDK architecture. It routes implementation to
-`univer-integrate`, `univer-pro-integrate`, `univer-plugin-dev`, `univer-node-backend`,
-`univer-collaboration-integration`, or `univer-cli-sdk-integration`. Use `univer-cli` and
-`univer-workspace-cli` to operate finished applications.
+Use `build-univer-app` for cross-system architecture. It routes Engine / Runtime work to
+`univer-integrate`, `univer-pro-integrate`, `univer-plugin-dev`, or `univer-node-backend`; Agent
+capabilities to `univer-cli-sdk-integration`; and the server-side collaboration backend to
+`univer-collaboration-integration`.

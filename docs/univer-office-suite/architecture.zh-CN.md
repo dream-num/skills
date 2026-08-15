@@ -3,6 +3,10 @@
 本章定义 Univer Office Suite application 的系统边界，以及 DreamNum SDK、developer-owned 产品
 代码和第三方系统之间的所有权边界。
 
+本章把 Univer 与 Univer Pro 统一描述为底层 **Univer Engine / Runtime SDK（内核层）**，将构建在
+该 runtime 上的 **Univer CLI SDK** 定义为 Agent-facing，并将权威 **Univer Collaboration SDK**
+放在 server-side。
+
 [English](./architecture.md)
 
 ## 系统上下文
@@ -12,17 +16,17 @@ C4Context
     title System Context — Univer Office Suite Application
 
     Person(user, "Office Suite 用户", "创建、编辑、review 与分享 Office 内容")
-    Person(agentUser, "Agent 用户", "在客户端运行 Univer CLI SDK、发起任务并 review 结果")
+    Person(agentUser, "Agent 用户", "使用面向 Agent 的 Univer CLI SDK、发起任务并 review 结果")
 
     System_Boundary(productScope, "Developer scope") {
         System(product, "Office Suite application", "浏览器体验、产品 API、身份映射、ACL policy、Space、Node、Resource、Worktree catalog 与 durable workflow")
         SystemDb(productStore, "产品存储", "用户、ACL、层级、metadata、operation 与业务状态")
     }
 
-    System_Boundary(sdkScope, "univer-*-sdk scope") {
-        System(contentSdk, "Univer / Univer Pro SDK", "Office 内容模型、plugin、Facade、command、mutation、UI 与 render")
-        System(collabSdk, "Univer Collaboration SDK", "权威 snapshot、changeset、revision、OT、HTTP/WebSocket 协议、room 与 Worktree collaboration")
-        System(cliSdk, "Univer CLI SDK", "Headless 与 Agent execution、手动 collaboration runtime、inspection、Office exchange、render、lint 与 screenshot")
+    System_Boundary(sdkScope, "三个 SDK 系统") {
+        System(contentSdk, "Univer Engine / Runtime SDK（内核层）", "核心内容模型、plugin、Facade、command、mutation、UI、render 与 browser/Node runtime")
+        System(cliSdk, "面向 Agent 的 Univer CLI SDK", "Headless execution、手动 collaboration runtime、inspection、Office exchange、render、lint 与 screenshot")
+        System(collabSdk, "Server-side Univer Collaboration SDK", "权威 snapshot、changeset、revision、OT、HTTP/WebSocket 协议、room 与 Worktree collaboration")
     }
 
     System_Boundary(integrationScope, "Developer-integrated third-party systems") {
@@ -59,11 +63,11 @@ C4Container
     title Container Diagram — SDK Placement in a Univer Office Suite Application
 
     Person(user, "Office Suite 用户", "编辑并 review 内容")
-    Person(agentUser, "Agent 用户", "在客户端运行 Univer CLI SDK、发起任务并 review 结果")
+    Person(agentUser, "Agent 用户", "使用面向 Agent 的 Univer CLI SDK、发起任务并 review 结果")
 
     System_Boundary(app, "Developer-owned Office Suite application") {
-        Container(browser, "浏览器 Office application", "Developer UI + Univer/Core/Pro SDK + Browser Collaboration Client", "渲染并编辑 Office 内容，自动同步 realtime collaboration")
-        Container(backend, "Application backend", "Developer product APIs + Univer Collaboration SDK", "拥有产品 control plane，并托管权威 collaboration gateway")
+        Container(browser, "浏览器 Office application", "Developer UI + Univer Engine / Runtime SDK + Browser Collaboration Client", "渲染并编辑 Office 内容，自动同步 realtime collaboration")
+        Container(backend, "Application backend", "Developer product APIs + server-side Univer Collaboration SDK", "拥有产品 control plane，并托管权威 collaboration gateway")
         ContainerDb(productDb, "产品数据库", "Developer-selected database", "保存用户、ACL、层级、metadata 与 durable operation")
         ContainerDb(collabDb, "协同数据库", "Collaboration SDK Database Adapter", "保存权威 snapshot、changeset、revision 与幂等状态")
     }
@@ -72,7 +76,7 @@ C4Container
 
     Rel(user, browser, "编辑与 review")
     Rel(browser, backend, "使用产品与 collaboration API", "HTTPS / WebSocket")
-    Rel(agentUser, backend, "运行本地 CLI SDK", "HTTPS / WebSocket")
+    Rel(agentUser, backend, "使用 Agent-facing CLI SDK", "HTTPS / WebSocket")
     Rel(backend, productDb, "保存产品状态")
     Rel(backend, collabDb, "保存协同状态")
     Rel(backend, integrations, "使用 developer-owned adapter")
@@ -80,11 +84,11 @@ C4Container
 
 因此，各 SDK 的运行位置非常明确：
 
-- **Univer/Core/Pro SDK** 在浏览器中提供交互式编辑，并在本地 CLI runtime 中作为 headless
-  内容引擎。
+- **Univer Engine / Runtime SDK（内核层）**是基础，在浏览器中提供交互式编辑，并在面向 Agent
+  的 CLI runtime 中作为 headless 内容引擎。
 - **Browser Collaboration Client** 只运行在浏览器中，拥有自动 realtime sync。
-- **Univer CLI SDK** 运行在 Agent 用户的客户端，拥有有边界的 manual execution loop。
-- **Univer Collaboration SDK** 运行在 application backend 中，拥有权威协同状态。
+- **Univer CLI SDK** 面向 Agent，拥有有边界的 manual execution loop。
+- **Univer Collaboration SDK** 运行在 server-side application backend 中，拥有权威协同状态。
 - **产品后端代码**与 Collaboration SDK 共同运行，拥有产品 policy，并调用其公开 Service
   contract，但不拥有 collaboration internals。
 
@@ -100,7 +104,7 @@ sequenceDiagram
     participant Browser as Browser + Collaboration Client
     participant Product as Product auth / ACL
     participant Collab as Collaboration Endpoint / Service
-    participant Agent as Agent 用户 + 本地 CLI runtime
+    participant Agent as Agent 用户 + CLI SDK runtime
 
     Human->>Browser: 通过 Facade / command 编辑
     Browser->>Product: 认证并解析访问权
@@ -135,7 +139,7 @@ flowchart LR
 Snapshot 是持久化数据，不是可变 live state。修改 snapshot 不会更新运行中的应用。Live content
 必须通过 Facade 或 command 修改；mutation 是协同转换的最小单元。
 
-## Collaboration SDK 内部分层
+## Server-side Collaboration SDK 内部分层
 
 ```mermaid
 flowchart LR
@@ -195,8 +199,8 @@ commit 仍可能成功；client 根据已知 revision 拉取 confirmed changeset
 可重试 apply/commit stage 可能执行多次。不可逆 effect 只能在 commit 后触发；可靠外部投递使用
 transactional outbox。
 
-Database CAS 可以保持多个 Service instance 的权威数据正确性。当前 room、presence、ACK 与
-broadcast 保证只覆盖单个 Endpoint process，除非应用显式增加 realtime distribution design。
+Database CAS 可以保持多个 Service instance 的权威数据正确性。Room、presence、ACK 与 broadcast
+保证只覆盖单个 Endpoint process，除非应用显式增加 realtime distribution design。
 
 从网络边缘向内释放资源。Transport 释放已注册 Endpoint；Endpoint 不释放 Service；Service
 不释放外部注入的 Database Adapter。

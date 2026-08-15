@@ -2,32 +2,34 @@
 
 [简体中文](./sdk-boundaries.zh-CN.md)
 
-| Need | Owner | Skill |
+## Responsibility map
+
+| System | Owns | Skill |
 | --- | --- | --- |
-| Embed and configure Univer | Univer/Core | `univer-integrate` |
-| Add Pro capabilities | Univer Pro | `univer-pro-integrate` |
-| Extend Univer | Plugin system | `univer-plugin-dev` |
-| Run Univer directly in Node.js | Univer/Core/Pro | `univer-node-backend` |
-| Persist and synchronize collaboration | Collaboration SDK | `univer-collaboration-integration` |
-| Build headless or Agent application capabilities | CLI SDK | `univer-cli-sdk-integration` |
-| Operate local `.univer` files | Univer CLI application | `univer-cli` |
-| Operate remote Workspace files | Workspace CLI application | `univer-workspace-cli` |
+| Univer Engine / Runtime SDK | Unit models, plugins, Facade, commands, mutations, UI, rendering, browser and Node runtimes | `univer-integrate`, `univer-pro-integrate`, `univer-plugin-dev`, `univer-node-backend` |
+| Univer CLI SDK | Agent-facing execution, inspection, Office exchange, rendering, screenshots, lint, runtime and process helpers | `univer-cli-sdk-integration` |
+| Univer Collaboration SDK | Server-side snapshot, changeset, revision, OT, idempotency, HTTP/WebSocket protocol, rooms, persistence | `univer-collaboration-integration` |
+| Product application | Identity, ACL, tenancy, hierarchy, targets, blobs, workflows, deployment policy | `build-univer-app` for cross-system composition |
 
-The product application owns users, authentication, ACL, tenancy, hierarchy, sharing, target
-resolution, durable workflows, backups, and deployment policy.
+The Engine / Runtime SDK is the foundation. The CLI SDK builds Agent-facing capabilities on its
+headless runtime. The Collaboration SDK is the server-side authority used by browser and Agent
+clients. The product application connects these systems without transferring product policy into
+SDK internals.
 
-The supported collaboration chain is:
+The supported server-side collaboration chain is:
 
 ```text
 Node Transport → Collaboration Endpoint → Collaboration Service → Database Adapter
 ```
 
-History, Thread Comment, and Worktree are separate optional domains. They may reuse infrastructure,
-but each retains its own service, middleware, storage, and lifecycle.
+History, Thread Comment, and Worktree are separate optional collaboration domains. They may reuse
+infrastructure, but each retains its own service, middleware, storage, and lifecycle. The product
+still owns their user-facing catalog and policy.
 
 CLI SDK packages are target-neutral capabilities and optional command presets, not a product
-framework. The host application owns command composition, credentials, targets, and business
-policy.
+framework. The host application owns command composition, credentials, targets, storage, and
+business policy.
 
 Capability evidence is Unit-specific. Do not generalize a Sheet, Doc, Slide, Board, or Base recipe
-to another Unit. Keep version-coupled packages on one exact cohort and stop on unresolved API drift.
+to another Unit. Resolve API questions through the owning Skill and installed public exports rather
+than inventing compatibility rules in this cross-system guide.

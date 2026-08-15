@@ -3,6 +3,10 @@
 This chapter defines the system boundary of a Univer Office Suite application and the ownership
 seams between DreamNum SDKs, developer-owned product code, and third-party systems.
 
+It treats Univer and Univer Pro as one foundational **Univer Engine / Runtime SDK**, distinguishes
+the **Agent-facing Univer CLI SDK** built on that runtime, and places the authoritative **Univer
+Collaboration SDK** on the server side.
+
 [简体中文](./architecture.zh-CN.md)
 
 ## System context
@@ -12,17 +16,17 @@ C4Context
     title System Context — Univer Office Suite Application
 
     Person(user, "Office Suite user", "Creates, edits, reviews, and shares Office content")
-    Person(agentUser, "Agent user", "Runs the Univer CLI SDK locally, directs tasks, and reviews results")
+    Person(agentUser, "Agent user", "Uses the Agent-facing Univer CLI SDK, directs tasks, and reviews results")
 
     System_Boundary(productScope, "Developer scope") {
         System(product, "Office Suite application", "Browser experience, product APIs, identity mapping, ACL policy, Spaces, Nodes, Resources, Worktree catalog, and durable workflows")
         SystemDb(productStore, "Product storage", "Users, ACL, hierarchy, metadata, operations, and business state")
     }
 
-    System_Boundary(sdkScope, "univer-*-sdk scope") {
-        System(contentSdk, "Univer / Univer Pro SDK", "Office content model, plugins, Facade, commands, mutations, UI, and rendering")
-        System(collabSdk, "Univer Collaboration SDK", "Authoritative snapshots, changesets, revisions, OT, HTTP/WebSocket protocol, rooms, and Worktree collaboration")
-        System(cliSdk, "Univer CLI SDK", "Headless and Agent execution, manual collaboration runtime, inspection, Office exchange, rendering, lint, and screenshots")
+    System_Boundary(sdkScope, "Three SDK systems") {
+        System(contentSdk, "Univer Engine / Runtime SDK", "Core content models, plugins, Facade, commands, mutations, UI, rendering, and browser/Node runtimes")
+        System(cliSdk, "Agent-facing Univer CLI SDK", "Headless execution, manual collaboration runtime, inspection, Office exchange, rendering, lint, and screenshots")
+        System(collabSdk, "Server-side Univer Collaboration SDK", "Authoritative snapshots, changesets, revisions, OT, HTTP/WebSocket protocol, rooms, and Worktree collaboration")
     }
 
     System_Boundary(integrationScope, "Developer-integrated third-party systems") {
@@ -60,11 +64,11 @@ C4Container
     title Container Diagram — SDK Placement in a Univer Office Suite Application
 
     Person(user, "Office Suite user", "Edits and reviews content")
-    Person(agentUser, "Agent user", "Runs the Univer CLI SDK locally, starts tasks, and reviews results")
+    Person(agentUser, "Agent user", "Uses the Agent-facing Univer CLI SDK, starts tasks, and reviews results")
 
     System_Boundary(app, "Developer-owned Office Suite application") {
-        Container(browser, "Browser Office application", "Developer UI + Univer/Core/Pro SDK + Browser Collaboration Client", "Renders and edits Office content; automatically synchronizes realtime collaboration")
-        Container(backend, "Application backend", "Developer product APIs + Univer Collaboration SDK", "Owns the product control plane and hosts the authoritative collaboration gateway")
+        Container(browser, "Browser Office application", "Developer UI + Univer Engine / Runtime SDK + Browser Collaboration Client", "Renders and edits Office content; automatically synchronizes realtime collaboration")
+        Container(backend, "Application backend", "Developer product APIs + server-side Univer Collaboration SDK", "Owns the product control plane and hosts the authoritative collaboration gateway")
         ContainerDb(productDb, "Product database", "Developer-selected database", "Stores users, ACL, hierarchy, metadata, and durable operations")
         ContainerDb(collabDb, "Collaboration database", "Collaboration SDK Database Adapter", "Stores authoritative snapshots, changesets, revisions, and idempotency state")
     }
@@ -73,7 +77,7 @@ C4Container
 
     Rel(user, browser, "Edits and reviews")
     Rel(browser, backend, "Uses product and collaboration APIs", "HTTPS / WebSocket")
-    Rel(agentUser, backend, "Runs the local CLI SDK", "HTTPS / WebSocket")
+    Rel(agentUser, backend, "Uses the Agent-facing CLI SDK", "HTTPS / WebSocket")
     Rel(backend, productDb, "Stores product state")
     Rel(backend, collabDb, "Stores collaboration state")
     Rel(backend, integrations, "Uses developer-owned adapters")
@@ -81,11 +85,11 @@ C4Container
 
 SDK placement is therefore explicit:
 
-- **Univer/Core/Pro SDK** runs in the browser for interactive editing and inside the local CLI
-  runtime as a headless content engine.
+- **Univer Engine / Runtime SDK** is the foundation. It runs in the browser for interactive editing
+  and inside the Agent-facing CLI runtime as a headless content engine.
 - **Browser Collaboration Client** runs only in the browser and owns automatic realtime sync.
-- **Univer CLI SDK** runs on the Agent user's client and owns the bounded manual execution loop.
-- **Univer Collaboration SDK** runs in the application backend and owns authoritative
+- **Univer CLI SDK** is Agent-facing and owns the bounded manual execution loop.
+- **Univer Collaboration SDK** runs server-side in the application backend and owns authoritative
   collaboration state.
 - **Product backend code** runs beside the Collaboration SDK, owns product policy, and calls its
   public Service contracts without taking ownership of collaboration internals.
@@ -102,7 +106,7 @@ sequenceDiagram
     participant Browser as Browser + Collaboration Client
     participant Product as Product auth / ACL
     participant Collab as Collaboration Endpoint / Service
-    participant Agent as Agent user + local CLI runtime
+    participant Agent as Agent user + CLI SDK runtime
 
     Human->>Browser: Edit through Facade / commands
     Browser->>Product: Authenticate and resolve access
@@ -139,7 +143,7 @@ A snapshot is persisted data, not mutable live state. Editing a snapshot does no
 application. Change live content through Facade or commands; mutations are the smallest units
 transformed by collaboration.
 
-## Collaboration SDK internals
+## Server-side Collaboration SDK internals
 
 ```mermaid
 flowchart LR
@@ -205,8 +209,8 @@ recovery—not a claimed shared transaction.
 Retryable apply/commit stages may run more than once. Emit irreversible effects only after commit;
 use a transactional outbox when external delivery must be reliable.
 
-Database CAS can preserve authoritative correctness across multiple Service instances. Current
-room, presence, ACK, and broadcast guarantees are scoped to one Endpoint process unless the
+Database CAS can preserve authoritative correctness across multiple Service instances. Room,
+presence, ACK, and broadcast guarantees are scoped to one Endpoint process unless the
 application adds an explicit realtime distribution design.
 
 Dispose from the network edge inward. Transport disposes registered Endpoints; Endpoint does not

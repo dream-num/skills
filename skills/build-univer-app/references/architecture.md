@@ -5,11 +5,11 @@
 ```text
 [Office Suite user] ───────────────→ [Developer-owned Office Suite application]
                                              │
-[Agent user + local Univer CLI SDK] ─────────┘
+[Agent user + Univer CLI SDK] ───────────────┘
                                              │
                  ┌───────────────────────────┼──────────────────────────┐
                  ▼                           ▼                          ▼
-      [Univer/Core/Pro SDK]      [Collaboration SDK]      [Third-party systems]
+      [Univer Engine / Runtime]  [Univer Collaboration]  [Third-party systems]
       content and rendering      collaboration authority  ├ identity/user
                                                          ├ authorization/policy
                                                          ├ object storage
@@ -17,9 +17,10 @@
 ```
 
 The developer-owned application is the product boundary. It owns authentication, ACL, tenancy,
-Space/Node/Resource hierarchy, sharing, target resolution, and durable workflows. Univer/Core/Pro
-owns content behavior; the Collaboration SDK owns authoritative collaboration state. The Agent user
-runs the CLI SDK locally. Third-party systems connect only through developer-owned adapters.
+Space/Node/Resource hierarchy, sharing, target resolution, and durable workflows. The Engine /
+Runtime SDK owns content behavior; the Collaboration SDK owns
+authoritative collaboration state. The Agent user works through the CLI SDK. Third-party systems
+connect only through developer-owned adapters.
 
 ## C4 containers
 
@@ -28,13 +29,13 @@ runs the CLI SDK locally. Third-party systems connect only through developer-own
         │
         ▼
 [Browser Office application]
- Developer UI + Univer/Core/Pro + Browser Collaboration Client
+ Developer UI + Univer Engine / Runtime + Browser Collaboration Client
         │
         ├───────────────────────┐
         ▼                       ▼
-[Application backend] ← [Agent user running local Univer CLI SDK + headless Univer/Core/Pro]
+[Application backend] ← [Agent user running Univer CLI SDK + headless Engine / Runtime]
  Developer product APIs
- + Univer Collaboration SDK
+ + server-side Univer Collaboration SDK
         │
         ├──→ [Product database]       users, ACL, hierarchy, metadata, operations
         ├──→ [Collaboration database] snapshots, changesets, revisions, idempotency
@@ -95,6 +96,6 @@ Worktree lifecycle actions that span owners. Do not claim one database transacti
 - Database Adapter owns atomic persistence, revision CAS, and submission deduplication; it does not
   perform OT, authentication, or broadcasting.
 
-Current realtime room delivery is a single-Endpoint-process guarantee. Database CAS can preserve
+Realtime room delivery is a single-Endpoint-process guarantee. Database CAS can preserve
 authoritative correctness across Service instances, but a multi-Endpoint deployment needs an
 explicit realtime distribution design before it can promise cross-process presence and broadcast.
