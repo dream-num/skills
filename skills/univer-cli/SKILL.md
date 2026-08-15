@@ -18,14 +18,7 @@ univer doctor
 
 ## Keep the CLI current
 
-Use these commands to compare the installed CLI with the latest public release:
-
-```bash
-univer --version
-npm view univer-cli@latest version --registry=https://registry.npmjs.org/
-```
-
-When a newer version is available, complete the current Univer task before updating:
+Before starting a new Univer task, apply any available CLI update:
 
 ```bash
 univer update
@@ -33,8 +26,9 @@ univer doctor --json
 univer skills get core
 ```
 
-If `univer update` reports that the shared daemon must stop, rerun it with `--force` after confirming
-that stopping the daemon is safe. Reload core and the target Unit Skill after every update.
+Continue only after `doctor` reports that the CLI is ready. Reload core and the target Unit Skill
+after every update. Once task work begins, keep the CLI and loaded Skills unchanged until handoff;
+apply later updates before the next new task.
 
 ## Start here
 
