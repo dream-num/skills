@@ -4,7 +4,7 @@ This page is shared by the English and Chinese guides.
 
 | System | Authority |
 | --- | --- |
-| Univer Engine / Runtime SDK | `dream-num/documentation`, `dream-num/univer-sdk-skills` |
+| Univer Engine / Runtime SDK | `dream-num/documentation`, [`univer-integrate`](../../skills/univer-integrate/SKILL.md), [`univer-pro-integrate`](../../skills/univer-pro-integrate/SKILL.md), [`univer-node-backend`](../../skills/univer-node-backend/SKILL.md), [`univer-plugin-dev`](../../skills/univer-plugin-dev/SKILL.md), [`univer-customize-theme`](../../skills/univer-customize-theme/SKILL.md) |
 | Univer CLI SDK | [`univer-cli-sdk-integration`](../../skills/univer-cli-sdk-integration/SKILL.md) |
 | Univer Collaboration SDK | [`univer-collaboration-integration`](../../skills/univer-collaboration-integration/SKILL.md) |
 | Cross-system application architecture | [Architecture](./architecture.md) and [SDK boundaries](./sdk-boundaries.md) |
