@@ -1,0 +1,4 @@
+interface:
+  display_name: "Univer CLI SDK Integration"
+  short_description: "Build applications with the Univer CLI SDK"
+  default_prompt: "Use $univer-cli-sdk-integration to build or extend a Node.js CLI application with the Univer CLI SDK."

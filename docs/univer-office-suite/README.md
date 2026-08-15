@@ -1,82 +1,41 @@
-# Building a Univer Office Suite Application
+# Univer Office Suite Architecture
 
-This guide explains how to compose Univer/Core/Pro, the self-hosted Collaboration SDK, the Univer
-CLI SDK, and your product application into one Office Suite product. It is written for developers
-who need to understand the architecture and for developers directing an Agent that uses the
-`build-univer-app` skill.
+This guide explains how a product application composes Univer/Core/Pro, the self-hosted
+Collaboration SDK, and the Univer CLI SDK. It covers cross-layer architecture; each SDK integration
+Skill owns its implementation details.
 
-English is the authoritative text. [简体中文](./README.zh-CN.md) is maintained as a complete
-developer translation.
+English is authoritative. [简体中文](./README.zh-CN.md) is maintained alongside it.
 
-## The stack in one minute
+## The stack
 
 ```text
-Browser users
-  → Univer/Core/Pro + Collaboration Client
-  → application authentication and ACL
-  → Collaboration Endpoint → Service → collaboration database
-
-Agent tasks
-  → product target resolver
-  → CLI SDK manual collaboration runtime + headless Univer
-  → the same Collaboration Endpoint, Service, and collaboration database
-
-Product APIs
-  → users, Spaces, Nodes, Resources, ACL, sharing, Worktree catalog
-  → product database
+Browser user → Univer/Core/Pro + Collaboration Client ─┐
+                                                       ├→ Product application
+Agent task  → CLI SDK + headless Univer/Core/Pro ──────┘   ├→ Product store
+                                                           └→ Collaboration SDK → collaboration store
 ```
 
-Each layer has one job:
+- **Univer/Core/Pro** owns content models, plugins, Facade, commands, UI, and rendering.
+- **Collaboration SDK** owns authoritative snapshots, changesets, revisions, OT, and protocol.
+- **Univer CLI SDK** supplies headless execution, inspection, exchange, and rendering capabilities.
+- **The product application** owns identity, ACL, tenancy, hierarchy, targets, workflows, and
+  deployment policy.
 
-- **Univer/Core/Pro** is the content engine: Unit models, plugins, presets, Facade APIs, commands,
-  mutations, browser UI, and rendering.
-- **Collaboration SDK** is the collaboration authority: snapshots, changesets, revisions, OT,
-  submission idempotency, HTTP/WebSocket protocol, rooms, and Worktree collaboration.
-- **Univer CLI SDK** is the headless and Agent toolkit: explicit content execution, collaboration
-  runtime, pools, inspection, Office exchange, rendering, lint, and screenshots.
-- **Your application** owns identity, authentication, ACL, tenancy, product hierarchy, sharing,
-  target resolution, durable business operations, and deployment policy.
-
-The only supported collaboration backend for new applications is the self-hosted Collaboration
-SDK. The legacy Univer Server integration is deprecated and unsupported.
+The self-hosted Collaboration SDK is the only supported collaboration backend for new apps. The
+legacy Univer Server integration is deprecated and unsupported.
 
 ## Read by goal
 
-1. Read [Architecture](./architecture.md) to understand the control plane, content plane, human and
-   Agent data flows, identities, and persistence boundaries.
-2. Read [SDK boundaries](./sdk-boundaries.md) before selecting packages or assigning ownership.
-3. Follow [Build a Workspace](./build-workspace.md) for browser, product backend, authentication,
-   ACL, collaboration, and five-Unit product composition.
-4. Follow [Add Agent/CLI editing](./add-agent-cli.md) for headless editing, Worktree review, Office
-   conversion, inspection, rendering, screenshots, and export.
-5. Check [Sources](./sources.md) for the exact revisions and release cohort reviewed by this guide.
+- Read [Architecture](./architecture.md) for data flow, identity, storage, and lifecycle seams.
+- Read [SDK boundaries](./sdk-boundaries.md) to select the owning Skill.
+- Read [Sources](./sources.md) when versions or source authority matter.
 
-## Canonical applications
+Complete runnable applications remain in `dream-num/univer-collaboration-examples`; this guide does
+not duplicate them.
 
-The integrated reference consists of two applications in `dream-num/univer-collaboration-examples`:
+## Agent entry
 
-- `univer-workspace` demonstrates the browser client, product APIs, identity and ACL, product data,
-  Collaboration SDK gateway, five Unit types, and Worktree lifecycle.
-- `univer-workspace-cli` demonstrates authenticated target resolution, headless CLI SDK runtime,
-  collaboration against the same authority, Agent Worktree editing, review handoff, inspection,
-  rendering, screenshots, and Office exchange.
-
-Use them as composition evidence. Keep complete runnable applications there instead of copying them
-into this documentation or skill.
-
-## Working with an Agent
-
-Install the repository skills, then invoke the integration skill explicitly when the task crosses
-SDK boundaries:
-
-```text
-Use $build-univer-app to explain the identity and storage boundaries in this Workspace.
-```
-
-```text
-Use $build-univer-app to add reviewable Agent editing to this Univer Workspace through Worktree.
-```
-
-For a read-only question, the skill stays read-only. For design, it inspects the target and reports
-decisions. For build or fix requests, it implements through public APIs and runs proportional
-validation.
+Use `build-univer-app` for cross-SDK architecture. It routes implementation to
+`univer-integrate`, `univer-pro-integrate`, `univer-plugin-dev`, `univer-node-backend`,
+`univer-collaboration-integration`, or `univer-cli-sdk-integration`. Use `univer-cli` and
+`univer-workspace-cli` to operate finished applications.
