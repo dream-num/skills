@@ -1,0 +1,4 @@
+interface:
+  display_name: "Univer Collaboration Integration"
+  short_description: "Build a Univer Collaboration backend server"
+  default_prompt: "Use $univer-collaboration-integration to build or extend a Univer Collaboration backend server."
