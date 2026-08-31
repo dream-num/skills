@@ -261,14 +261,21 @@ async function validateWorkspaceDiscoveryGuidance() {
   const corpus = [skillText, ...await Promise.all(readmes.map(readText))].join("\n");
 
   const requiredTokens = [
-    "univer-workspace-cli config set-origin",
+    "univer-workspace-cli config set workspace.origin",
+    "univer-workspace-cli login --json",
+    "univer-workspace-cli login --complete --json",
     "univer-workspace-cli skills get core",
     "univer-workspace-cli skills get core --full",
     "univer-workspace-cli skills get sheet",
     "univer-workspace-cli skills get doc",
     "univer-workspace-cli skills get slide",
+    "univer-workspace-cli skills get base",
+    "univer-workspace-cli skills get board",
+    "univer-workspace-cli skills get embed",
+    "univer-workspace-cli skills get cross-unit-formula",
     "Start every new task in a new Worktree",
-    "Base and Board authoring are outside the current Workspace Skill surface"
+    "resourceId",
+    "unitId"
   ];
   for (const token of requiredTokens) {
     if (!skillText.includes(token)) {
@@ -277,11 +284,12 @@ async function validateWorkspaceDiscoveryGuidance() {
   }
 
   const forbiddenTokens = [
-    "config set workspace.origin",
+    "univer-workspace-cli config set-origin",
     "https://workspace.univer.plus/",
     "univer-workspace-cli update",
-    "univer-workspace-cli skills get base",
-    "univer-workspace-cli skills get board",
+    "Base and Board authoring are outside the current Workspace Skill surface",
+    "formula-shape",
+    "fileId",
     "Univerfile Link"
   ];
   for (const token of forbiddenTokens) {
