@@ -1,6 +1,6 @@
 ---
 name: univer-workspace-cli
-description: "Use when installing or operating the independent Univer Workspace CLI application (`univer-workspace-cli`) for remote Workspace files, Personal or Team Spaces, task Worktrees, Sheet/Doc/Slide Units, Facade authoring, inspection, verification, import/export, screenshots, or review handoff. Do not use for local targets handled by `univer`."
+description: "Use when installing or operating the independent Univer Workspace CLI application (`univer-workspace-cli`) for remote Workspace files, Personal or Team Spaces, task Worktrees, Sheet/Doc/Slide/Base/Board Units, Facade authoring, inspection, verification, import/export, screenshots, or review handoff. Do not use for local targets handled by `univer`."
 hidden: true
 ---
 
@@ -16,8 +16,15 @@ Install and configure the target Workspace:
 
 ```bash
 npm install -g univer-workspace-cli
-univer-workspace-cli config set-origin https://workspace.example.com
-univer-workspace-cli login --username <name>
+univer-workspace-cli config set workspace.origin https://workspace.example.com
+univer-workspace-cli login --json
+```
+
+Relay the first login command's verification URL and code to the user, then stop. Run `--complete`
+only after the user confirms approval; do not poll while approval is pending.
+
+```bash
+univer-workspace-cli login --complete --json
 univer-workspace-cli doctor
 ```
 
@@ -54,10 +61,10 @@ Runtime Skills ship with the CLI so their commands and Facade APIs match the ins
 ## Core Model
 
 - Configure one Workspace origin, then authenticate against it.
-- A Space is the file container users browse. Personal and Team Spaces expose files identified by
-  `fileId`.
-- A Unit is editable Sheet, Doc, or Slide content identified by `unitId` after it is staged in a
-  Worktree.
+- A Space is the file container users browse. Its tree contains Nodes identified by `nodeId`; a
+  Univer Resource attached to a Node is identified by `resourceId`.
+- A Unit is editable Sheet, Doc, Slide, Base, or Board content identified by `unitId` after its
+  Resource is staged in a Worktree.
 - Start every new task in a new Worktree. Continue a known Worktree only for rework on that same
   task; there is no implicit current Worktree or Unit.
 - Command success is not correctness evidence. Read back the stored model and inspect rendered
@@ -74,11 +81,14 @@ After core, load the Skill matching the target top-level Unit before authoring:
 univer-workspace-cli skills get sheet
 univer-workspace-cli skills get doc
 univer-workspace-cli skills get slide
+univer-workspace-cli skills get base
+univer-workspace-cli skills get board
 ```
 
 Use `univer-workspace-cli skills list` to discover the installed set. Each Unit Skill owns its
 creation recipe, injected Facade root, readback guidance, and visual verification requirements.
-Base and Board authoring are outside the current Workspace Skill surface.
+For cross-Unit composition, also load `univer-workspace-cli skills get embed` or
+`univer-workspace-cli skills get cross-unit-formula` after the Host and Source Unit Skills.
 
 ## Task Routing
 
@@ -89,6 +99,10 @@ Base and Board authoring are outside the current Workspace Skill surface.
 | Inspect or edit Sheet values, formulas, formatting, charts, or tables | core + `sheet` |
 | Create or refine Doc paragraphs, rich text, tables, charts, or pagination | core + `doc` |
 | Build or review Slide pages, shapes, text, images, tables, or charts | core + `slide` |
+| Inspect or edit Base tables, fields, records, views, or formulas | core + `base` |
+| Build or review a Board canvas and its verified elements | core + `board` |
+| Embed a Unit or back a Chart with another Unit | core + Host + Source + `embed` |
+| Use Source data in a formula or formula-driven Shape | core + Host + Source + `cross-unit-formula` |
 | Verify, screenshot, export, mark ready, or generate a review URL | core + target Unit |
 
 ## Why Univer Workspace CLI

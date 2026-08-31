@@ -55,7 +55,7 @@ npm install -g univer-cli@latest
 univer doctor
 
 npm install -g univer-workspace-cli@latest
-univer-workspace-cli config set-origin https://workspace.example.com
+univer-workspace-cli config set workspace.origin https://workspace.example.com
 univer-workspace-cli doctor
 ```
 
