@@ -1,7 +1,7 @@
 # Univer Skills
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Skills](https://img.shields.io/badge/skills-7-0a7ea4.svg)
+![Skills](https://img.shields.io/badge/skills-10-0a7ea4.svg)
 ![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
@@ -13,17 +13,23 @@
 
 | Skill | 用途 |
 | --- | --- |
+| [`build-univer-app`](./skills/build-univer-app/SKILL.md) | 跨 SDK 架构、职责、兼容性与路由 |
 | [`univer-integrate`](./skills/univer-integrate/SKILL.md) | 嵌入 Univer Sheets、Docs 或 Slides，并使用当前 Facade API |
 | [`univer-pro-integrate`](./skills/univer-pro-integrate/SKILL.md) | 集成授权版 Sheets、Docs、Slides、Bases、Boards、PDFs、协同、交换和 Pro 功能 |
 | [`univer-node-backend`](./skills/univer-node-backend/SKILL.md) | 在 Node.js 中运行无头 Univer 模型和公式工作流 |
 | [`univer-plugin-dev`](./skills/univer-plugin-dev/SKILL.md) | 开发插件、Commands、UI 扩展、事件和 Facade 扩展 |
 | [`univer-customize-theme`](./skills/univer-customize-theme/SKILL.md) | 定制调色板、暗色模式、主题感知 UI 和 Pro Chart 主题 |
+| [`univer-cli-sdk-integration`](./skills/univer-cli-sdk-integration/SKILL.md) | 使用 `@univer-cli/*` packages 构建应用 |
+| [`univer-collaboration-integration`](./skills/univer-collaboration-integration/SKILL.md) | 构建自托管 Collaboration SDK 后端 |
 | [`univer-cli`](./skills/univer-cli/SKILL.md) | 操作本地 `.univer` 文件 |
 | [`univer-workspace-cli`](./skills/univer-workspace-cli/SKILL.md) | 操作远程 Workspace 文件 |
 
 SDK Skills 跟随当前 Univer OSS 与 Pro 源码，覆盖 Sheets、Docs、Slides、Bases、Boards 和
 PDFs。修改已有应用时应保留它实际安装的精确 package 版本，并在使用源码新增 API 前检查对应
 exports 和 Facade 声明。
+
+`build-univer-app` 介绍完整 application 结构，并把实现路由到对应 SDK Skill。CLI SDK 与
+Collaboration SDK Skills 由上游生成并迁移到这里。
 
 两个 CLI Skill 是彼此独立的 discovery 入口，并非核心与变体：`univer-cli` 操作本地
 `.univer` 文件，`univer-workspace-cli` 操作远程 Workspace 文件。它们会从已安装的 CLI
@@ -113,6 +119,8 @@ Use univer-workspace-cli to edit this Workspace file in a new Worktree and retur
 - SDK Skills 的 `agents/`、`references/`、`assets/` 和 `scripts/` 资源保留在各自
   skill 目录中。
 - 发布 Skill 变更前运行 `npm run validate`。
+- 修改 `build-univer-app` 时运行 `npm run validate:skill`；它使用本地 Codex 安装中的标准 Skill
+  Creator validator。
 
 ## License
 

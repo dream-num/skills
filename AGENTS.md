@@ -6,3 +6,6 @@
   a short checklist of user-visible outcomes, preservation constraints, deliverables, validation
   signals, non-goals, and ambiguities left for the plan. It is not a plan and must not contain pack
   decomposition, assertion design, or execution strategy.
+- `skills/univer-cli-sdk-integration/` and `skills/univer-collaboration-integration/` are generated
+  artifacts migrated from their SDK repositories. Never edit files in these directories directly;
+  update their upstream source and migration script, then replace the generated artifact.

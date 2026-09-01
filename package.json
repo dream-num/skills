@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "validate": "node scripts/validate-univer-skills.mjs"
+    "validate": "node scripts/validate-univer-skills.mjs",
+    "validate:skill": "uv run --with pyyaml python \"${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py\" skills/build-univer-app"
   }
 }

@@ -17,7 +17,28 @@ const sdkSkills = [
   "univer-plugin-dev",
   "univer-customize-theme"
 ];
-const officialSkills = [...discoverySkills, ...sdkSkills];
+const generatedIntegrationSkills = [
+  "univer-cli-sdk-integration",
+  "univer-collaboration-integration"
+];
+const buildSkill = "build-univer-app";
+const officialSkills = [buildSkill, ...sdkSkills, ...generatedIntegrationSkills, ...discoverySkills];
+const buildUniverAppFiles = [
+  "SKILL.md",
+  "agents/openai.yaml",
+  "references/architecture.md",
+  "references/sdk-boundaries.md",
+  "references/sources.md"
+];
+const buildUniverAppDocs = [
+  "README.md",
+  "README.zh-CN.md",
+  "architecture.md",
+  "architecture.zh-CN.md",
+  "sdk-boundaries.md",
+  "sdk-boundaries.zh-CN.md",
+  "sources.md"
+];
 const removedWorkflowSkills = [
   "using-univer-cli",
   "writing-univer-plans",
@@ -121,6 +142,17 @@ async function validateSkillStructure() {
         recordError(`skills/${skill}/agents/openai.yaml: missing agent metadata`);
       }
     }
+
+    if (generatedIntegrationSkills.includes(skill)) {
+      if (!text.includes("generated-by: generate-sdk-integration-skill; do not edit")) {
+        recordError(`skills/${skill}/SKILL.md: missing generated artifact marker`);
+      }
+      for (const relativeFile of ["agents/openai.yaml", "references"]) {
+        if (!existsSync(path.join(skillPath, relativeFile))) {
+          recordError(`skills/${skill}/${relativeFile}: missing generated resource`);
+        }
+      }
+    }
   }
 
   for (const skill of discoverySkills) {
@@ -139,6 +171,20 @@ async function validateSkillStructure() {
     const entries = await fs.readdir(skillPath);
     if (entries.length !== 1 || entries[0] !== "SKILL.md") {
       recordError(`skills/${skill}: discovery skill directory must contain only SKILL.md`);
+    }
+  }
+
+  const buildSkillPath = path.join(skillsRoot, buildSkill);
+  for (const relativeFile of buildUniverAppFiles) {
+    if (!existsSync(path.join(buildSkillPath, relativeFile))) {
+      recordError(`skills/${buildSkill}/${relativeFile}: missing rich skill resource`);
+    }
+  }
+
+  const docsPath = path.join(root, "docs", "univer-office-suite");
+  for (const relativeFile of buildUniverAppDocs) {
+    if (!existsSync(path.join(docsPath, relativeFile))) {
+      recordError(`docs/univer-office-suite/${relativeFile}: missing developer document`);
     }
   }
 
@@ -163,6 +209,29 @@ async function validateReadmes() {
   reports.push("readme: official skill links checked");
 }
 
+async function validateBuildUniverAppLinks() {
+  const skillFiles = await collectMarkdownFiles(path.join(skillsRoot, buildSkill));
+  for (const skill of generatedIntegrationSkills) {
+    skillFiles.push(...await collectMarkdownFiles(path.join(skillsRoot, skill)));
+  }
+  const docsFiles = await collectMarkdownFiles(path.join(root, "docs", "univer-office-suite"));
+  const files = [path.join(root, "README.md"), path.join(root, "README.zh-CN.md"), ...skillFiles, ...docsFiles];
+  const linkPattern = /\[[^\]]*\]\(([^)]+)\)/g;
+
+  for (const file of files) {
+    const text = await readText(file);
+    for (const match of text.matchAll(linkPattern)) {
+      const target = match[1].trim().replace(/^<|>$/g, "").split("#", 1)[0];
+      if (!target || /^(?:https?:|mailto:|#)/i.test(target)) continue;
+      if (!existsSync(path.resolve(path.dirname(file), decodeURIComponent(target)))) {
+        recordError(`${relativeToRoot(file)}: broken local link ${JSON.stringify(match[1])}`);
+      }
+    }
+  }
+
+  reports.push(`links: ${files.length} repository markdown files checked`);
+}
+
 function isExplicitlyHistoricalOrNegative(line) {
   return /deprecated|historical|migration|stale|legacy|old|removed|obsolete|no longer|do not|not use|forbid|forbidden|avoid|禁止|不要|不得|旧|历史|迁移|已移除|废弃/i.test(line);
 }
@@ -175,17 +244,19 @@ function lineMatchesExactToken(line, token) {
 
 async function validateStaleContractText() {
   const officialSkillMarkdownFiles = [];
-  for (const skill of officialSkills) {
+  for (const skill of [buildSkill, ...sdkSkills, ...discoverySkills]) {
     officialSkillMarkdownFiles.push(...await collectMarkdownFiles(path.join(skillsRoot, skill)));
   }
 
   const contractFiles = [
     path.join(root, "README.md"),
     path.join(root, "README.zh-CN.md"),
-    ...officialSkillMarkdownFiles
+    ...officialSkillMarkdownFiles,
+    ...await collectMarkdownFiles(path.join(root, "docs", "univer-office-suite"))
   ];
 
   const forbiddenOldSkillNames = [
+    ["dream-num", "univer-sdk-skills"].join("/"),
     "use-univer-cli",
     "univer-plan",
     "univer-tdd",
@@ -435,6 +506,7 @@ async function validateDrift() {
 async function main() {
   await validateSkillStructure();
   await validateReadmes();
+  await validateBuildUniverAppLinks();
   await validateStaleContractText();
   await validateWorkspaceDiscoveryGuidance();
   await validateDrift();
