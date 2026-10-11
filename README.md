@@ -1,119 +1,83 @@
-# Univer Skills
+# Build with Univer
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Skills](https://img.shields.io/badge/skills-7-0a7ea4.svg)
-![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20Cursor-1f6feb.svg)
+![Support](https://img.shields.io/badge/support-Claude%20Code%20%7C%20Codex%20%7C%20OpenCode%20%7C%20Cursor-1f6feb.svg)
 ![OS](https://img.shields.io/badge/os-Linux%20%7C%20macOS-555.svg)
 
 Languages: [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-Official Univer Skills for SDK integration, Pro products, plugin and theme development, backend
-processing, and CLI operation.
+An agent skill for building applications with the [Univer Office SDK](https://docs.univer.ai).
+[`build-with-univer`](./skills/build-with-univer/SKILL.md) tells your coding agent which Univer SDK
+fits the job, where to start, and what to avoid, so it stops guessing from stale training data.
 
-## Skills
+## What it covers
 
-| Skill | Use it for |
+| You are building | SDK |
 | --- | --- |
-| [`univer-integrate`](./skills/univer-integrate/SKILL.md) | Embedding Univer Sheets, Docs, or Slides and using the current Facade API |
-| [`univer-pro-integrate`](./skills/univer-pro-integrate/SKILL.md) | Integrating licensed Sheets, Docs, Slides, Bases, Boards, PDFs, collaboration, exchange, and Pro features |
-| [`univer-node-backend`](./skills/univer-node-backend/SKILL.md) | Running headless Univer model and formula workflows in Node.js |
-| [`univer-plugin-dev`](./skills/univer-plugin-dev/SKILL.md) | Building plugins, Commands, UI extensions, events, and Facade extensions |
-| [`univer-customize-theme`](./skills/univer-customize-theme/SKILL.md) | Customizing palettes, dark mode, theme-aware UI, and Pro Chart themes |
-| [`univer-cli`](./skills/univer-cli/SKILL.md) | Operating local `.univer` files |
-| [`univer-workspace-cli`](./skills/univer-workspace-cli/SKILL.md) | Operating remote Workspace files |
+| An embedded spreadsheet, document, or slide editor | Web SDK |
+| Real-time collaboration on your own auth and storage, Office import/export | Server SDK |
+| A CLI or tool that lets agents read and edit Office content | AI SDK |
+| A plain HTML page bound to live Sheet data | Binding SDK |
 
-The SDK Skills track current Univer OSS and Pro source across Sheets, Docs, Slides, Bases, Boards,
-and PDFs. Preserve an existing application's exact installed package versions and inspect its
-exports and Facade declarations before using a source-new API.
-
-The two CLI Skills are independent discovery entries, not a core/variant pair: `univer-cli`
-operates local `.univer` files, while `univer-workspace-cli` operates remote Workspace files.
-They load version-matched operational Skills from the installed CLI:
-
-```bash
-univer skills get core
-univer-workspace-cli skills get core
-```
+The skill resolves package versions at build time, never blocks a proof of concept on a missing
+license, and lists the superseded servers, packages and API names that models still suggest.
 
 ## Install
 
-Install all Skills:
-
 ```bash
-npx skills add dream-num/skills
+npx skills add dream-num/skills --skill build-with-univer
 ```
 
-Install one Skill:
-
-```bash
-npx skills add dream-num/skills --skill univer-integrate
-```
-
-Install the matching CLI only when the task operates that application:
-
-```bash
-npm install -g univer-cli@latest
-univer doctor
-
-npm install -g univer-workspace-cli@latest
-univer-workspace-cli config set workspace.origin https://workspace.example.com
-univer-workspace-cli doctor
-```
+Add `-g` for a user-level install, or `-a claude-code -a codex -a opencode` to pick agents.
+Re-run the command to update.
 
 ### Manual installation
 
+Copy `skills/build-with-univer` into your agent's skills directory:
+
 ```bash
-git clone https://github.com/dream-num/skills.git
-cd skills
-
-# Claude Code
-mkdir -p ~/.claude/skills
-cp -R skills/* ~/.claude/skills/
-
-# Codex
-mkdir -p ~/.codex/skills
-cp -R skills/* ~/.codex/skills/
-
-# Cursor
-mkdir -p ~/.cursor/skills
-cp -R skills/* ~/.cursor/skills/
+git clone https://github.com/dream-num/skills.git && cd skills
+mkdir -p ~/.claude/skills && cp -R skills/build-with-univer ~/.claude/skills/              # Claude Code
+mkdir -p ~/.agents/skills && cp -R skills/build-with-univer ~/.agents/skills/              # Codex
+mkdir -p ~/.config/opencode/skills && cp -R skills/build-with-univer ~/.config/opencode/skills/   # OpenCode
+mkdir -p ~/.cursor/skills && cp -R skills/build-with-univer ~/.cursor/skills/              # Cursor
 ```
 
-## Example Prompts
+## Example prompts
 
 ```text
-Use univer-integrate to embed a themed spreadsheet editor in this React application.
+Embed a spreadsheet editor in this React app and read and write cells from code.
 ```
 
 ```text
-Use univer-pro-integrate to add collaboration and XLSX exchange to this Sheets application.
+Let several people edit one spreadsheet in real time, with our own login and database.
 ```
 
 ```text
-Use univer-plugin-dev to scaffold a command-driven plugin with a Facade extension.
+Build a CLI my coding agent can use to inspect and edit spreadsheets and slides.
 ```
 
 ```text
-Use univer-cli to update this local .univer file and verify the result.
+Add xlsx import and export endpoints to this Node API. We have no license yet.
 ```
 
 ```text
-Use univer-workspace-cli to edit this Workspace file in a new Worktree and return a review URL.
+Make a plain HTML dashboard that charts and edits cells in our team's spreadsheet.
 ```
+
+You do not need to name Univer or the skill; the agent loads it when the task matches.
 
 ## Requirements
 
-- Node.js and npm for installation
-- The matching `univer` or `univer-workspace-cli` command for CLI tasks
-- The target application's installed Univer packages and release line for SDK tasks
+- Node.js and npm
+- Network access to `docs.univer.ai` and the npm registry, which the skill uses for current docs and versions
 
 ## Contributing
 
-- CLI discovery Skills live in `skills/univer-cli` and `skills/univer-workspace-cli`; their
-  version-matched operational resources ship with the corresponding CLI.
-- SDK Skills keep their supporting `agents/`, `references/`, `assets/`, and `scripts/`
-  inside their owning skill directory.
-- Run `npm run validate` before publishing Skill changes.
+- The skill lives in `skills/build-with-univer`: `SKILL.md` routes, `references/` holds one page
+  per SDK plus versions and what to avoid.
+- Keep `SKILL.md` under 500 lines, pin no versions in the text, and run `npm run validate` before
+  publishing changes.
 
 ## License
 

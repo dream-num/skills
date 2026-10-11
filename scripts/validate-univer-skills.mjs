@@ -15,9 +15,12 @@ const sdkSkills = [
   "univer-pro-integrate",
   "univer-node-backend",
   "univer-plugin-dev",
-  "univer-customize-theme"
+  "univer-customize-theme",
+  "build-with-univer"
 ];
 const officialSkills = [...discoverySkills, ...sdkSkills];
+// Skills the READMEs introduce; the others stay installable but are not advertised.
+const readmeSkills = ["build-with-univer"];
 const removedWorkflowSkills = [
   "using-univer-cli",
   "writing-univer-plans",
@@ -149,7 +152,7 @@ async function validateReadmes() {
   const readmes = ["README.md", "README.zh-CN.md"].map((name) => path.join(root, name));
   for (const readme of readmes) {
     const text = await readText(readme);
-    for (const skill of officialSkills) {
+    for (const skill of readmeSkills) {
       if (!text.includes(`./skills/${skill}/SKILL.md`)) {
         recordError(`${relativeToRoot(readme)}: missing link to ${skill}`);
       }
@@ -397,7 +400,7 @@ async function validateExposureDirectory({ label, exposureRoot, failOnDrift, ski
 
 function withSyncCommand(message, skill) {
   const source = path.join(root, "skills", skill);
-  const target = path.join(os.homedir(), ".codex", "skills", skill);
+  const target = path.join(os.homedir(), ".agents", "skills", skill);
   return `${message}; explicit sync: rsync -a --delete "${source}/" "${target}/"`;
 }
 
@@ -426,8 +429,8 @@ async function validateDrift() {
   }
 
   await validateExposureDirectory({
-    label: "user-home ~/.codex/skills",
-    exposureRoot: path.join(os.homedir(), ".codex", "skills"),
+    label: "user-home ~/.agents/skills",
+    exposureRoot: path.join(os.homedir(), ".agents", "skills"),
     failOnDrift: false
   });
 }
