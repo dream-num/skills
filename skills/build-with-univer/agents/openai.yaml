@@ -1,0 +1,6 @@
+interface:
+  display_name: "Build with Univer"
+  short_description: "Choose and assemble Univer Office SDK packages for your app"
+  default_prompt: "Use $build-with-univer to help me pick the right Univer SDK for my project and start from the matching example."
+policy:
+  allow_implicit_invocation: true
