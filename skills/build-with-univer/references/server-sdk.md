@@ -118,37 +118,67 @@ enabled History, Comment and Worktree service: core-service middleware does not 
 
 ## Client wiring
 
-Plugin order matters. Mirror `examples/quick-start/web/main.ts`:
+This is the browser client, even when the backend runs in Node. Start with the imports, locales
+and core registrations in [Web SDK's browser plugin setup](web-sdk.md#browser-plugin-setup-sheets),
+then add the collaboration packages from `examples/quick-start/web/main.ts`. That example uses a
+preset; for a new plugin-mode client, use the following initialization instead. Do not create
+a blank workbook from the base example; load the backend's existing Unit after all registrations.
 
 ```ts
+import { IAuthzIoService, IMentionIOService, IUndoRedoService } from "@univerjs/core";
+import CollaborationClientEnUS from "@univerjs-pro/collaboration-client/locale/en-US";
+import CollaborationClientUIEnUS from "@univerjs-pro/collaboration-client-ui/locale/en-US";
+import "@univerjs-pro/collaboration-client-ui/lib/index.css";
+import "@univerjs-pro/collaboration-client/facade";
+
 const baseURL = `${location.protocol === "https:" ? "https" : "http"}://${location.host}/universer-api`;
 const wsProtocol = location.protocol === "https:" ? "wss" : "ws";
 
-createUniver({
-  collaboration: true,
-  presets: [UniverSheetsCorePreset({ container: "app" })],
-  plugins: [
-    [UniverLicensePlugin, { license: import.meta.env.UNIVER_LICENSE || undefined }], // first; see note below
-    UniverCollaborationPlugin,
-    [UniverCollaborationClientPlugin, {
-      socketService: BrowserCollaborationSocketService,
-      authzUrl: `${baseURL}/authz`,
-      snapshotServerUrl: `${baseURL}/snapshot`,
-      collabSubmitChangesetUrl: `${baseURL}/comb`,
-      collabWebSocketUrl: `${wsProtocol}://${location.host}/universer-api/comb/connect`,
-      wsSessionTicketUrl: `${baseURL}/user/session-ticket`,
-    }],
-    UniverCollaborationClientUIPlugin,
-  ],
+const univer = new Univer({
+  locale: LocaleType.EN_US,
+  locales: {
+    [LocaleType.EN_US]: mergeLocales(
+      DesignEnUS, UIEnUS, DocsUIEnUS, SheetsEnUS, SheetsUIEnUS,
+      SheetsFormulaUIEnUS, SheetsNumfmtUIEnUS,
+      CollaborationClientEnUS, CollaborationClientUIEnUS,
+    ),
+  },
+  override: [[IUndoRedoService, null], [IAuthzIoService, null], [IMentionIOService, null]],
 });
+univer.registerPlugin(UniverLicensePlugin, { license: import.meta.env.UNIVER_LICENSE || undefined });
+univer.registerPlugin(UniverRenderEnginePlugin);
+univer.registerPlugin(UniverFormulaEnginePlugin);
+univer.registerPlugin(UniverUIPlugin, { container: "app" });
+univer.registerPlugin(UniverDocsPlugin);
+univer.registerPlugin(UniverDocsUIPlugin);
+univer.registerPlugin(UniverSheetsPlugin);
+univer.registerPlugin(UniverSheetsUIPlugin);
+univer.registerPlugin(UniverSheetsFormulaPlugin);
+univer.registerPlugin(UniverSheetsFormulaUIPlugin);
+univer.registerPlugin(UniverSheetsNumfmtPlugin);
+univer.registerPlugin(UniverSheetsNumfmtUIPlugin);
+univer.registerPlugin(UniverCollaborationPlugin);
+univer.registerPlugin(UniverCollaborationClientPlugin, {
+  socketService: BrowserCollaborationSocketService,
+  authzUrl: `${baseURL}/authz`,
+  snapshotServerUrl: `${baseURL}/snapshot`,
+  collabSubmitChangesetUrl: `${baseURL}/comb`,
+  collabWebSocketUrl: `${wsProtocol}://${location.host}/universer-api/comb/connect`,
+  wsSessionTicketUrl: `${baseURL}/user/session-ticket`,
+});
+univer.registerPlugin(UniverCollaborationClientUIPlugin);
+const univerAPI = FUniver.newAPI(univer);
 ```
 
+- The three dependency overrides replace what `createUniver({ collaboration: true })` sets up.
+  That flag belongs to the preset helper; it is not an option on `new Univer`. Keep these overrides
+  and register the license first. Existing preset clients can retain their initialization.
 - Vite only exposes `VITE_`-prefixed variables to browser code. The examples map the key with
   `define: { "import.meta.env.UNIVER_LICENSE": JSON.stringify(process.env.UNIVER_LICENSE ?? "") }` in
   `vite.config.ts`; otherwise name the variable `VITE_UNIVER_LICENSE`. An unmapped variable is silently
   `undefined` and the app runs unlicensed.
-- Also import `@univerjs-pro/collaboration-client-ui/lib/index.css`, the client and client-ui
-  locales, and the product preset CSS. The page needs `<div id="app">`.
+- Keep the core browser plugins' CSS and locales as well as the collaboration imports above.
+  The page needs `<div id="app">` with a real height.
 - Preset alternative: `UniverSheetsCollaborationPreset({ universerEndpoint: <your backend base URL>,
   univerContainerId: "app" })` from `@univerjs/preset-sheets-collaboration` (Docs has a matching
   preset). It only registers browser plugins; the server routes are still yours.
