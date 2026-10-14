@@ -1,7 +1,6 @@
 ---
 name: univer-cli
 description: "Use when installing or operating Univer CLI for .univer files, spreadsheets, documents, slides, Base databases, Board canvases, cross-Unit embedding, worktrees, Facade authoring, inspection, verification, import/export, screenshots, or viewer handoff."
-hidden: true
 ---
 
 # Univer CLI
@@ -18,14 +17,7 @@ univer doctor
 
 ## Keep the CLI current
 
-Use these commands to compare the installed CLI with the latest public release:
-
-```bash
-univer --version
-npm view univer-cli@latest version --registry=https://registry.npmjs.org/
-```
-
-When a newer version is available, complete the current Univer task before updating:
+Before starting a new Univer task, apply any available CLI update:
 
 ```bash
 univer update
@@ -33,8 +25,9 @@ univer doctor --json
 univer skills get core
 ```
 
-If `univer update` reports that the shared daemon must stop, rerun it with `--force` after confirming
-that stopping the daemon is safe. Reload core and the target Unit Skill after every update.
+Continue only after `doctor` reports that the CLI is ready. Reload core and the target Unit Skill
+after every update. Once task work begins, keep the CLI and loaded Skills unchanged until handoff;
+apply later updates before the next new task.
 
 ## Start here
 
@@ -91,21 +84,21 @@ univer skills get cross-unit-formula
 
 ## Task Routing
 
-| Task | Load and use |
-| --- | --- |
-| Inspect or edit spreadsheet values, formulas, formatting, charts, or tables | core + `sheet` |
-| Create or refine document paragraphs, rich text, tables, charts, or page layout | core + `doc` |
-| Build or review presentation pages, shapes, text, or images | core + `slide` |
-| Create or edit structured Base tables, fields, records, or views | core + `base` |
-| Create or edit a Board canvas, charts, and other elements | core + `board` |
-| Embed one Unit inside another Unit | core + host Unit + child Unit + `embed` |
+| Task                                                                              | Load and use                                          |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Inspect or edit spreadsheet values, formulas, formatting, charts, or tables       | core + `sheet`                                        |
+| Create or refine document paragraphs, rich text, tables, charts, or page layout   | core + `doc`                                          |
+| Build or review presentation pages, shapes, text, or images                       | core + `slide`                                        |
+| Create or edit structured Base tables, fields, records, or views                  | core + `base`                                         |
+| Create or edit a Board canvas, charts, and other elements                         | core + `board`                                        |
+| Embed one Unit inside another Unit                                                | core + host Unit + child Unit + `embed`               |
 | Read a Sheet range or Base table column from a Sheet cell or formula-driven Shape | core + Host Unit + Source Unit + `cross-unit-formula` |
 
 ## Why Univer CLI
 
 - One `.univer` target can contain Sheet, Doc, Slide, Base, and Board Units addressed by `unitId`.
 - Worktrees isolate agent changes until review and merge.
-- Offline `api show` / `api find` resolves exact Facade symbols for the installed SDK.
+- Offline `api find` searches the installed SDK index by keyword; `api show` resolves exact Facade symbols and details.
 - Runtime readback and the viewer verify the stored model and rendered result.
 - Import/export and screenshots use the product runtime rather than unrelated file writers.
 
