@@ -4,6 +4,11 @@ Toolkit for building your own Office CLI that agents drive. Your app owns the ro
 program, command names, targets, identity and authorization, output, and deployment. The SDK
 supplies the capabilities behind the commands.
 
+Its headless runtime processes document data in Node; visual inspection uses a separate browser
+rendering path. Check the installed headless factory's plugin set rather than assuming it matches
+Web SDK's `preset-sheets-node-core`. See [web-sdk.md](web-sdk.md#browser-or-headless-node) for the
+runtime and plugin-registration distinction; preserve the factory wiring in the examples below.
+
 Docs: `https://docs.univer.ai/ai/llms.txt`. Examples: `dream-num/univer-cli-examples`.
 
 ## Package roles

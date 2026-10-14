@@ -1,6 +1,6 @@
 ---
 name: build-with-univer
-description: Build applications with Univer Office SDK, covering the Web SDK (embedded Sheets, Docs, Slides, Boards, Bases and PDFs editors), Server SDK (self-hosted OT collaboration, storage, auth, Office import/export), AI SDK (agent-operated Office CLIs, reviewable Worktrees), and Binding SDK (plain HTML pages bound to live Sheet data). Use when starting or designing any Univer-based app or choosing Univer packages, including when the user describes a spreadsheet, document, collaboration, or AI-office need without naming a Univer package.
+description: Build applications with Univer Office SDK, covering the Web SDK (browser Office editors, headless Sheets and Docs in Node), Server SDK (self-hosted OT collaboration, storage, auth, Office import/export), AI SDK (agent-operated Office CLIs, reviewable Worktrees), and Binding SDK (plain HTML pages bound to live Sheet data). Use when starting or designing any Univer-based app or choosing Univer packages, including when the user describes a spreadsheet, document, collaboration, or AI-office need without naming a Univer package.
 ---
 
 # Build with Univer
@@ -14,6 +14,7 @@ quickly and older material is widely mis-remembered.
 | You are building | SDK | Packages | Start from |
 | --- | --- | --- | --- |
 | An embedded spreadsheet, document, or slide editor in a web app | Web SDK | `@univerjs/*`, `@univerjs-pro/*` | [references/web-sdk.md](references/web-sdk.md) |
+| Generate or modify Sheet or Doc data, or calculate formulas in Node.js | Headless Web SDK | `@univerjs/*` without editor UI | [references/web-sdk.md](references/web-sdk.md#headless-in-node) |
 | Real-time multi-user editing with your own auth and storage | Server SDK + Web SDK client | `@univerjs-pro/collaboration-*` | [references/server-sdk.md](references/server-sdk.md), `quick-start` example |
 | Server-side Office import/export (xlsx, docx, pptx) | Server SDK | `@univerjs-pro/exchange-node` | [references/server-sdk.md](references/server-sdk.md), `exchange` example |
 | Your own CLI or tool that lets agents read and edit Office content | AI SDK | `@univer-cli/*` | [references/ai-sdk.md](references/ai-sdk.md), `01-content-operations` example |
@@ -21,13 +22,17 @@ quickly and older material is widely mis-remembered.
 
 Real products often combine them. A collaborative editor is Web SDK in the browser plus Server SDK
 behind it. An HTML dashboard over shared data is Binding SDK on top of a Server SDK backend.
+Running in Node does not by itself select Server SDK or AI SDK: use Headless Web SDK for document
+processing, Server SDK for collaboration/storage or Office import/export, and AI SDK for agent tools.
 
 ## The four SDKs
 
 - **Web SDK** is the engine. It runs in the browser or headless in Node and covers six products:
-  Sheets and Docs (open source), Slides, Boards, Bases and PDFs (Pro). Presets are the fast path
-  for Sheets and Docs; every other product uses plugin mode. All programmatic control goes through
-  the Facade API.
+  Sheets and Docs (open source), Slides, Boards, Bases and PDFs (Pro). Choose the runtime before
+  assembling plugins: browser editors need UI; headless Node processes document data without an
+  editor UI. Follow each product's runtime guide rather than assuming Node support. For new Web SDK
+  integrations, default to plugin mode; preserve existing presets or an explicit request for them.
+  All programmatic control goes through the Facade API.
 - **Server SDK** is a set of Node.js packages you assemble inside your own backend: transport,
   endpoint, service and a database adapter, with an OT collaboration engine and history, comment and
   Worktree services. Your application owns users, permissions, storage and deployment.
@@ -54,7 +59,9 @@ behind it. An HTML dashboard over shared data is Binding SDK on top of a Server 
 4. Copy an example's wiring rather than recombining packages from scratch. Then replace its demo
    shortcuts (fixed user, always-allow authorization, in-memory storage) with real ones.
 5. Verify in proportion to the change: build, run, and for collaboration open two independent
-   browser contexts.
+   browser contexts. Run headless examples in plain Node. Before declaring a feature unsupported
+   or adding a workaround, check the runtime's installed packages, plugin registrations and Facade
+   imports, then verify the native API. A Facade method can exist without its feature plugin.
 6. A missing license never blocks a proof of concept. Everything still runs; Pro surfaces show
    watermarks or restrict some operations. Build first, add the license when one is available.
 7. Check [references/avoid.md](references/avoid.md) before recommending anything from older docs,
